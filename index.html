@@ -695,8 +695,8 @@ body {
   import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
   import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  // IMPORTANT: Replace these values with your Firebase Web App config.
-  // The game will still work locally if you leave this disabled.
+  // IMPORTANT: Put your Firebase Web App config below and set enabled:true.
+  // GitHub Pages hosts the game; Firebase Realtime Database provides the shared global shop stock.
   window.GLOBAL_FIREBASE_CONFIG = {
     enabled: false,
     apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
@@ -753,6 +753,15 @@ body {
       });
       return true;
     },
+    async setShopStock(stock) {
+      if (!window.GlobalDB.ready) return false;
+      await set(ref(window.GlobalDB.db, "global/shopStock"), {
+        ...stock,
+        updatedAt: Date.now(),
+        updatedBy: window.GlobalDB.uid
+      });
+      return true;
+    },
     listen() {
       if (!window.GlobalDB.ready) return;
       onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
@@ -762,6 +771,10 @@ body {
       onValue(ref(window.GlobalDB.db, "global/limited"), snap => {
         const v = snap.val();
         if (v) window.dispatchEvent(new CustomEvent("global-limited", { detail: v }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/shopStock"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-shop-stock", { detail: v || {} }));
       });
       onValue(ref(window.GlobalDB.db, "global/broadcasts"), snap => {
         const all = snap.val() || {};
@@ -778,6 +791,15 @@ body {
 
 <style>
 .log-entry{margin:10px 0;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.04);line-height:1.7}
+</style>
+
+
+<style>
+.seed-equip-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04)}
+.seed-equip-row .seed-info{display:flex;align-items:center;gap:8px;min-width:0}
+.seed-equip-row button{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#171717;color:#fff;cursor:pointer}
+.seed-equip-row button.equipped{background:#234d2a;border-color:#61d978}
+.seed-equip-row button:disabled{opacity:.5;cursor:not-allowed}
 </style>
 
 </head>
@@ -931,7 +953,8 @@ body {
 
             <h3>🥔 POTATO SEED MARKET</h3>
 
-            <div id="shopItems"></div>
+            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">🥔 Common Spud = Unlimited • All other shop seeds have 1–5 global stock.</div>
+<div id="shopItems"></div>
 
         </div>
 
@@ -995,6 +1018,14 @@ body {
   <div class="log-entry"><b>Next</b><br>🚀 More crops, events, quests, pets, and global events coming soon.</div>
 </div>
 
+
+<button class="menu-btn" onclick="togglePanel('seedEquipPanel')">🎒 EQUIP SEEDS</button>
+<div id="seedEquipPanel" class="panel" style="display:none;">
+  <h2>🎒 EQUIP SEEDS</h2>
+  <p style="opacity:.75">Equip a seed to make it your active planting seed. Unequip it to stop using it.</p>
+  <div id="seedEquipList"></div>
+</div>
+
 <div id="adminPanel" class="admin-panel">
 
             <div class="admin-title">
@@ -1050,7 +1081,8 @@ body {
                         🔨 BAN / UNBAN
                     </button>
 
-                    <div class="admin-heading">
+                    <button class="btn" onclick="resetGlobalShopStock()">🌎 RESTOCK SHOP GLOBALLY (1–5)</button>
+<div class="admin-heading">
                         ✨ LIMITED SEED TOGGLES
                     </div>
 
@@ -1288,6 +1320,12 @@ let game = {
         infinity:0,
         bedrock:0,
         matrix:0,
+        prism:0,
+        glitch:0,
+        cosmic:0,
+        galaxy:0,
+        infinity2:0,
+        adminium:0,
         golden:0,
         ghost:0,
         tree:0,
@@ -1298,6 +1336,8 @@ let game = {
 
     /* Each plot has its own upgrade level. */
     plotLevels:Array(12).fill(0),
+
+    shopStock:{common:-1},
 
     upgrades:{
         speed:false,
@@ -1583,83 +1623,89 @@ function harvest(index) {
 
 function renderShop() {
 
-    const container =
-        document.getElementById("shopItems");
+    const container = document.getElementById("shopItems");
+    if(!container) return;
 
     container.innerHTML = "";
 
-    Object.entries(crops).forEach(
-        ([id,crop]) => {
+    Object.entries(crops).forEach(([id,crop]) => {
 
-        if(
-            crop.limited &&
-            !game.limited[id]
-        ) {
-            return;
-        }
+        if(crop.limited && !game.limited[id]) return;
 
-        const row =
-            document.createElement("div");
+        const stock = typeof getShopStock === "function"
+            ? getShopStock(id)
+            : Infinity;
 
-        row.className =
-            "shop-item";
+        const owned = Number(game.seeds[id] || 0);
+        const equipped = game.selected === id || game.equippedSeed === id;
+        const row = document.createElement("div");
+        row.className = "shop-item";
+
+        const stockText = id === "common"
+            ? "Stock: ∞"
+            : `Stock: ${stock}`;
 
         row.innerHTML = `
-
             <div>
                 🥔 ${crop.name}
-
                 <br>
-
-                <span style="color:#777;">
-                    Buy: $${crop.price.toLocaleString()}
-                </span>
-
+                <span style="color:#777;">Buy: $${crop.price.toLocaleString()}</span>
                 <br>
-
-                <span style="color:#137333;">
-                    Sell: $${crop.sell.toLocaleString()}
-                </span>
-
+                <span style="color:#137333;">Sell: $${crop.sell.toLocaleString()}</span>
+                <br>
+                <span style="color:#d6b34a;">${stockText}</span>
+                <br>
+                <span style="color:#aaa;">Owned: ${owned}</span>
+                ${crop.limited ? '<br><span class="limited-label">✨ LIMITED EVENT</span>' : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <button class="btn buy-seed-btn" ${id !== "common" && stock <= 0 ? "disabled" : ""}>
+                    ${id !== "common" && stock <= 0 ? "SOLD OUT" : "BUY"}
+                </button>
                 ${
-                    crop.limited
-                    ? '<br><span class="limited-label">✨ LIMITED EVENT</span>'
-                    : ''
+                  equipped
+                  ? `<button class="btn" onclick="unequipSeed('${id}')">❌ UNEQUIP</button>`
+                  : `<button class="btn" onclick="equipSeed('${id}')" ${owned <= 0 ? "disabled" : ""}>🎒 EQUIP</button>`
                 }
             </div>
-
-            <button class="btn">
-                BUY
-            </button>
         `;
 
-        row.querySelector("button")
-            .onclick = () => {
+        const buyButton = row.querySelector(".buy-seed-btn");
+        buyButton.onclick = () => {
 
-                if(game.cash < crop.price) {
+            if(id !== "common" && getShopStock(id) <= 0){
+                alert("❌ SOLD OUT! Ask an admin to restock.");
+                return;
+            }
 
-                    alert("❌ NOT ENOUGH CASH!");
+            if(game.cash < crop.price){
+                alert("❌ NOT ENOUGH CASH!");
+                return;
+            }
 
-                    return;
-                }
+            game.cash -= crop.price;
+            game.seeds[id] = Number(game.seeds[id] || 0) + 1;
 
-                game.cash -= crop.price;
+            // Buying from the shop automatically equips that seed.
+            game.selected = id;
+            game.equippedSeed = id;
 
-                game.seeds[id]++;
+            if(id !== "common"){
+                game.shopStock[id] = Math.max(0, getShopStock(id) - 1);
+            }
 
-                game.selected = id;
+            saveGame();
+            render();
 
-                saveGame();
-                render();
-
-            };
+            // Sync the new stock to Firebase when global mode is online.
+            if(id !== "common" && window.GlobalDB?.ready && window.GlobalAPI){
+                window.GlobalAPI.setShopStock(game.shopStock).catch(console.warn);
+            }
+        };
 
         container.appendChild(row);
-
     });
-
 }
-
 /* ==========================================
    PANEL
 ========================================== */
@@ -2450,6 +2496,167 @@ window.EXTRA_POTATO_SEEDS = {
   infinity2:{name:"Infinity X",price:250000000000,sell:2500000000000,grow:105000,emoji:"♾️"},
   adminium:{name:"Adminium Potato",price:2500000000000,sell:30000000000000,grow:120000,emoji:"🛡️"}
 };
+</script>
+
+
+<script>
+/* ===== EQUIP / UNEQUIP SEEDS ===== */
+(function(){
+  function getCropCatalog(){
+    const candidates = ["CROPS","crops","SEEDS","seeds"];
+    for (const n of candidates) {
+      try { if (window[n] && typeof window[n] === "object") return window[n]; } catch(e){}
+    }
+    return window.EXTRA_POTATO_SEEDS || {};
+  }
+
+  window.equipSeed = function(type){
+    if (typeof game === "undefined") return;
+    game.selected = type;
+    game.equippedSeed = type;
+    if (typeof save === "function") save();
+    if (typeof render === "function") render();
+    if (typeof renderSeedEquip === "function") renderSeedEquip();
+  };
+
+  window.unequipSeed = function(type){
+    if (typeof game === "undefined") return;
+    if (game.selected === type) {
+      game.selected = null;
+    }
+    if (game.equippedSeed === type) {
+      game.equippedSeed = null;
+    }
+    if (typeof save === "function") save();
+    if (typeof render === "function") render();
+    if (typeof renderSeedEquip === "function") renderSeedEquip();
+  };
+
+  window.renderSeedEquip = function(){
+    const box = document.getElementById("seedEquipList");
+    if (!box || typeof game === "undefined") return;
+
+    const catalog = getCropCatalog();
+    const keys = Object.keys(catalog);
+    const allKeys = [...new Set(keys.concat(Object.keys(window.EXTRA_POTATO_SEEDS || {})))];
+
+    if (!allKeys.length) {
+      box.innerHTML = "<p>No seeds found.</p>";
+      return;
+    }
+
+    box.innerHTML = allKeys.map(type => {
+      const c = catalog[type] || (window.EXTRA_POTATO_SEEDS || {})[type];
+      if (!c) return "";
+      const count = Number((game.seeds || {})[type] || 0);
+      const equipped = game.selected === type || game.equippedSeed === type;
+      const label = c.name || type;
+      const emoji = c.emoji || "🥔";
+      return `
+        <div class="seed-equip-row">
+          <div class="seed-info">
+            <span style="font-size:22px">${emoji}</span>
+            <div><b>${label}</b><br><small>Owned: ${count}</small></div>
+          </div>
+          ${
+            equipped
+            ? `<button class="equipped" onclick="unequipSeed('${type}')">UNEQUIP</button>`
+            : `<button onclick="equipSeed('${type}')" ${count <= 0 ? "disabled" : ""}>EQUIP</button>`
+          }
+        </div>`;
+    }).join("");
+  };
+
+  // Preserve equipped seed through saves/loads when the game state supports it.
+  const oldRender = window.render;
+  if (typeof oldRender === "function") {
+    window.render = function(){
+      oldRender.apply(this, arguments);
+      try { renderSeedEquip(); } catch(e){}
+    };
+  }
+
+  window.addEventListener("load", () => {
+    try {
+      if (typeof game !== "undefined" && game.equippedSeed === undefined)
+        game.equippedSeed = game.selected || null;
+      renderSeedEquip();
+    } catch(e){}
+  });
+})();
+</script>
+
+
+<script>
+/* ===== GLOBAL SHOP STOCK ===== */
+(function(){
+  const SHOP_STOCK_SEEDS = [
+    "rare","quantum","epic","nebula","supernova","mythic","void",
+    "ancient","infinity","bedrock","matrix","prism","glitch","cosmic",
+    "galaxy","infinity2","adminium","golden","ghost","tree","diamond"
+  ];
+
+  function freshStock(){
+    const s = {};
+    SHOP_STOCK_SEEDS.forEach(k => s[k] = Math.floor(Math.random()*5)+1);
+    s.common = -1; // unlimited Common Spud
+    return s;
+  }
+
+  window.getShopStock = function(type){
+    if(type === "common") return Infinity;
+    if(typeof game === "undefined") return 0;
+    game.shopStock = game.shopStock || freshStock();
+    const n = Number(game.shopStock[type]);
+    return Number.isFinite(n) ? Math.max(0,n) : 0;
+  };
+
+  window.resetGlobalShopStock = async function(){
+    const stock = freshStock();
+    if(typeof game !== "undefined"){
+      game.shopStock = stock;
+      if(typeof saveGame === "function") saveGame();
+      if(typeof render === "function") render();
+    }
+    if(window.GlobalDB && window.GlobalDB.ready && window.GlobalAPI){
+      await window.GlobalAPI.setShopStock(stock);
+    }
+    if(window.showGlobalToast) window.showGlobalToast("🌎 SHOP RESTOCKED GLOBALLY! 1–5 EACH!");
+  };
+
+  window.addGlobalShopStock = async function(amount){
+    amount = Math.max(1, Number(amount)||1);
+    const stock = (typeof game !== "undefined" && game.shopStock) ? {...game.shopStock} : freshStock();
+    SHOP_STOCK_SEEDS.forEach(k => stock[k] = Math.min(99, Number(stock[k]||0)+amount));
+    stock.common = -1;
+    if(typeof game !== "undefined"){
+      game.shopStock = stock;
+      if(typeof saveGame === "function") saveGame();
+      if(typeof render === "function") render();
+    }
+    if(window.GlobalDB && window.GlobalDB.ready && window.GlobalAPI){
+      await window.GlobalAPI.setShopStock(stock);
+    }
+  };
+
+  window.addEventListener("global-shop-stock", e => {
+    if(typeof game === "undefined") return;
+    const incoming = e.detail || {};
+    game.shopStock = {...(game.shopStock || {}), ...incoming};
+    game.shopStock.common = -1;
+    if(typeof saveGame === "function") saveGame();
+    if(typeof render === "function") render();
+  });
+
+  // Create the first stock set after the game loads.
+  window.addEventListener("load", () => {
+    if(typeof game !== "undefined"){
+      game.shopStock = game.shopStock || freshStock();
+      game.shopStock.common = -1;
+      if(typeof render === "function") render();
+    }
+  });
+})();
 </script>
 
 </body>
