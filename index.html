@@ -775,6 +775,11 @@ body {
   startGlobal();
 </script>
 
+
+<style>
+.log-entry{margin:10px 0;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.04);line-height:1.7}
+</style>
+
 </head>
 
 <body>
@@ -979,7 +984,18 @@ body {
             🔒 ADMIN TERMINAL
         </button>
 
-        <div id="adminPanel" class="admin-panel">
+        
+<button class="menu-btn" onclick="togglePanel('updateLog')">📜 UPDATE LOG</button>
+<div id="updateLog" class="panel" style="display:none;">
+  <h2>📜 UPDATE LOG</h2>
+  <div class="log-entry"><b>V2.0 — Global Update</b><br>🌎 Added Firebase global systems, global restocks, broadcasts, and limited-seed syncing.</div>
+  <div class="log-entry"><b>V2.1 — Bigger Potato Update</b><br>🌈 Added Prism, Glitch, Cosmic, Galaxy, Infinity X, and Adminium potatoes.</div>
+  <div class="log-entry"><b>V2.1 — Economy + Plots</b><br>💰 Rebalanced the economy and added upgradeable plots with faster growth and better sell value.</div>
+  <div class="log-entry"><b>V2.1 — Bug Fixes</b><br>🛠️ Safer saves, safer crop loading, better auto-harvest handling, and ban-state rendering.</div>
+  <div class="log-entry"><b>Next</b><br>🚀 More crops, events, quests, pets, and global events coming soon.</div>
+</div>
+
+<div id="adminPanel" class="admin-panel">
 
             <div class="admin-title">
                 👑 ADMIN CONTROL CENTER
@@ -2401,7 +2417,7 @@ window.addEventListener("beforeunload", saveGame);
         Object.keys(CROPS).forEach(k => stock[k] = 99);
       } else {
         // Matches the crop list in this game.
-        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","golden","ghost","tree","diamond"]
+        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","golden","ghost","tree","diamond"]
           .forEach(k => stock[k] = 99);
       }
     } catch(e) {}
@@ -2422,6 +2438,18 @@ window.addEventListener("beforeunload", saveGame);
     showGlobalToast("🌎 Limited seed setting updated for everyone.");
   };
 })();
+</script>
+
+
+<script>
+window.EXTRA_POTATO_SEEDS = {
+  prism:{name:"Prism Potato",price:150000000,sell:750000000,grow:50000,emoji:"🌈"},
+  glitch:{name:"Glitch Potato",price:750000000,sell:4500000000,grow:60000,emoji:"👾"},
+  cosmic:{name:"Cosmic Potato",price:5000000000,sell:35000000000,grow:75000,emoji:"🌌"},
+  galaxy:{name:"Galaxy Potato",price:30000000000,sell:250000000000,grow:90000,emoji:"🌠"},
+  infinity2:{name:"Infinity X",price:250000000000,sell:2500000000000,grow:105000,emoji:"♾️"},
+  adminium:{name:"Adminium Potato",price:2500000000000,sell:30000000000000,grow:120000,emoji:"🛡️"}
+};
 </script>
 
 </body>
