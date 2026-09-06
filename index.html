@@ -1,251 +1,1227 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potatoes Search Tycoon - Web Edition</title>
-    <link href="https//googleapis.com" rel="stylesheet>
-    <style>
-        
-        * {
-            box-sizing: border-box;
-            font-family: 'Press Start 2P', monospace;
-            image-rendering: pixelated;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potatoes Search Tycoon</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    box-sizing: border-box;
+    font-family: "Press Start 2P", monospace;
+    image-rendering: pixelated;
+}
+
+body {
+    margin: 0;
+    padding: 15px;
+    background: #ffffff;
+    color: #202124;
+}
+
+button,
+input,
+select {
+    font-family: "Press Start 2P", monospace;
+}
+
+button {
+    cursor: pointer;
+}
+
+.btn {
+    border: 2px solid #000;
+    background: #4285f4;
+    color: white;
+    padding: 8px;
+    font-size: 8px;
+    border-radius: 4px;
+}
+
+.btn:hover {
+    filter: brightness(1.08);
+}
+
+#site-friend-gate-lock {
+    position: fixed;
+    inset: 0;
+    background: #111;
+    color: white;
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+}
+
+.gate-header {
+    font-size: 14px;
+    line-height: 2;
+    color: #4285f4;
+    margin-bottom: 20px;
+}
+
+.gate-input {
+    width: 280px;
+    padding: 12px;
+    background: #000;
+    color: #00ff00;
+    border: 3px solid white;
+    text-align: center;
+    font-size: 10px;
+    margin-bottom: 12px;
+}
+
+.gate-hint {
+    color: #777;
+    font-size: 6px;
+    margin-top: 15px;
+}
+
+.google-logo {
+    text-align: center;
+    font-size: 26px;
+    margin: 10px 0 25px;
+}
+
+.g1 { color:#4285F4; }
+.g2 { color:#EA4335; }
+.g3 { color:#FBBC05; }
+.g4 { color:#34A853; }
+
+.account {
+    max-width: 600px;
+    margin: auto;
+    background: #f8f9fa;
+    border: 2px solid #e8eaed;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.account input {
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 7px;
+    border: 1px solid #ccc;
+    font-size: 7px;
+}
+
+.game {
+    max-width: 600px;
+    margin: 15px auto;
+}
+
+.cabinet {
+    position: relative;
+    border: 2px solid #dadce0;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.title {
+    text-align: center;
+    color: #1a73e8;
+    font-size: 9px;
+    padding-bottom: 8px;
+    border-bottom: 2px dashed #ddd;
+}
+
+.hud {
+    background: #f8f9fa;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    font-size: 7px;
+    line-height: 2;
+}
+
+.garden {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 8px;
+    background: #e8eaed;
+    border: 2px solid #dadce0;
+    border-radius: 8px;
+}
+
+.plot {
+    aspect-ratio: 1;
+    background: #f1f3f4;
+    border: 2px dashed #aaa;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 6px;
+    text-align: center;
+    transition: .2s;
+}
+
+.plot:hover {
+    transform: scale(1.04);
+    background: #e8eaed;
+}
+
+.potato {
+    width: 38px;
+    height: 28px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.common { background:#b8860b; }
+.rare { background:#00bcd4; box-shadow:0 0 10px #00bcd4; }
+.quantum { background:#00ffcc; box-shadow:0 0 12px #00ffcc; }
+.epic { background:#8e24aa; box-shadow:0 0 12px #ba68c8; }
+.nebula { background:#4a00e0; box-shadow:0 0 14px #8e24aa; }
+.supernova { background:#ffeb3b; box-shadow:0 0 18px #ffeb3b; }
+.mythic { background:#ff3d00; box-shadow:0 0 14px #ff3d00; }
+.void { background:#111; box-shadow:0 0 15px #4a148c; }
+.ancient { background:#ffd700; box-shadow:0 0 16px #ffd700; }
+.infinity {
+    background: linear-gradient(45deg,red,green,blue);
+    box-shadow:0 0 20px white;
+}
+.bedrock { background:#555; }
+.matrix { background:#000; box-shadow:0 0 15px #00ff00; }
+
+.market,
+.panel,
+.admin-panel {
+    margin-top: 12px;
+    border: 2px solid #dadce0;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+}
+
+.market h3,
+.panel h3,
+.admin-panel h3 {
+    text-align: center;
+    color: #1a73e8;
+    font-size: 8px;
+}
+
+.shop-item {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 4px;
+    border-bottom:1px solid #eee;
+    font-size:6px;
+}
+
+.menu {
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+}
+
+.admin-panel {
+    display:none;
+}
+
+.admin-grid {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:7px;
+}
+
+.admin-grid input {
+    grid-column:span 2;
+    padding:7px;
+    font-size:7px;
+}
+
+.broadcast {
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    background:#d93025;
+    color:#fff;
+    text-align:center;
+    padding:14px;
+    z-index:9998;
+    font-size:8px;
+}
+
+.banned {
+    display:none;
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.96);
+    color:#ff4444;
+    z-index:20;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:12px;
+    border-radius:10px;
+}
+
+@media(max-width:500px) {
+    .garden {
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .admin-grid {
+        grid-template-columns:1fr;
+    }
+
+    .admin-grid input {
+        grid-column:span 1;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- FRIEND GATE -->
+<div id="site-friend-gate-lock">
+    <div class="gate-header">
+        🔒 POTATO SEARCH TYCOON
+        <br>
+        <span style="color:white;font-size:7px;">
+            FRIENDS ONLY SECURITY PORTAL
+        </span>
+    </div>
+
+    <input
+        id="gate-pass-field"
+        class="gate-input"
+        type="password"
+        placeholder="ENTER ACCESS CODE"
+    >
+
+    <button class="btn" onclick="verifyFriendGateCode()">
+        UNLOCK SITE
+    </button>
+
+    <div class="gate-hint">
+        Hint: Code is case-insensitive
+    </div>
+</div>
+
+<div id="broadcast" class="broadcast"></div>
+
+<div class="account">
+    <b style="font-size:7px;color:#1a73e8;">
+        ⚙️ ACCOUNT PORTAL
+    </b>
+
+    <input
+        id="username"
+        value="Player1"
+        placeholder="Username"
+    >
+
+    <input
+        id="accountPassword"
+        type="password"
+        placeholder="Account password"
+    >
+
+    <button class="btn" onclick="saveAccount()">
+        💾 SAVE ACCOUNT
+    </button>
+</div>
+
+<div class="google-logo">
+    <span class="g1">P</span>
+    <span class="g2">o</span>
+    <span class="g3">t</span>
+    <span class="g1">a</span>
+    <span class="g4">t</span>
+    <span class="g2">o</span>
+    <span class="g3">e</span>
+    <span class="g1">s</span>
+</div>
+
+<div class="menu">
+    <button class="btn" onclick="toggleShop()">
+        🛒 SEED SHOP
+    </button>
+
+    <button class="btn" onclick="toggleUpgrades()">
+        ⚡ UPGRADES
+    </button>
+
+    <button class="btn" onclick="saveGame()">
+        💾 SAVE
+    </button>
+</div>
+
+<div class="game">
+    <div class="cabinet">
+
+        <div id="banScreen" class="banned">
+            🔨
+            <br><br>
+            YOU HAVE BEEN BANNED
+            <br><br>
+            BY THE ADMIN
+        </div>
+
+        <div class="title">
+            🕹️ PROFILE:
+            <span id="playerName">Player1</span>
+        </div>
+
+        <div class="hud">
+            💰 BALANCE: $<span id="cash">100</span>
+            <br>
+            ⭐ LEVEL: <span id="level">1</span>
+            <br>
+            🥔 SELECTED:
+            <span id="selectedSeed">Common Spud</span>
+            <br>
+            🌱 SEEDS:
+            <span id="seedCount">5</span>
+        </div>
+
+        <div id="garden" class="garden"></div>
+
+        <div id="shop" class="market" style="display:none;">
+            <h3>🥔 SEED MARKET</h3>
+            <div id="shopItems"></div>
+        </div>
+
+        <div id="upgrades" class="panel" style="display:none;">
+            <h3>⚙️ UPGRADES</h3>
+
+            <div class="shop-item">
+                👟 Fertilizer Boots
+                <button class="btn" onclick="buyUpgrade('speed')">
+                    $50
+                </button>
+            </div>
+
+            <div class="shop-item">
+                🤖 Robo Harvester
+                <button class="btn" onclick="buyUpgrade('auto')">
+                    $250
+                </button>
+            </div>
+
+            <div class="shop-item">
+                💧 Automated Sprinkler
+                <button class="btn" onclick="buyUpgrade('sprinkler')">
+                    $400
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ADMIN -->
+<div style="max-width:600px;margin:20px auto;text-align:center;">
+    <button class="btn" onclick="openAdmin()">
+        🔒 ADMIN TERMINAL
+    </button>
+
+    <div id="adminPanel" class="admin-panel">
+        <h3>👑 ADMIN TERMINAL</h3>
+
+        <input
+            id="adminPassword"
+            type="password"
+            placeholder="ADMIN CODE"
+            style="padding:8px;width:100%;font-size:7px;"
+        >
+
+        <button class="btn" onclick="loginAdmin()" style="margin:8px;">
+            BYPASS
+        </button>
+
+        <div id="adminControls" style="display:none;">
+            <div class="admin-grid">
+
+                <button class="btn" onclick="adminCash()">
+                    💰 +$50,000
+                </button>
+
+                <button class="btn" onclick="adminGrow()">
+                    ⚡ INSTA-GROW
+                </button>
+
+                <button class="btn" onclick="adminRestock()">
+                    🌱 RESTOCK EVERYONE
+                </button>
+
+                <button class="btn" onclick="adminSeeds()">
+                    🥔 +100 SEEDS
+                </button>
+
+                <button class="btn" onclick="adminRain()">
+                    🌧️ RAINSTORM
+                </button>
+
+                <button class="btn" onclick="adminBot()">
+                    🤖 ROBO BOT
+                </button>
+
+                <button class="btn" onclick="adminWipe()">
+                    💥 RESET FIELD
+                </button>
+
+                <button class="btn" onclick="adminBan()">
+                    🔨 BAN / UNBAN
+                </button>
+
+                <input
+                    id="broadcastMessage"
+                    value="ALERT: SYSTEM PATCHED!"
+                >
+
+                <button
+                    class="btn"
+                    style="grid-column:span 2;"
+                    onclick="sendBroadcast()"
+                >
+                    📢 GLOBAL SERVER MESSAGE
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================
+   GAME DATA
+========================= */
+
+const FRIEND_CODE = "miniboys5151";
+const ADMIN_CODE = "goofy4321";
+
+const crops = {
+    common: {
+        name:"Common Spud",
+        price:5,
+        sell:12,
+        grow:5000,
+        className:"common"
+    },
+
+    rare: {
+        name:"Glitch Spud",
+        price:20,
+        sell:55,
+        grow:7000,
+        className:"rare"
+    },
+
+    quantum: {
+        name:"Quantum Spud",
+        price:75,
+        sell:200,
+        grow:9000,
+        className:"quantum"
+    },
+
+    epic: {
+        name:"Cosmic Tater",
+        price:250,
+        sell:700,
+        grow:12000,
+        className:"epic"
+    },
+
+    nebula: {
+        name:"Nebula Spud",
+        price:750,
+        sell:2200,
+        grow:15000,
+        className:"nebula"
+    },
+
+    supernova: {
+        name:"Supernova Mash",
+        price:2500,
+        sell:8000,
+        grow:18000,
+        className:"supernova"
+    },
+
+    mythic: {
+        name:"Magma Masher",
+        price:10000,
+        sell:35000,
+        grow:22000,
+        className:"mythic"
+    },
+
+    void: {
+        name:"Void Root",
+        price:50000,
+        sell:200000,
+        grow:26000,
+        className:"void"
+    },
+
+    ancient: {
+        name:"Divine Roots",
+        price:250000,
+        sell:1000000,
+        grow:30000,
+        className:"ancient"
+    },
+
+    infinity: {
+        name:"Infinity Root",
+        price:1000000,
+        sell:5000000,
+        grow:35000,
+        className:"infinity"
+    },
+
+    bedrock: {
+        name:"Admin Bedrock",
+        price:5000000,
+        sell:25000000,
+        grow:40000,
+        className:"bedrock"
+    },
+
+    matrix: {
+        name:"Admin Matrix",
+        price:25000000,
+        sell:100000000,
+        grow:45000,
+        className:"matrix"
+    }
+};
+
+let game = {
+    cash:100,
+    level:1,
+    selected:"common",
+    seeds:{
+        common:5,
+        rare:0,
+        quantum:0,
+        epic:0,
+        nebula:0,
+        supernova:0,
+        mythic:0,
+        void:0,
+        ancient:0,
+        infinity:0,
+        bedrock:0,
+        matrix:0
+    },
+    plots:Array(12).fill(null),
+    upgrades:{
+        speed:false,
+        auto:false,
+        sprinkler:false
+    },
+    banned:false
+};
+
+/* =========================
+   FRIEND GATE
+========================= */
+
+function verifyFriendGateCode() {
+    const input =
+        document.getElementById("gate-pass-field")
+        .value
+        .trim()
+        .toLowerCase();
+
+    if(input === FRIEND_CODE.toLowerCase()) {
+        document.getElementById(
+            "site-friend-gate-lock"
+        ).style.display = "none";
+
+        localStorage.setItem("potatoGateUnlocked","yes");
+    } else {
+        alert("❌ WRONG FRIEND CODE!");
+    }
+}
+
+document
+.getElementById("gate-pass-field")
+.addEventListener("keydown", function(e) {
+    if(e.key === "Enter") {
+        verifyFriendGateCode();
+    }
+});
+
+if(localStorage.getItem("potatoGateUnlocked") === "yes") {
+    document.getElementById(
+        "site-friend-gate-lock"
+    ).style.display = "none";
+}
+
+/* =========================
+   RENDER
+========================= */
+
+function render() {
+
+    document.getElementById("cash").textContent =
+        Math.floor(game.cash).toLocaleString();
+
+    document.getElementById("level").textContent =
+        game.level;
+
+    document.getElementById("selectedSeed").textContent =
+        crops[game.selected].name;
+
+    document.getElementById("seedCount").textContent =
+        game.seeds[game.selected];
+
+    document.getElementById("playerName").textContent =
+        document.getElementById("username").value || "Player1";
+
+    const garden =
+        document.getElementById("garden");
+
+    garden.innerHTML = "";
+
+    game.plots.forEach((plot,index) => {
+
+        const div = document.createElement("div");
+        div.className = "plot";
+
+        if(!plot) {
+
+            div.innerHTML = `
+                <div style="font-size:18px;">🟫</div>
+                <div>EMPTY</div>
+                <div>CLICK TO PLANT</div>
+            `;
+
+            div.onclick = () => plant(index);
+
+        } else {
+
+            const crop = crops[plot.type];
+
+            const potato =
+                document.createElement("div");
+
+            potato.className =
+                "potato " + crop.className;
+
+            div.appendChild(potato);
+
+            const text =
+                document.createElement("div");
+
+            if(plot.ready) {
+
+                text.innerHTML =
+                    `🥔 READY<br>+$${crop.sell.toLocaleString()}`;
+
+                div.onclick = () => harvest(index);
+
+            } else {
+
+                const remaining =
+                    Math.max(
+                        0,
+                        Math.ceil(
+                            (plot.finish - Date.now()) / 1000
+                        )
+                    );
+
+                text.innerHTML =
+                    `🌱 GROWING<br>${remaining}s`;
+            }
+
+            div.appendChild(text);
         }
 
-        body {
-            background-color: #ffffff;
-            color: #202124;
-            margin: 0;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            position: relative;
+        garden.appendChild(div);
+    });
+
+    renderShop();
+}
+
+/* =========================
+   PLANT
+========================= */
+
+function plant(index) {
+
+    if(game.banned) return;
+
+    if(game.plots[index]) {
+        return;
+    }
+
+    if(game.seeds[game.selected] <= 0) {
+        alert("❌ You don't have that seed!");
+        return;
+    }
+
+    const crop =
+        crops[game.selected];
+
+    let growTime =
+        crop.grow;
+
+    if(game.upgrades.speed) {
+        growTime *= .85;
+    }
+
+    if(game.upgrades.sprinkler) {
+        growTime *= .8;
+    }
+
+    game.seeds[game.selected]--;
+
+    game.plots[index] = {
+        type:game.selected,
+        finish:Date.now() + growTime,
+        ready:false
+    };
+
+    saveGame();
+    render();
+}
+
+/* =========================
+   HARVEST
+========================= */
+
+function harvest(index) {
+
+    if(game.banned) return;
+
+    const plot =
+        game.plots[index];
+
+    if(!plot || !plot.ready) return;
+
+    const crop =
+        crops[plot.type];
+
+    game.cash += crop.sell;
+
+    game.level =
+        Math.max(
+            1,
+            Math.floor(game.cash / 500) + 1
+        );
+
+    game.plots[index] = null;
+
+    saveGame();
+    render();
+}
+
+/* =========================
+   TIMER
+========================= */
+
+setInterval(() => {
+
+    let changed = false;
+
+    game.plots.forEach(plot => {
+
+        if(
+            plot &&
+            !plot.ready &&
+            Date.now() >= plot.finish
+        ) {
+            plot.ready = true;
+            changed = true;
+        }
+    });
+
+    if(game.upgrades.auto) {
+
+        game.plots.forEach((plot,index) => {
+
+            if(plot && plot.ready) {
+                harvest(index);
+            }
+
+        });
+    }
+
+    if(changed) {
+        render();
+    }
+
+},500);
+
+/* =========================
+   SHOP
+========================= */
+
+function renderShop() {
+
+    const shop =
+        document.getElementById("shopItems");
+
+    shop.innerHTML = "";
+
+    Object.entries(crops).forEach(([id,crop]) => {
+
+        const row =
+            document.createElement("div");
+
+        row.className = "shop-item";
+
+        row.innerHTML = `
+            <span>
+                🥔 ${crop.name}
+                <br>
+                $${crop.price.toLocaleString()}
+            </span>
+
+            <button class="btn">
+                BUY
+            </button>
+        `;
+
+        row.querySelector("button")
+        .onclick = () => {
+
+            if(game.cash < crop.price) {
+                alert("❌ Not enough cash!");
+                return;
+            }
+
+            game.cash -= crop.price;
+            game.seeds[id]++;
+            game.selected = id;
+
+            saveGame();
+            render();
+        };
+
+        shop.appendChild(row);
+    });
+}
+
+function toggleShop() {
+
+    const shop =
+        document.getElementById("shop");
+
+    shop.style.display =
+        shop.style.display === "none"
+        ? "block"
+        : "none";
+}
+
+function toggleUpgrades() {
+
+    const panel =
+        document.getElementById("upgrades");
+
+    panel.style.display =
+        panel.style.display === "none"
+        ? "block"
+        : "none";
+}
+
+/* =========================
+   UPGRADES
+========================= */
+
+function buyUpgrade(type) {
+
+    const prices = {
+        speed:50,
+        auto:250,
+        sprinkler:400
+    };
+
+    if(game.upgrades[type]) {
+        alert("✅ Already owned!");
+        return;
+    }
+
+    if(game.cash < prices[type]) {
+        alert("❌ Not enough cash!");
+        return;
+    }
+
+    game.cash -= prices[type];
+    game.upgrades[type] = true;
+
+    saveGame();
+    render();
+
+    alert("⚡ Upgrade purchased!");
+}
+
+/* =========================
+   SAVE
+========================= */
+
+function saveGame() {
+
+    localStorage.setItem(
+        "potatoGame",
+        JSON.stringify(game)
+    );
+}
+
+function loadGame() {
+
+    const saved =
+        localStorage.getItem("potatoGame");
+
+    if(saved) {
+
+        try {
+            game = JSON.parse(saved);
+        } catch(e) {
+            console.log("Save corrupted.");
+        }
+    }
+
+    render();
+}
+
+function saveAccount() {
+
+    const name =
+        document.getElementById("username").value;
+
+    if(!name.trim()) {
+        alert("Enter a username.");
+        return;
+    }
+
+    localStorage.setItem(
+        "potatoUsername",
+        name
+    );
+
+    render();
+
+    alert("💾 Account saved!");
+}
+
+const savedName =
+    localStorage.getItem("potatoUsername");
+
+if(savedName) {
+    document.getElementById("username").value =
+        savedName;
+}
+
+/* =========================
+   ADMIN
+========================= */
+
+function openAdmin() {
+
+    const panel =
+        document.getElementById("adminPanel");
+
+    panel.style.display =
+        panel.style.display === "none"
+        ? "block"
+        : "none";
+}
+
+function loginAdmin() {
+
+    const password =
+        document.getElementById("adminPassword").value;
+
+    if(password === ADMIN_CODE) {
+
+        document.getElementById(
+            "adminControls"
+        ).style.display = "block";
+
+        alert("👑 ADMIN ACCESS GRANTED!");
+
+    } else {
+
+        alert("❌ WRONG ADMIN CODE!");
+    }
+}
+
+function adminCash() {
+
+    game.cash += 50000;
+
+    saveGame();
+    render();
+
+    alert("💰 +$50,000!");
+}
+
+function adminSeeds() {
+
+    Object.keys(game.seeds)
+    .forEach(id => {
+        game.seeds[id] += 100;
+    });
+
+    saveGame();
+    render();
+
+    alert("🥔 +100 OF EVERY SEED!");
+}
+
+/* GLOBAL RESTOCK */
+function adminRestock() {
+
+    Object.keys(game.seeds)
+    .forEach(id => {
+        game.seeds[id] += 25;
+    });
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        "🌱 ADMIN RESTOCK: EVERYONE GOT +25 SEEDS!"
+    );
+}
+
+function adminGrow() {
+
+    game.plots.forEach(plot => {
+
+        if(plot) {
+            plot.finish = Date.now();
+            plot.ready = true;
         }
 
-        /* SITE VISITOR PASSCODE BARRIER SECURITY OVERLAY CONTAINER */
-        #site-friend-gate-lock {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #111111;
-            color: #ffffff;
-            z-index: 999999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        .gate-header { font-size: 12px; color: #4285F4; margin-bottom: 25px; line-height: 1.8; letter-spacing: -1px; }
-        .gate-input { font-size: 10px; padding: 10px; border: 3px solid #ffffff; background: #000000; color: #00ff00; text-align: center; width: 260px; margin-bottom: 15px; }
-        .gate-hint { font-size: 6px; color: #70757a; margin-top: 15px; }
+    });
 
-        #admin-alert-banner {
-            display: none;
-            width: 100%;
-            background: #d93025;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 10px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 9999;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border-bottom: 4px solid black;
-        }
+    saveGame();
+    render();
 
-        .google-logo {
-            font-size: 24px;
-            text-align: center;
-            margin: 15px 0 25px 0;
-            font-weight: bold;
-            letter-spacing: -2px;
-            user-select: none;
-        }
-        .g-p1 { color: #4285F4; }
-        .g-o1 { color: #EA4335; }
-        .g-t1 { color: #FBBC05; }
-        .g-a  { color: #4285F4; }
-        .g-t2 { color: #34A853; }
-        .g-o2 { color: #EA4335; }
-        .g-e  { color: #FBBC05; }
-        .g-s  { color: #4285F4; }
+    alert("⚡ FIELD INSTANTLY GROWN!");
+}
 
-        .account-registry-zone {
-            width: 100%;
-            max-width: 600px;
-            background: #f8f9fa;
-            border: 2px solid #e8eaed;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-        .reg-box { display: flex; flex-direction: column; gap: 5px; background: #ffffff; border: 1px solid #dadce0; padding: 8px; border-radius: 6px; }
-        .reg-title { font-size: 6px; font-weight: bold; margin-bottom: 2px; color: #1a73e8; }
-        .reg-input { font-size: 6px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 100%; }
+function adminBot() {
 
-        .changelog-panel {
-            width: 100%;
-            max-width: 600px;
-            background: #e8f0fe;
-            border: 2px dashed #1a73e8;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 5px;
-            color: #3c4043;
-            line-height: 1.8;
-        }
-        .changelog-header { font-size: 7px; color: #1a73e8; font-weight: bold; margin-bottom: 8px; text-align: center; }
-        .changelog-item { border-bottom: 1px solid #d2e3fc; padding-bottom: 4px; margin-bottom: 4px; }
+    game.upgrades.auto =
+        !game.upgrades.auto;
 
-        .menu-zone {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .btn-toggle {
-            background: #4285F4;
-            color: white;
-            border: 2px solid #000;
-            padding: 8px 12px;
-            font-size: 8px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .btn-upgrade-toggle { background: #e8f0fe; color: #1a73e8; border: 2px solid #000; }
+    saveGame();
+    render();
 
-        .game-container {
-            width: 100%;
-            max-width: 600px;
-        }
+    alert(
+        game.upgrades.auto
+        ? "🤖 ROBO BOT ACTIVATED!"
+        : "🤖 ROBO BOT DEACTIVATED!"
+    );
+}
 
-        .player-cabinet {
-            background: #ffffff;
-            border: 2px solid #dadce0;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            position: relative;
-        }
+function adminRain() {
 
-        .ban-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            color: #d93025;
-            z-index: 50;
-            border-radius: 10px;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            line-height: 2;
-        }
+    game.plots.forEach(plot => {
 
-        .player-title {
-            font-size: 8px;
-            text-align: center;
-            margin-bottom: 8px;
-            padding-bottom: 5px;
-            border-bottom: 2px dashed #dadce0;
-            color: #1a73e8;
-        }
+        if(plot && !plot.ready) {
 
-        .hud {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 8px;
-            font-size: 6px;
-            color: #3c4043;
-            line-height: 1.6;
-            margin-bottom: 10px;
+            plot.finish -= 5000;
         }
+    });
 
-        .garden-grid {
-            background: #e8eaed;
-            border: 2px solid #dadce0;
-            border-radius: 8px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            padding: 8px;
-            margin-bottom: 10px;
-        }
+    saveGame();
+    render();
 
-        .plot {
-            background: #f1f3f4;
-            border: 2px dashed #bdc3c7;
-            border-radius: 6px;
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-            transition: all 0.2s;
-        }
-        .plot:hover {
-            background: #e8eaed;
-            transform: scale(1.04);
-        }
+    sendBroadcastText(
+        "🌧️ A GLOBAL RAINSTORM HIT THE POTATO FIELDS!"
+    );
+}
 
-        .plot-status {
-            font-size: 5px;
-            text-align: center;
-            margin-top: 4px;
-            color: #70757a;
-        }
+function adminWipe() {
 
-        .potato-art {
-            width: 32px;
-            height: 24px;
-            border-radius: 50% 40% 45% 50%;
-            position: relative;
-            border: 2px solid #000;
-            box-shadow: inset -3px -3px 0px rgba(0,0,0,0.2);
-        }
-        .spud-common { background: #b8860b; }
-        .spud-rare { background: #00bcd4; border-color: #0d47a1; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.3), 0 0 8px #00bcd4; }
-        .spud-quantum { background: #00ffcc; border-color: #006655; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.2), 0 0 10px #00ffcc; animation: spudPulse 0.4s infinite alternate ease-in-out; }
-        .spud-glitchfil { background: #ff5252; border-color: #b71c1c; border-radius: 10%; box-shadow: inset -3px -3px 0px #ffeb3b, 0 0 10px #ff5252; animation: spudPulse 0.3s infinite alternate ease-in-out; }
-        .spud-epic { background: #8e24aa; border-color: #4a148c; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.3), 0 0 10px #ba68c8; animation: spudFloat 1.2s infinite alternate ease-in-out; }
-        .spud-nebula { background: #4a00e0; border-color: #8e24aa; box-shadow: inset -3px -3px 0px #ff007f, 0 0 12px #8e24aa; animation: spudFloat 1.5s infinite alternate ease-in-out; }
-        .spud-supernova { background: #ffeb3b; border-color: #ff9800; box-shadow: inset -3px -3px 0px #fff, 0 0 18px #ffeb3b; animation: spudPulse 0.2s infinite alternate ease-in-out; }
-        .spud-mythic { background: #ff3d00; border-color: #3700b3; box-shadow: inset -3px -3px 0px #ffea00, 0 0 12px #ff3d00; animation: spudPulse 0.6s infinite alternate ease-in-out; }
-        .spud-void { background: #111111; border-color: #333333; box-shadow: inset -3px -3px 0px #4a148c, 0 0 15px #4a148c; animation: spudPulse 0.8s infinite alternate ease-in-out; }
-        .spud-ancient { background: #ffd700; border-color: #ff6f00; box-shadow: inset -3px -3px 0px #fff, 0 0 16px #ffd700; animation: spudFloat 0.8s infinite alternate ease-in-out; }
-        .spud-infinity { background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff); border-color: #ffffff; box-shadow: 0 0 25px rgba(255,255,255,0.8); animation: spudFloat 0.5s infinite alternate ease-in-out; }
-        .spud-bedrock { background: #555555; border-color: #222222; box-shadow: inset -3px -3px 0px #000; border-radius: 4px !important; }
-        .spud-matrix { background: #000000; border-color: #00ff00; box-shadow: 0 0 15px #00ff00; animation: spudPulse 0.1s infinite alternate; }
-        .spud-golden { background: #ffd700; border-color: #b8860b; box-shadow: inset -3px -3px 0px #fff, 0 0 15px rgba(255,215,0,0.6); }
-        .spud-ghost { background: #e0f7fa; border-color: #b2ebf2; opacity: 0.8; box-shadow: 0 0 15px #fff; animation: spudFloat 0.7s infinite alternate ease-in-out; }
-        .spud-tree { background: #2e7d32; border-color: #1b5e20; border-radius: 50% 50% 10% 10%; box-shadow: inset -3px -3px 0px #81c784; }
+    if(!confirm(
+        "Destroy every potato currently growing?"
+    )) return;
 
-        .sprout-art {
-            width: 8px;
-            height: 12px;
-            background: #4caf50;
-            border: 1px solid #1b5e20;
-            border-radius: 0 100% 0 100%;
-        }
+    game.plots =
+        Array(12).fill(null);
 
-        .market-shelf { background: #ffffff; border: 1px solid #dadce0; border-radius: 6px; padding: 5px; margin-bottom: 10px; }
-        .shelf-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #f1f3f4; font-size: 5px; line-height: 1.4; }
+    saveGame();
+    render();
+
+    alert("💥 FIELD RESET!");
+}
+
+function adminBan() {
+
+    game.banned =
+        !game.banned;
+
+    document.getElementById(
+        "banScreen"
+    ).style.display =
+        game.banned
+        ? "flex"
+        : "none";
+
+    saveGame();
+}
+
+function sendBroadcast() {
+
+    const msg =
+        document.getElementById(
+            "broadcastMessage"
+        ).value;
+
+    sendBroadcastText(msg);
+}
+
+function sendBroadcastText(message) {
+
+    const banner =
+        document.getElementById("broadcast");
+
+    banner.textContent =
+        "📢 " + message;
+
+    banner.style.display =
+        "block";
+
+    setTimeout(() => {
+
+        banner.style.display =
+            "none";
+
+    },5000);
+}
+
+/* =========================
+   START
+========================= */
+
+loadGame();
+
+if(game.banned) {
+    document.getElementById(
+        "banScreen"
+    ).style.display = "flex";
+}
+</script>
+
+</body>
+</html>
+```
