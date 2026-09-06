@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -659,10 +658,131 @@ body {
         font-size:22px;
     }
 }
+
+/* =========================
+   PLOT UPGRADES + ECONOMY UI
+========================= */
+.plot.upgraded {
+    border-color: #fbbc04;
+    box-shadow: inset 0 -7px 0 rgba(0,0,0,.18), 0 0 8px rgba(251,188,4,.45);
+}
+.plot-level {
+    position:absolute;
+    top:4px;
+    right:4px;
+    background:#111;
+    color:#ffd54f;
+    padding:3px 4px;
+    border:1px solid #ffd54f;
+    border-radius:3px;
+    font-size:4px;
+}
+.upgrade-note {
+    background:#111;
+    color:#fff;
+    border-radius:6px;
+    padding:8px;
+    margin-bottom:8px;
+    font-size:5px;
+    line-height:1.7;
+}
+
 </style>
+
+<!-- GLOBAL MULTIPLAYER / SHARED STATE: Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+  // IMPORTANT: Replace these values with your Firebase Web App config.
+  // The game will still work locally if you leave this disabled.
+  window.GLOBAL_FIREBASE_CONFIG = {
+    enabled: false,
+    apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "PASTE_YOUR_PROJECT",
+    storageBucket: "PASTE_YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
+  };
+
+  window.GlobalDB = { ready: false, app: null, db: null, auth: null, uid: null };
+
+  async function startGlobal() {
+    const c = window.GLOBAL_FIREBASE_CONFIG;
+    if (!c || !c.enabled || !c.apiKey || c.apiKey.startsWith("PASTE_")) {
+      console.log("[Global] Firebase is disabled; using local save mode.");
+      return;
+    }
+    try {
+      const app = initializeApp(c);
+      const db = getDatabase(app);
+      const auth = getAuth(app);
+      const credential = await signInAnonymously(auth);
+      window.GlobalDB = { ready: true, app, db, auth, uid: credential.user.uid };
+      window.dispatchEvent(new CustomEvent("global-ready"));
+    } catch (err) {
+      console.error("[Global] Firebase setup failed:", err);
+      window.dispatchEvent(new CustomEvent("global-error", { detail: err }));
+    }
+  }
+
+  window.GlobalAPI = {
+    async restockAll(payload) {
+      if (!window.GlobalDB.ready) return false;
+      await set(ref(window.GlobalDB.db, "global/restock"), {
+        ...payload,
+        at: Date.now(),
+        by: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async broadcast(message) {
+      if (!window.GlobalDB.ready) return false;
+      await push(ref(window.GlobalDB.db, "global/broadcasts"), {
+        message, at: Date.now(), by: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async setLimited(type, enabled) {
+      if (!window.GlobalDB.ready) return false;
+      await update(ref(window.GlobalDB.db, "global/limited"), {
+        [type]: !!enabled
+      });
+      return true;
+    },
+    listen() {
+      if (!window.GlobalDB.ready) return;
+      onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-restock", { detail: v }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/limited"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-limited", { detail: v }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/broadcasts"), snap => {
+        const all = snap.val() || {};
+        const entries = Object.values(all).sort((a,b) => (b.at || 0) - (a.at || 0));
+        if (entries[0]) window.dispatchEvent(new CustomEvent("global-broadcast", { detail: entries[0] }));
+      });
+    }
+  };
+
+  window.addEventListener("global-ready", () => window.GlobalAPI.listen());
+  startGlobal();
+</script>
+
 </head>
 
 <body>
+
+<div id="global-status" style="position:fixed;left:12px;bottom:12px;z-index:9998;padding:8px 11px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.72);font:10px 'Press Start 2P',monospace;color:#aaa;">
+  🌐 GLOBAL: OFFLINE
+</div>
+
 
 <!-- FRIEND LOCK -->
 <div id="site-friend-gate-lock">
@@ -745,6 +865,10 @@ body {
 
         <button class="btn" onclick="togglePanel('upgrades')">
             ⚡ UPGRADES
+        </button>
+
+        <button class="btn gold-btn" onclick="togglePanel('plotUpgrades')">
+            🌾 PLOT UPGRADES
         </button>
 
         <button class="btn dark-btn" onclick="saveGame()">
@@ -834,6 +958,15 @@ body {
 
         </div>
 
+        <div id="plotUpgrades" class="panel" style="display:none;">
+            <h3>🌾 PLOT UPGRADES</h3>
+            <div class="upgrade-note">
+                Upgrade individual plots to make them faster and more valuable.
+                Click a plot, then choose an upgrade below.
+            </div>
+            <div id="plotUpgradeItems"></div>
+        </div>
+
     </div>
 
     <!-- ADMIN -->
@@ -877,7 +1010,7 @@ body {
                         🥔 +100 ALL SEEDS
                     </button>
 
-                    <button class="btn green-btn" onclick="adminRestock()">
+                    <button class="btn green-btn" onclick="adminRestock()" onclick="globalRestockEveryone()">
                         🌱 RESTOCK EVERYONE
                     </button>
 
@@ -990,72 +1123,72 @@ const crops = {
 
     rare: {
         name:"Glitch Spud",
-        price:20,
-        sell:55,
+        price:25,
+        sell:65,
         grow:7000,
         className:"rare"
     },
 
     quantum: {
         name:"Quantum Spud",
-        price:75,
-        sell:200,
+        price:100,
+        sell:275,
         grow:9000,
         className:"quantum"
     },
 
     epic: {
         name:"Cosmic Tater",
-        price:250,
-        sell:700,
+        price:350,
+        sell:950,
         grow:12000,
         className:"epic"
     },
 
     nebula: {
         name:"Nebula Spud",
-        price:750,
-        sell:2200,
+        price:1000,
+        sell:3200,
         grow:15000,
         className:"nebula"
     },
 
     supernova: {
         name:"Supernova Mash",
-        price:2500,
-        sell:8000,
+        price:3500,
+        sell:12000,
         grow:18000,
         className:"supernova"
     },
 
     mythic: {
         name:"Magma Masher",
-        price:10000,
-        sell:35000,
+        price:14000,
+        sell:50000,
         grow:22000,
         className:"mythic"
     },
 
     void: {
         name:"Void Root",
-        price:50000,
-        sell:200000,
+        price:65000,
+        sell:280000,
         grow:26000,
         className:"void"
     },
 
     ancient: {
         name:"Divine Roots",
-        price:250000,
-        sell:1000000,
+        price:325000,
+        sell:1400000,
         grow:30000,
         className:"ancient"
     },
 
     infinity: {
         name:"Infinity Root",
-        price:1000000,
-        sell:5000000,
+        price:1300000,
+        sell:6500000,
         grow:35000,
         className:"infinity"
     },
@@ -1147,6 +1280,9 @@ let game = {
 
     plots:Array(12).fill(null),
 
+    /* Each plot has its own upgrade level. */
+    plotLevels:Array(12).fill(0),
+
     upgrades:{
         speed:false,
         auto:false,
@@ -1222,6 +1358,9 @@ if(
 
 function render() {
 
+    const ban = document.getElementById("banScreen");
+    if(ban) ban.style.display = game.banned ? "flex" : "none";
+
     document.getElementById("cash")
         .textContent =
         Math.floor(game.cash)
@@ -1247,6 +1386,7 @@ function render() {
     renderGarden();
     renderShop();
     renderLimitedButtons();
+    renderPlotUpgrades();
 
 }
 
@@ -1256,88 +1396,79 @@ function render() {
 
 function renderGarden() {
 
-    const garden =
-        document.getElementById("garden");
-
+    const garden = document.getElementById("garden");
     garden.innerHTML = "";
 
     game.plots.forEach((plot,index) => {
 
-        const div =
-            document.createElement("div");
+        const div = document.createElement("div");
+        const plotLevel = Number(game.plotLevels[index] || 0);
 
         div.className =
-            "plot" + (!plot ? " empty" : "");
+            "plot" + (!plot ? " empty" : "") +
+            (plotLevel > 0 ? " upgraded" : "");
+
+        if(plotLevel > 0) {
+            const badge = document.createElement("div");
+            badge.className = "plot-level";
+            badge.textContent = "LV " + plotLevel;
+            div.appendChild(badge);
+        }
 
         if(!plot) {
 
-            div.innerHTML = `
+            div.innerHTML += `
                 <div style="font-size:18px;">🌱</div>
                 <div>EMPTY</div>
                 <div>CLICK TO PLANT</div>
+                ${plotLevel ? `<div style="color:#ffd54f;">UPGRADE +${plotLevel * 10}%</div>` : ""}
             `;
 
-            div.onclick =
-                () => plant(index);
+            div.onclick = () => plant(index);
 
         } else {
 
-            const crop =
-                crops[plot.type];
+            const crop = crops[plot.type];
 
-            const wrap =
-                document.createElement("div");
+            const wrap = document.createElement("div");
+            wrap.className = "potato-wrap";
 
-            wrap.className =
-                "potato-wrap";
-
-            const potato =
-                document.createElement("div");
-
-            potato.className =
-                "potato " +
-                crop.className;
+            const potato = document.createElement("div");
+            potato.className = "potato " + crop.className;
 
             wrap.appendChild(potato);
-
             div.appendChild(wrap);
 
-            const text =
-                document.createElement("div");
+            const text = document.createElement("div");
 
             if(plot.ready) {
 
+                const bonus = 1 + (plotLevel * 0.10);
+                const payout = Math.floor(crop.sell * bonus);
+
                 text.innerHTML =
-                    `🥔 READY<br>+$${crop.sell.toLocaleString()}`;
+                    `🥔 READY<br>+$${payout.toLocaleString()}<br>
+                     <span style="color:#ffd54f;">+${plotLevel * 10}% PLOT BONUS</span>`;
 
-                text.style.color =
-                    "#7cff7c";
-
-                div.onclick =
-                    () => harvest(index);
+                text.style.color = "#7cff7c";
+                div.onclick = () => harvest(index);
 
             } else {
 
-                const seconds =
-                    Math.max(
-                        0,
-                        Math.ceil(
-                            (plot.finish -
-                            Date.now()) / 1000
-                        )
-                    );
+                const seconds = Math.max(
+                    0,
+                    Math.ceil((plot.finish - Date.now()) / 1000)
+                );
 
                 text.innerHTML =
-                    `🌱 GROWING<br>${seconds}s`;
-
+                    `🌱 GROWING<br>${seconds}s<br>
+                     <span style="color:#ffd54f;">PLOT LV ${plotLevel}</span>`;
             }
 
             div.appendChild(text);
-
         }
 
         garden.appendChild(div);
-
     });
 
 }
@@ -1349,56 +1480,48 @@ function renderGarden() {
 function plant(index) {
 
     if(game.banned) return;
-
+    if(!Number.isInteger(index) || index < 0 || index >= game.plots.length) return;
     if(game.plots[index]) return;
 
-    const selected =
-        game.selected;
+    const selected = game.selected;
+    const crop = crops[selected];
 
-    if(
-        crops[selected].limited &&
-        !game.limited[selected]
-    ) {
-
-        alert(
-            "🔒 This limited seed is currently disabled!"
-        );
-
+    if(!crop) {
+        game.selected = "common";
+        render();
         return;
     }
 
-    if(game.seeds[selected] <= 0) {
+    if(crop.limited && !game.limited[selected]) {
+        alert("🔒 This limited seed is currently disabled!");
+        return;
+    }
 
+    if((game.seeds[selected] || 0) <= 0) {
         alert("❌ You don't have that seed!");
-
         return;
     }
 
-    let grow =
-        crops[selected].grow;
+    const plotLevel = Number(game.plotLevels[index] || 0);
 
-    if(game.upgrades.speed)
-        grow *= .85;
+    let grow = crop.grow;
 
-    if(game.upgrades.sprinkler)
-        grow *= .8;
+    if(game.upgrades.speed) grow *= .85;
+    if(game.upgrades.sprinkler) grow *= .8;
+
+    /* Each plot level makes that plot 7% faster. */
+    grow *= Math.max(.45, 1 - (plotLevel * .07));
 
     game.seeds[selected]--;
 
     game.plots[index] = {
-
         type:selected,
-
-        finish:
-            Date.now() + grow,
-
+        finish:Date.now() + Math.max(500, grow),
         ready:false
-
     };
 
     saveGame();
     render();
-
 }
 
 /* ==========================================
@@ -1409,25 +1532,33 @@ function harvest(index) {
 
     if(game.banned) return;
 
-    const plot =
-        game.plots[index];
+    const plot = game.plots[index];
 
-    if(!plot || !plot.ready)
+    if(!plot || !plot.ready) return;
+
+    const crop = crops[plot.type];
+    if(!crop) {
+        game.plots[index] = null;
+        saveGame();
+        render();
         return;
+    }
 
-    const crop =
-        crops[plot.type];
+    const plotLevel = Number(game.plotLevels[index] || 0);
+    const payoutMultiplier = 1 + (plotLevel * 0.10);
 
-    game.cash += crop.sell;
+    game.cash += Math.floor(crop.sell * payoutMultiplier);
 
-    game.level =
-        Math.floor(game.cash / 500) + 1;
+    /* Level is based on lifetime cash earned, with a gentler progression. */
+    game.level = Math.max(
+        1,
+        Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1
+    );
 
     game.plots[index] = null;
 
     saveGame();
     render();
-
 }
 
 /* ==========================================
@@ -1536,38 +1667,111 @@ function togglePanel(id) {
 function buyUpgrade(type) {
 
     const prices = {
-
-        speed:50,
-
-        auto:250,
-
-        sprinkler:400
-
+        speed:75,
+        auto:500,
+        sprinkler:900
     };
 
+    if(!(type in prices)) return;
+
     if(game.upgrades[type]) {
-
         alert("✅ YOU ALREADY OWN THIS!");
-
         return;
     }
 
     if(game.cash < prices[type]) {
-
         alert("❌ NOT ENOUGH CASH!");
-
         return;
     }
 
     game.cash -= prices[type];
-
     game.upgrades[type] = true;
 
     saveGame();
     render();
 
     alert("⚡ UPGRADE PURCHASED!");
+}
 
+
+/* ==========================================
+   PLOT UPGRADES
+========================================== */
+
+function renderPlotUpgrades() {
+
+    const container = document.getElementById("plotUpgradeItems");
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    game.plots.forEach((plot,index) => {
+
+        const level = Number(game.plotLevels[index] || 0);
+        const cost = Math.floor(250 * Math.pow(2, level));
+
+        const row = document.createElement("div");
+        row.className = "shop-item";
+
+        const cropName = plot && crops[plot.type]
+            ? crops[plot.type].name
+            : "Empty Plot";
+
+        row.innerHTML = `
+            <div>
+                🌾 PLOT ${index + 1} — LV ${level}
+                <br>
+                <span style="color:#777;">
+                    ${cropName}
+                </span>
+                <br>
+                <span style="color:#137333;">
+                    +${level * 10}% sell value
+                </span>
+                <br>
+                <span style="color:#1a73e8;">
+                    Next: +10% value / 7% faster
+                </span>
+            </div>
+            <button class="btn gold-btn">
+                $${cost.toLocaleString()}
+            </button>
+        `;
+
+        row.querySelector("button").onclick = () => buyPlotUpgrade(index);
+
+        container.appendChild(row);
+    });
+}
+
+function buyPlotUpgrade(index) {
+
+    if(game.banned) return;
+
+    if(!Number.isInteger(index) || index < 0 || index >= game.plots.length)
+        return;
+
+    const level = Number(game.plotLevels[index] || 0);
+
+    if(level >= 5) {
+        alert("🏆 THIS PLOT IS MAXED!");
+        return;
+    }
+
+    const cost = Math.floor(250 * Math.pow(2, level));
+
+    if(game.cash < cost) {
+        alert(`❌ NOT ENOUGH CASH! You need $${cost.toLocaleString()}.`);
+        return;
+    }
+
+    game.cash -= cost;
+    game.plotLevels[index] = level + 1;
+
+    saveGame();
+    render();
+
+    alert(`🌾 PLOT ${index + 1} UPGRADED TO LV ${level + 1}!`);
 }
 
 /* ==========================================
@@ -1986,8 +2190,27 @@ function loadGame() {
                 limited:{
                     ...game.limited,
                     ...(loaded.limited || {})
-                }
+                },
+                plotLevels:Array.isArray(loaded.plotLevels)
+                    ? game.plotLevels.map((_,i) =>
+                        Math.max(0, Math.min(5, Number(loaded.plotLevels[i]) || 0))
+                    )
+                    : game.plotLevels
             };
+
+            /* Repair malformed or old saves safely. */
+            if(!Array.isArray(game.plots) || game.plots.length !== 12) {
+                game.plots = Array(12).fill(null);
+            }
+            game.plots = game.plots.map(plot =>
+                plot && crops[plot.type]
+                    ? {
+                        type:plot.type,
+                        finish:Number(plot.finish) || Date.now(),
+                        ready:Boolean(plot.ready) || Date.now() >= Number(plot.finish)
+                    }
+                    : null
+            );
 
         } catch(error) {
 
@@ -2029,21 +2252,34 @@ setInterval(() => {
 
     if(game.upgrades.auto) {
 
-        game.plots.forEach(
-            (plot,index) => {
+        let harvested = false;
 
-                if(
-                    plot &&
-                    plot.ready
-                ) {
+        game.plots.forEach((plot,index) => {
 
-                    harvest(index);
+            if(plot && plot.ready) {
+                const crop = crops[plot.type];
+                const level = Number(game.plotLevels[index] || 0);
 
+                if(crop) {
+                    game.cash += Math.floor(
+                        crop.sell * (1 + level * 0.10)
+                    );
+                    harvested = true;
                 }
 
+                game.plots[index] = null;
             }
-        );
 
+        });
+
+        if(harvested) {
+            game.level = Math.max(
+                1,
+                Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1
+            );
+            saveGame();
+            render();
+        }
     }
 
     if(changed) {
@@ -2069,8 +2305,124 @@ if(game.banned) {
 
 }
 
+
+window.addEventListener("beforeunload", saveGame);
+</script>
+
+
+<script>
+/* ===== GLOBAL SHARED GAME PATCH ===== */
+(function () {
+  const status = () => document.getElementById("global-status");
+
+  window.addEventListener("global-ready", () => {
+    if (status()) {
+      status().textContent = "🌐 GLOBAL: ONLINE";
+      status().style.color = "#7cff8a";
+    }
+  });
+
+  window.addEventListener("global-error", () => {
+    if (status()) {
+      status().textContent = "🌐 GLOBAL: LOCAL MODE";
+      status().style.color = "#ffd166";
+    }
+  });
+
+  // A global restock changes the shop stock for EVERY connected player.
+  window.addEventListener("global-restock", (ev) => {
+    const data = ev.detail || {};
+    try {
+      if (typeof game !== "undefined") {
+        if (!game.globalSeedStock) game.globalSeedStock = {};
+        if (data.stock) game.globalSeedStock = data.stock;
+
+        // If the original game has a seed stock object, sync it too.
+        if (typeof seedStock !== "undefined" && data.stock) {
+          Object.keys(data.stock).forEach(k => {
+            seedStock[k] = data.stock[k];
+          });
+        }
+
+        if (typeof save === "function") save();
+        if (typeof render === "function") render();
+
+        if (data.by !== window.GlobalDB?.uid) {
+          showGlobalToast("🌾 GLOBAL RESTOCK! Everyone's seed shop was restocked.");
+        }
+      }
+    } catch (e) {
+      console.warn("Global restock apply error:", e);
+    }
+  });
+
+  window.addEventListener("global-limited", (ev) => {
+    try {
+      if (typeof game === "undefined") return;
+      const d = ev.detail || {};
+      game.limited = game.limited || {};
+      Object.keys(d).forEach(k => game.limited[k] = !!d[k]);
+      if (typeof save === "function") save();
+      if (typeof render === "function") render();
+      if (typeof showGlobalToast === "function") showGlobalToast("🌐 Limited seeds updated globally!");
+    } catch (e) {}
+  });
+
+  window.addEventListener("global-broadcast", (ev) => {
+    const d = ev.detail || {};
+    if (d.message && d.by !== window.GlobalDB?.uid) showGlobalToast("📢 " + d.message);
+  });
+
+  window.showGlobalToast = function(msg) {
+    let box = document.getElementById("global-toast");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "global-toast";
+      box.style.cssText = "position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:10000;padding:13px 18px;border:2px solid #fff;border-radius:12px;background:#111;color:#fff;font:11px 'Press Start 2P',monospace;box-shadow:0 8px 30px #000;";
+      document.body.appendChild(box);
+    }
+    box.textContent = msg;
+    clearTimeout(window.__globalToastTimer);
+    window.__globalToastTimer = setTimeout(() => box.remove(), 4500);
+  };
+
+  // Global admin functions. They do nothing until Firebase is configured.
+  window.globalRestockEveryone = async function () {
+    if (!window.GlobalDB?.ready) {
+      showGlobalToast("⚠️ Global server is not connected. Add your Firebase config first.");
+      return;
+    }
+
+    const stock = {};
+    try {
+      if (typeof seedStock !== "undefined") {
+        Object.keys(seedStock).forEach(k => stock[k] = 99);
+      } else if (typeof CROPS !== "undefined") {
+        Object.keys(CROPS).forEach(k => stock[k] = 99);
+      } else {
+        // Matches the crop list in this game.
+        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","golden","ghost","tree","diamond"]
+          .forEach(k => stock[k] = 99);
+      }
+    } catch(e) {}
+
+    await window.GlobalAPI.restockAll({ stock, amount: 99 });
+    showGlobalToast("🌎 GLOBAL RESTOCK SENT TO EVERYONE!");
+  };
+
+  window.globalBroadcast = async function(message) {
+    if (!window.GlobalDB?.ready) return showGlobalToast("⚠️ Global server is not connected.");
+    await window.GlobalAPI.broadcast(message);
+    showGlobalToast("📢 Broadcast sent globally!");
+  };
+
+  window.globalToggleLimited = async function(type, enabled) {
+    if (!window.GlobalDB?.ready) return showGlobalToast("⚠️ Global server is not connected.");
+    await window.GlobalAPI.setLimited(type, enabled);
+    showGlobalToast("🌎 Limited seed setting updated for everyone.");
+  };
+})();
 </script>
 
 </body>
 </html>
-```
