@@ -17,220 +17,555 @@
 
 body {
     margin: 0;
-    padding: 15px;
-    background: #ffffff;
+    padding: 14px;
+    min-height: 100vh;
     color: #202124;
+    background:
+        radial-gradient(circle at top, #303030 0%, #111 35%, #050505 100%);
 }
 
-button,
-input,
-select {
-    font-family: "Press Start 2P", monospace;
-}
-
-button {
-    cursor: pointer;
-}
-
-.btn {
-    border: 2px solid #000;
-    background: #4285f4;
-    color: white;
-    padding: 8px;
-    font-size: 8px;
-    border-radius: 4px;
-}
-
-.btn:hover {
-    filter: brightness(1.08);
-}
+/* =========================
+   FRIEND GATE
+========================= */
 
 #site-friend-gate-lock {
     position: fixed;
     inset: 0;
-    background: #111;
+    z-index: 999999;
+    background:
+        radial-gradient(circle, #252525, #050505 70%);
     color: white;
-    z-index: 99999;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
     text-align: center;
     padding: 20px;
 }
 
+.gate-potato {
+    font-size: 55px;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 15px #8b5a2b);
+}
+
 .gate-header {
-    font-size: 14px;
-    line-height: 2;
     color: #4285f4;
+    font-size: 13px;
+    line-height: 1.9;
     margin-bottom: 20px;
 }
 
 .gate-input {
     width: 280px;
-    padding: 12px;
+    max-width: 90vw;
+    padding: 13px;
     background: #000;
-    color: #00ff00;
-    border: 3px solid white;
+    color: #00ff66;
+    border: 3px solid #fff;
     text-align: center;
-    font-size: 10px;
-    margin-bottom: 12px;
+    font-size: 9px;
+    outline: none;
+}
+
+.gate-input:focus {
+    border-color: #4285f4;
 }
 
 .gate-hint {
     color: #777;
     font-size: 6px;
-    margin-top: 15px;
+    margin-top: 14px;
 }
 
-.google-logo {
+/* =========================
+   GLOBAL
+========================= */
+
+.btn {
+    border: 2px solid #000;
+    background: #4285f4;
+    color: white;
+    padding: 8px 10px;
+    font-size: 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #000;
+}
+
+.btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #000;
+}
+
+.btn:hover {
+    filter: brightness(1.15);
+}
+
+.dark-btn {
+    background: #111;
+    color: white;
+    border-color: #555;
+}
+
+.green-btn {
+    background: #137333;
+}
+
+.red-btn {
+    background: #b31412;
+}
+
+.gold-btn {
+    background: #d89b00;
+    color: #111;
+}
+
+.page {
+    max-width: 680px;
+    margin: auto;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header-card {
+    background: #111;
+    color: white;
+    border: 3px solid #333;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+}
+
+.logo {
     text-align: center;
-    font-size: 26px;
-    margin: 10px 0 25px;
+    font-size: 27px;
+    letter-spacing: -3px;
+    margin-bottom: 10px;
 }
 
-.g1 { color:#4285F4; }
-.g2 { color:#EA4335; }
-.g3 { color:#FBBC05; }
-.g4 { color:#34A853; }
+.logo span:nth-child(1) { color:#4285F4; }
+.logo span:nth-child(2) { color:#EA4335; }
+.logo span:nth-child(3) { color:#FBBC05; }
+.logo span:nth-child(4) { color:#4285F4; }
+.logo span:nth-child(5) { color:#34A853; }
+.logo span:nth-child(6) { color:#EA4335; }
+.logo span:nth-child(7) { color:#FBBC05; }
+.logo span:nth-child(8) { color:#4285F4; }
+
+.subtitle {
+    text-align: center;
+    color: #aaa;
+    font-size: 6px;
+}
+
+/* =========================
+   ACCOUNT
+========================= */
 
 .account {
-    max-width: 600px;
-    margin: auto;
     background: #f8f9fa;
-    border: 2px solid #e8eaed;
+    border: 3px solid #333;
+    border-radius: 10px;
     padding: 10px;
-    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.account-title {
+    font-size: 7px;
+    color: #1a73e8;
+    margin-bottom: 8px;
 }
 
 .account input {
     width: 100%;
+    padding: 8px;
     margin-bottom: 6px;
-    padding: 7px;
-    border: 1px solid #ccc;
+    border: 1px solid #bbb;
     font-size: 7px;
 }
 
-.game {
-    max-width: 600px;
-    margin: 15px auto;
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
 }
+
+/* =========================
+   GAME
+========================= */
 
 .cabinet {
     position: relative;
-    border: 2px solid #dadce0;
-    border-radius: 12px;
+    background: #fff;
+    border: 4px solid #111;
+    border-radius: 14px;
     padding: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.5),
+        inset 0 0 0 3px #ddd;
 }
 
-.title {
-    text-align: center;
+.player-title {
     color: #1a73e8;
-    font-size: 9px;
-    padding-bottom: 8px;
-    border-bottom: 2px dashed #ddd;
+    font-size: 8px;
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 9px;
 }
 
 .hud {
-    background: #f8f9fa;
+    background: #111;
+    color: white;
+    border: 3px solid #333;
+    border-radius: 8px;
     padding: 10px;
     margin: 10px 0;
-    border-radius: 8px;
-    font-size: 7px;
+    font-size: 6px;
     line-height: 2;
 }
 
+.hud span {
+    color: #7cff7c;
+}
+
+/* =========================
+   GARDEN
+========================= */
+
 .garden {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4,1fr);
     gap: 8px;
+    background: #181818;
+    border: 3px solid #000;
     padding: 8px;
-    background: #e8eaed;
-    border: 2px solid #dadce0;
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
 .plot {
     aspect-ratio: 1;
-    background: #f1f3f4;
-    border: 2px dashed #aaa;
-    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #5a3821;
+    border-radius: 8px;
+    background:
+        radial-gradient(circle, #80502c, #55331e);
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    font-size: 6px;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+    color: white;
+    font-size: 5px;
     text-align: center;
-    transition: .2s;
+    box-shadow: inset 0 -7px 0 rgba(0,0,0,.18);
 }
 
 .plot:hover {
-    transform: scale(1.04);
-    background: #e8eaed;
+    transform: scale(1.035);
+}
+
+.plot.empty {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #694225,
+            #694225 6px,
+            #58351f 6px,
+            #58351f 12px
+        );
+}
+
+/* =========================
+   DETAILED 2D POTATO
+========================= */
+
+.potato-wrap {
+    position: relative;
+    width: 58px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .potato {
-    width: 38px;
-    height: 28px;
-    border: 2px solid #000;
+    position: relative;
+    width: 43px;
+    height: 34px;
+    border: 3px solid #241408;
+    border-radius:
+        48% 58% 44% 55%
+        / 55% 45% 60% 48%;
+    background:
+        radial-gradient(circle at 30% 25%, #dca35b 0 9%, transparent 10%),
+        radial-gradient(circle at 70% 70%, #7b461c 0 8%, transparent 9%),
+        radial-gradient(circle at 55% 35%, #9b5b25 0 7%, transparent 8%),
+        linear-gradient(145deg,#d18a3c,#9a5a22);
+    box-shadow:
+        inset -5px -5px 0 rgba(60,25,5,.28),
+        inset 5px 4px 0 rgba(255,210,130,.28),
+        0 3px 0 rgba(0,0,0,.35);
+}
+
+/* potato eyes */
+.potato::before {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    left: 9px;
+    top: 10px;
     border-radius: 50%;
-    margin-bottom: 5px;
+    background: #3b1d0b;
+    box-shadow:
+        19px 5px 0 #3b1d0b,
+        11px 13px 0 #3b1d0b;
 }
 
-.common { background:#b8860b; }
-.rare { background:#00bcd4; box-shadow:0 0 10px #00bcd4; }
-.quantum { background:#00ffcc; box-shadow:0 0 12px #00ffcc; }
-.epic { background:#8e24aa; box-shadow:0 0 12px #ba68c8; }
-.nebula { background:#4a00e0; box-shadow:0 0 14px #8e24aa; }
-.supernova { background:#ffeb3b; box-shadow:0 0 18px #ffeb3b; }
-.mythic { background:#ff3d00; box-shadow:0 0 14px #ff3d00; }
-.void { background:#111; box-shadow:0 0 15px #4a148c; }
-.ancient { background:#ffd700; box-shadow:0 0 16px #ffd700; }
-.infinity {
-    background: linear-gradient(45deg,red,green,blue);
-    box-shadow:0 0 20px white;
+/* potato highlight */
+.potato::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 4px;
+    left: 9px;
+    top: 5px;
+    border-radius: 50%;
+    background: rgba(255,235,180,.55);
+    transform: rotate(-20deg);
 }
-.bedrock { background:#555; }
-.matrix { background:#000; box-shadow:0 0 15px #00ff00; }
 
-.market,
-.panel,
-.admin-panel {
-    margin-top: 12px;
-    border: 2px solid #dadce0;
-    border-radius: 8px;
-    padding: 10px;
+.potato-face {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-38%);
+    width: 30px;
+    height: 15px;
+}
+
+.face-eye {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #160b04;
+    border-radius: 50%;
+}
+
+.face-eye.left {
+    left: 3px;
+    top: 2px;
+}
+
+.face-eye.right {
+    right: 3px;
+    top: 2px;
+}
+
+.face-mouth {
+    position: absolute;
+    width: 9px;
+    height: 5px;
+    border-bottom: 2px solid #160b04;
+    border-radius: 50%;
+    left: 10px;
+    top: 5px;
+}
+
+/* =========================
+   RARITIES
+========================= */
+
+.potato.rare {
+    background:
+        radial-gradient(circle at 30% 25%,#a8ffff 0 10%,transparent 11%),
+        linear-gradient(145deg,#00e5ff,#087d91);
+    box-shadow:0 0 12px #00e5ff;
+}
+
+.potato.quantum {
+    background:
+        radial-gradient(circle at 25% 20%,#fff 0 7%,transparent 8%),
+        linear-gradient(145deg,#00ffcc,#008f75);
+    box-shadow:0 0 16px #00ffcc;
+}
+
+.potato.epic {
+    background:
+        radial-gradient(circle at 25% 20%,#f0aaff 0 8%,transparent 9%),
+        linear-gradient(145deg,#c12be0,#55116c);
+    box-shadow:0 0 15px #d94fff;
+}
+
+.potato.nebula {
+    background:
+        radial-gradient(circle at 25% 20%,#fff 0 5%,transparent 6%),
+        radial-gradient(circle at 70% 60%,#ff00cc 0 5%,transparent 6%),
+        linear-gradient(145deg,#6727e8,#19004f);
+    box-shadow:0 0 18px #8b42ff;
+}
+
+.potato.supernova {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 9%,transparent 10%),
+        linear-gradient(145deg,#fff700,#ff7b00);
+    box-shadow:0 0 22px #ffd000;
+}
+
+.potato.mythic {
+    background:
+        radial-gradient(circle at 30% 25%,#ffff99 0 7%,transparent 8%),
+        linear-gradient(145deg,#ff4d00,#9b1300);
+    box-shadow:0 0 18px #ff3500;
+}
+
+.potato.void {
+    background:
+        radial-gradient(circle at 35% 30%,#722cff 0 5%,transparent 6%),
+        linear-gradient(145deg,#242424,#020202);
+    box-shadow:0 0 20px #711fff;
+}
+
+.potato.ancient {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 7%,transparent 8%),
+        linear-gradient(145deg,#ffe44d,#b97900);
+    box-shadow:0 0 20px #ffd700;
+}
+
+.potato.infinity {
+    background:
+        linear-gradient(
+            45deg,
+            #ff2020,
+            #ffe600,
+            #20ff4c,
+            #00c8ff,
+            #842cff,
+            #ff20c8
+        );
+    box-shadow:0 0 25px white;
+}
+
+.potato.bedrock {
+    background:
+        radial-gradient(circle at 25% 20%,#888 0 8%,transparent 9%),
+        linear-gradient(145deg,#666,#222);
+    box-shadow:inset -5px -5px #111;
+}
+
+.potato.matrix {
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #001500,
+            #001500 4px,
+            #00a000 5px
+        );
+    border-color:#00ff44;
+    box-shadow:0 0 20px #00ff44;
+}
+
+.potato.golden {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 8%,transparent 9%),
+        linear-gradient(145deg,#fff06a,#d89b00);
+    box-shadow:0 0 22px gold;
+}
+
+.potato.ghost {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.95),
+            rgba(180,240,255,.5)
+        );
+    border-color:#c9ffff;
+    box-shadow:0 0 22px #bfffff;
+}
+
+.potato.tree {
+    background:
+        linear-gradient(
+            145deg,
+            #41b94e,
+            #145c1b
+        );
+    border-color:#092f0d;
+    box-shadow:0 0 14px #31ff4c;
+}
+
+/* =========================
+   SHOP
+========================= */
+
+.panel {
     background: #fff;
+    border: 3px solid #222;
+    border-radius: 9px;
+    margin-top: 10px;
+    padding: 10px;
 }
 
-.market h3,
-.panel h3,
-.admin-panel h3 {
-    text-align: center;
-    color: #1a73e8;
+.panel h3 {
     font-size: 8px;
+    text-align: center;
+    margin-top: 2px;
 }
 
 .shop-item {
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:8px 4px;
-    border-bottom:1px solid #eee;
+    gap:8px;
+    border-bottom:1px solid #ddd;
+    padding:9px 4px;
     font-size:6px;
+    line-height:1.7;
 }
 
-.menu {
-    display:flex;
-    gap:8px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-bottom:10px;
+.limited-label {
+    color:#d93025;
+    font-size:5px;
+}
+
+/* =========================
+   ADMIN
+========================= */
+
+.admin-area {
+    margin-top: 16px;
+    background:#111;
+    border:3px solid #333;
+    padding:10px;
+    border-radius:10px;
 }
 
 .admin-panel {
     display:none;
+    margin-top:10px;
+    background:#f8f9fa;
+    color:#111;
+    border-radius:8px;
+    padding:10px;
+}
+
+.admin-title {
+    text-align:center;
+    color:#c5221f;
+    font-size:8px;
+    margin-bottom:10px;
 }
 
 .admin-grid {
@@ -239,39 +574,73 @@ button {
     gap:7px;
 }
 
-.admin-grid input {
-    grid-column:span 2;
+.admin-grid input,
+.admin-grid select {
+    width:100%;
     padding:7px;
-    font-size:7px;
+    font-size:6px;
 }
 
-.broadcast {
+.admin-heading {
+    grid-column:span 2;
+    background:#111;
+    color:white;
+    padding:8px;
+    font-size:6px;
+    text-align:center;
+    margin-top:5px;
+}
+
+.toggle-on {
+    background:#137333 !important;
+}
+
+.toggle-off {
+    background:#555 !important;
+}
+
+/* =========================
+   BROADCAST
+========================= */
+
+#broadcast {
     display:none;
     position:fixed;
     top:0;
     left:0;
     width:100%;
-    background:#d93025;
-    color:#fff;
-    text-align:center;
-    padding:14px;
     z-index:9998;
-    font-size:8px;
+    padding:14px;
+    background:#d93025;
+    color:white;
+    text-align:center;
+    font-size:7px;
+    border-bottom:4px solid #000;
 }
 
-.banned {
+/* =========================
+   BAN
+========================= */
+
+#banScreen {
     display:none;
     position:absolute;
     inset:0;
-    background:rgba(0,0,0,.96);
-    color:#ff4444;
-    z-index:20;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    font-size:12px;
+    z-index:100;
+    background:rgba(0,0,0,.97);
+    color:#ff3333;
     border-radius:10px;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    text-align:center;
+    font-size:11px;
+    line-height:2;
 }
+
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media(max-width:500px) {
     .garden {
@@ -282,8 +651,12 @@ button {
         grid-template-columns:1fr;
     }
 
-    .admin-grid input {
+    .admin-heading {
         grid-column:span 1;
+    }
+
+    .logo {
+        font-size:22px;
     }
 }
 </style>
@@ -291,8 +664,11 @@ button {
 
 <body>
 
-<!-- FRIEND GATE -->
+<!-- FRIEND LOCK -->
 <div id="site-friend-gate-lock">
+
+    <div class="gate-potato">🥔</div>
+
     <div class="gate-header">
         🔒 POTATO SEARCH TYCOON
         <br>
@@ -317,92 +693,123 @@ button {
     </div>
 </div>
 
-<div id="broadcast" class="broadcast"></div>
+<div id="broadcast"></div>
 
-<div class="account">
-    <b style="font-size:7px;color:#1a73e8;">
-        ⚙️ ACCOUNT PORTAL
-    </b>
+<div class="page">
 
-    <input
-        id="username"
-        value="Player1"
-        placeholder="Username"
-    >
+    <!-- HEADER -->
+    <div class="header-card">
 
-    <input
-        id="accountPassword"
-        type="password"
-        placeholder="Account password"
-    >
-
-    <button class="btn" onclick="saveAccount()">
-        💾 SAVE ACCOUNT
-    </button>
-</div>
-
-<div class="google-logo">
-    <span class="g1">P</span>
-    <span class="g2">o</span>
-    <span class="g3">t</span>
-    <span class="g1">a</span>
-    <span class="g4">t</span>
-    <span class="g2">o</span>
-    <span class="g3">e</span>
-    <span class="g1">s</span>
-</div>
-
-<div class="menu">
-    <button class="btn" onclick="toggleShop()">
-        🛒 SEED SHOP
-    </button>
-
-    <button class="btn" onclick="toggleUpgrades()">
-        ⚡ UPGRADES
-    </button>
-
-    <button class="btn" onclick="saveGame()">
-        💾 SAVE
-    </button>
-</div>
-
-<div class="game">
-    <div class="cabinet">
-
-        <div id="banScreen" class="banned">
-            🔨
-            <br><br>
-            YOU HAVE BEEN BANNED
-            <br><br>
-            BY THE ADMIN
+        <div class="logo">
+            <span>P</span><span>o</span><span>t</span><span>a</span>
+            <span>t</span><span>o</span><span>e</span><span>s</span>
         </div>
 
-        <div class="title">
+        <div class="subtitle">
+            🥔 SEARCH • PLANT • GROW • SELL • BECOME THE POTATO KING 🥔
+        </div>
+
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="account">
+
+        <div class="account-title">
+            ⚙️ WEBSITE ACCOUNT PORTAL
+        </div>
+
+        <input
+            id="username"
+            value="Player1"
+            placeholder="USERNAME"
+        >
+
+        <input
+            id="accountPassword"
+            type="password"
+            placeholder="ACCOUNT PASSWORD"
+        >
+
+        <button class="btn green-btn" onclick="saveAccount()">
+            💾 SAVE ACCOUNT
+        </button>
+
+    </div>
+
+    <!-- MENU -->
+    <div class="menu">
+
+        <button class="btn" onclick="togglePanel('shop')">
+            🛒 SEED SHOP
+        </button>
+
+        <button class="btn" onclick="togglePanel('upgrades')">
+            ⚡ UPGRADES
+        </button>
+
+        <button class="btn dark-btn" onclick="saveGame()">
+            💾 SAVE GAME
+        </button>
+
+    </div>
+
+    <!-- GAME -->
+    <div class="cabinet">
+
+        <div id="banScreen">
+            🔨
+            <br>
+            YOU HAVE BEEN BANNED
+            <br>
+            BY THE ADMIN
+            <br><br>
+            <span style="font-size:6px;color:#777;">
+                Admin abuse activated.
+            </span>
+        </div>
+
+        <div class="player-title">
             🕹️ PROFILE:
             <span id="playerName">Player1</span>
         </div>
 
         <div class="hud">
-            💰 BALANCE: $<span id="cash">100</span>
+
+            💰 BALANCE:
+            $<span id="cash">100</span>
+
             <br>
-            ⭐ LEVEL: <span id="level">1</span>
+
+            ⭐ LEVEL:
+            <span id="level">1</span>
+
             <br>
+
             🥔 SELECTED:
             <span id="selectedSeed">Common Spud</span>
+
             <br>
+
             🌱 SEEDS:
             <span id="seedCount">5</span>
+
         </div>
 
         <div id="garden" class="garden"></div>
 
-        <div id="shop" class="market" style="display:none;">
-            <h3>🥔 SEED MARKET</h3>
+        <!-- SHOP -->
+        <div id="shop" class="panel" style="display:none;">
+
+            <h3>🥔 POTATO SEED MARKET</h3>
+
             <div id="shopItems"></div>
+
         </div>
 
+        <!-- UPGRADES -->
         <div id="upgrades" class="panel" style="display:none;">
-            <h3>⚙️ UPGRADES</h3>
+
+            <h3>⚙️ EQUIPMENT UPGRADES</h3>
 
             <div class="shop-item">
                 👟 Fertilizer Boots
@@ -412,7 +819,7 @@ button {
             </div>
 
             <div class="shop-item">
-                🤖 Robo Harvester
+                🤖 Robo-Harvester
                 <button class="btn" onclick="buyUpgrade('auto')">
                     $250
                 </button>
@@ -424,93 +831,155 @@ button {
                     $400
                 </button>
             </div>
+
         </div>
 
     </div>
-</div>
 
-<!-- ADMIN -->
-<div style="max-width:600px;margin:20px auto;text-align:center;">
-    <button class="btn" onclick="openAdmin()">
-        🔒 ADMIN TERMINAL
-    </button>
+    <!-- ADMIN -->
+    <div class="admin-area">
 
-    <div id="adminPanel" class="admin-panel">
-        <h3>👑 ADMIN TERMINAL</h3>
-
-        <input
-            id="adminPassword"
-            type="password"
-            placeholder="ADMIN CODE"
-            style="padding:8px;width:100%;font-size:7px;"
+        <button
+            class="btn red-btn"
+            onclick="openAdmin()"
         >
-
-        <button class="btn" onclick="loginAdmin()" style="margin:8px;">
-            BYPASS
+            🔒 ADMIN TERMINAL
         </button>
 
-        <div id="adminControls" style="display:none;">
-            <div class="admin-grid">
+        <div id="adminPanel" class="admin-panel">
 
-                <button class="btn" onclick="adminCash()">
-                    💰 +$50,000
-                </button>
+            <div class="admin-title">
+                👑 ADMIN CONTROL CENTER
+            </div>
 
-                <button class="btn" onclick="adminGrow()">
-                    ⚡ INSTA-GROW
-                </button>
+            <input
+                id="adminPassword"
+                type="password"
+                placeholder="ENTER ADMIN CODE"
+                style="width:100%;padding:8px;font-size:7px;"
+            >
 
-                <button class="btn" onclick="adminRestock()">
-                    🌱 RESTOCK EVERYONE
-                </button>
+            <br><br>
 
-                <button class="btn" onclick="adminSeeds()">
-                    🥔 +100 SEEDS
-                </button>
+            <button class="btn" onclick="loginAdmin()">
+                BYPASS
+            </button>
 
-                <button class="btn" onclick="adminRain()">
-                    🌧️ RAINSTORM
-                </button>
+            <div id="adminControls" style="display:none;">
 
-                <button class="btn" onclick="adminBot()">
-                    🤖 ROBO BOT
-                </button>
+                <div class="admin-grid">
 
-                <button class="btn" onclick="adminWipe()">
-                    💥 RESET FIELD
-                </button>
+                    <button class="btn" onclick="adminCash()">
+                        💰 +$50K
+                    </button>
 
-                <button class="btn" onclick="adminBan()">
-                    🔨 BAN / UNBAN
-                </button>
+                    <button class="btn" onclick="adminSeeds()">
+                        🥔 +100 ALL SEEDS
+                    </button>
 
-                <input
-                    id="broadcastMessage"
-                    value="ALERT: SYSTEM PATCHED!"
-                >
+                    <button class="btn green-btn" onclick="adminRestock()">
+                        🌱 RESTOCK EVERYONE
+                    </button>
 
-                <button
-                    class="btn"
-                    style="grid-column:span 2;"
-                    onclick="sendBroadcast()"
-                >
-                    📢 GLOBAL SERVER MESSAGE
-                </button>
+                    <button class="btn" onclick="adminGrow()">
+                        ⚡ INSTA-GROW
+                    </button>
+
+                    <button class="btn" onclick="adminRain()">
+                        🌧️ RAINSTORM
+                    </button>
+
+                    <button class="btn" onclick="adminBot()">
+                        🤖 ROBO-BOT
+                    </button>
+
+                    <button class="btn red-btn" onclick="adminWipe()">
+                        💥 WIPE FIELD
+                    </button>
+
+                    <button class="btn red-btn" onclick="adminBan()">
+                        🔨 BAN / UNBAN
+                    </button>
+
+                    <div class="admin-heading">
+                        ✨ LIMITED SEED TOGGLES
+                    </div>
+
+                    <button
+                        id="goldenToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('golden')"
+                    >
+                        🌟 GOLDEN: OFF
+                    </button>
+
+                    <button
+                        id="ghostToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('ghost')"
+                    >
+                        👻 GHOST: OFF
+                    </button>
+
+                    <button
+                        id="treeToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('tree')"
+                    >
+                        🎄 TREE ROOT: OFF
+                    </button>
+
+                    <button
+                        id="diamondToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('diamond')"
+                    >
+                        💎 DIAMOND: OFF
+                    </button>
+
+                    <div class="admin-heading">
+                        📢 GLOBAL SERVER MESSAGE
+                    </div>
+
+                    <input
+                        id="broadcastMessage"
+                        value="🥔 POTATO SERVER EVENT!"
+                        style="grid-column:span 2;"
+                    >
+
+                    <button
+                        class="btn"
+                        style="grid-column:span 2;"
+                        onclick="sendBroadcast()"
+                    >
+                        📢 BROADCAST TO EVERYONE
+                    </button>
+
+                </div>
 
             </div>
+
         </div>
+
     </div>
+
 </div>
 
 <script>
-/* =========================
-   GAME DATA
-========================= */
+
+/* ==========================================
+   CODES
+========================================== */
 
 const FRIEND_CODE = "miniboys5151";
 const ADMIN_CODE = "goofy4321";
 
+/* ==========================================
+   CROPS
+========================================== */
+
 const crops = {
+
     common: {
         name:"Common Spud",
         price:5,
@@ -605,13 +1074,58 @@ const crops = {
         sell:100000000,
         grow:45000,
         className:"matrix"
+    },
+
+    golden: {
+        name:"Golden Spud",
+        price:1000,
+        sell:6000,
+        grow:12000,
+        className:"golden",
+        limited:true
+    },
+
+    ghost: {
+        name:"Ghost Spud",
+        price:5000,
+        sell:30000,
+        grow:15000,
+        className:"ghost",
+        limited:true
+    },
+
+    tree: {
+        name:"Christmas Tree Root",
+        price:15000,
+        sell:100000,
+        grow:18000,
+        className:"tree",
+        limited:true
+    },
+
+    diamond: {
+        name:"Diamond Potato",
+        price:100000,
+        sell:750000,
+        grow:22000,
+        className:"ancient",
+        limited:true
     }
+
 };
 
+/* ==========================================
+   GAME
+========================================== */
+
 let game = {
+
     cash:100,
+
     level:1,
+
     selected:"common",
+
     seeds:{
         common:5,
         rare:0,
@@ -624,22 +1138,38 @@ let game = {
         ancient:0,
         infinity:0,
         bedrock:0,
-        matrix:0
+        matrix:0,
+        golden:0,
+        ghost:0,
+        tree:0,
+        diamond:0
     },
+
     plots:Array(12).fill(null),
+
     upgrades:{
         speed:false,
         auto:false,
         sprinkler:false
     },
+
+    limited:{
+        golden:false,
+        ghost:false,
+        tree:false,
+        diamond:false
+    },
+
     banned:false
+
 };
 
-/* =========================
+/* ==========================================
    FRIEND GATE
-========================= */
+========================================== */
 
 function verifyFriendGateCode() {
+
     const input =
         document.getElementById("gate-pass-field")
         .value
@@ -647,50 +1177,84 @@ function verifyFriendGateCode() {
         .toLowerCase();
 
     if(input === FRIEND_CODE.toLowerCase()) {
+
         document.getElementById(
             "site-friend-gate-lock"
         ).style.display = "none";
 
-        localStorage.setItem("potatoGateUnlocked","yes");
+        localStorage.setItem(
+            "potatoGateUnlocked",
+            "yes"
+        );
+
     } else {
+
         alert("❌ WRONG FRIEND CODE!");
+
     }
+
 }
 
 document
 .getElementById("gate-pass-field")
-.addEventListener("keydown", function(e) {
+.addEventListener("keydown",e => {
+
     if(e.key === "Enter") {
         verifyFriendGateCode();
     }
+
 });
 
-if(localStorage.getItem("potatoGateUnlocked") === "yes") {
+if(
+    localStorage.getItem("potatoGateUnlocked")
+    === "yes"
+) {
+
     document.getElementById(
         "site-friend-gate-lock"
     ).style.display = "none";
+
 }
 
-/* =========================
+/* ==========================================
    RENDER
-========================= */
+========================================== */
 
 function render() {
 
-    document.getElementById("cash").textContent =
-        Math.floor(game.cash).toLocaleString();
+    document.getElementById("cash")
+        .textContent =
+        Math.floor(game.cash)
+        .toLocaleString();
 
-    document.getElementById("level").textContent =
+    document.getElementById("level")
+        .textContent =
         game.level;
 
-    document.getElementById("selectedSeed").textContent =
+    document.getElementById("selectedSeed")
+        .textContent =
         crops[game.selected].name;
 
-    document.getElementById("seedCount").textContent =
+    document.getElementById("seedCount")
+        .textContent =
         game.seeds[game.selected];
 
-    document.getElementById("playerName").textContent =
-        document.getElementById("username").value || "Player1";
+    document.getElementById("playerName")
+        .textContent =
+        document.getElementById("username")
+        .value || "Player1";
+
+    renderGarden();
+    renderShop();
+    renderLimitedButtons();
+
+}
+
+/* ==========================================
+   GARDEN
+========================================== */
+
+function renderGarden() {
 
     const garden =
         document.getElementById("garden");
@@ -699,30 +1263,44 @@ function render() {
 
     game.plots.forEach((plot,index) => {
 
-        const div = document.createElement("div");
-        div.className = "plot";
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "plot" + (!plot ? " empty" : "");
 
         if(!plot) {
 
             div.innerHTML = `
-                <div style="font-size:18px;">🟫</div>
+                <div style="font-size:18px;">🌱</div>
                 <div>EMPTY</div>
                 <div>CLICK TO PLANT</div>
             `;
 
-            div.onclick = () => plant(index);
+            div.onclick =
+                () => plant(index);
 
         } else {
 
-            const crop = crops[plot.type];
+            const crop =
+                crops[plot.type];
+
+            const wrap =
+                document.createElement("div");
+
+            wrap.className =
+                "potato-wrap";
 
             const potato =
                 document.createElement("div");
 
             potato.className =
-                "potato " + crop.className;
+                "potato " +
+                crop.className;
 
-            div.appendChild(potato);
+            wrap.appendChild(potato);
+
+            div.appendChild(wrap);
 
             const text =
                 document.createElement("div");
@@ -732,77 +1310,100 @@ function render() {
                 text.innerHTML =
                     `🥔 READY<br>+$${crop.sell.toLocaleString()}`;
 
-                div.onclick = () => harvest(index);
+                text.style.color =
+                    "#7cff7c";
+
+                div.onclick =
+                    () => harvest(index);
 
             } else {
 
-                const remaining =
+                const seconds =
                     Math.max(
                         0,
                         Math.ceil(
-                            (plot.finish - Date.now()) / 1000
+                            (plot.finish -
+                            Date.now()) / 1000
                         )
                     );
 
                 text.innerHTML =
-                    `🌱 GROWING<br>${remaining}s`;
+                    `🌱 GROWING<br>${seconds}s`;
+
             }
 
             div.appendChild(text);
+
         }
 
         garden.appendChild(div);
+
     });
 
-    renderShop();
 }
 
-/* =========================
+/* ==========================================
    PLANT
-========================= */
+========================================== */
 
 function plant(index) {
 
     if(game.banned) return;
 
-    if(game.plots[index]) {
+    if(game.plots[index]) return;
+
+    const selected =
+        game.selected;
+
+    if(
+        crops[selected].limited &&
+        !game.limited[selected]
+    ) {
+
+        alert(
+            "🔒 This limited seed is currently disabled!"
+        );
+
         return;
     }
 
-    if(game.seeds[game.selected] <= 0) {
+    if(game.seeds[selected] <= 0) {
+
         alert("❌ You don't have that seed!");
+
         return;
     }
 
-    const crop =
-        crops[game.selected];
+    let grow =
+        crops[selected].grow;
 
-    let growTime =
-        crop.grow;
+    if(game.upgrades.speed)
+        grow *= .85;
 
-    if(game.upgrades.speed) {
-        growTime *= .85;
-    }
+    if(game.upgrades.sprinkler)
+        grow *= .8;
 
-    if(game.upgrades.sprinkler) {
-        growTime *= .8;
-    }
-
-    game.seeds[game.selected]--;
+    game.seeds[selected]--;
 
     game.plots[index] = {
-        type:game.selected,
-        finish:Date.now() + growTime,
+
+        type:selected,
+
+        finish:
+            Date.now() + grow,
+
         ready:false
+
     };
 
     saveGame();
     render();
+
 }
 
-/* =========================
+/* ==========================================
    HARVEST
-========================= */
+========================================== */
 
 function harvest(index) {
 
@@ -811,7 +1412,8 @@ function harvest(index) {
     const plot =
         game.plots[index];
 
-    if(!plot || !plot.ready) return;
+    if(!plot || !plot.ready)
+        return;
 
     const crop =
         crops[plot.type];
@@ -819,78 +1421,65 @@ function harvest(index) {
     game.cash += crop.sell;
 
     game.level =
-        Math.max(
-            1,
-            Math.floor(game.cash / 500) + 1
-        );
+        Math.floor(game.cash / 500) + 1;
 
     game.plots[index] = null;
 
     saveGame();
     render();
+
 }
 
-/* =========================
-   TIMER
-========================= */
-
-setInterval(() => {
-
-    let changed = false;
-
-    game.plots.forEach(plot => {
-
-        if(
-            plot &&
-            !plot.ready &&
-            Date.now() >= plot.finish
-        ) {
-            plot.ready = true;
-            changed = true;
-        }
-    });
-
-    if(game.upgrades.auto) {
-
-        game.plots.forEach((plot,index) => {
-
-            if(plot && plot.ready) {
-                harvest(index);
-            }
-
-        });
-    }
-
-    if(changed) {
-        render();
-    }
-
-},500);
-
-/* =========================
+/* ==========================================
    SHOP
-========================= */
+========================================== */
 
 function renderShop() {
 
-    const shop =
+    const container =
         document.getElementById("shopItems");
 
-    shop.innerHTML = "";
+    container.innerHTML = "";
 
-    Object.entries(crops).forEach(([id,crop]) => {
+    Object.entries(crops).forEach(
+        ([id,crop]) => {
+
+        if(
+            crop.limited &&
+            !game.limited[id]
+        ) {
+            return;
+        }
 
         const row =
             document.createElement("div");
 
-        row.className = "shop-item";
+        row.className =
+            "shop-item";
 
         row.innerHTML = `
-            <span>
+
+            <div>
                 🥔 ${crop.name}
+
                 <br>
-                $${crop.price.toLocaleString()}
-            </span>
+
+                <span style="color:#777;">
+                    Buy: $${crop.price.toLocaleString()}
+                </span>
+
+                <br>
+
+                <span style="color:#137333;">
+                    Sell: $${crop.sell.toLocaleString()}
+                </span>
+
+                ${
+                    crop.limited
+                    ? '<br><span class="limited-label">✨ LIMITED EVENT</span>'
+                    : ''
+                }
+            </div>
 
             <button class="btn">
                 BUY
@@ -898,138 +1487,92 @@ function renderShop() {
         `;
 
         row.querySelector("button")
-        .onclick = () => {
+            .onclick = () => {
 
-            if(game.cash < crop.price) {
-                alert("❌ Not enough cash!");
-                return;
-            }
+                if(game.cash < crop.price) {
 
-            game.cash -= crop.price;
-            game.seeds[id]++;
-            game.selected = id;
+                    alert("❌ NOT ENOUGH CASH!");
 
-            saveGame();
-            render();
-        };
+                    return;
+                }
 
-        shop.appendChild(row);
+                game.cash -= crop.price;
+
+                game.seeds[id]++;
+
+                game.selected = id;
+
+                saveGame();
+                render();
+
+            };
+
+        container.appendChild(row);
+
     });
+
 }
 
-function toggleShop() {
+/* ==========================================
+   PANEL
+========================================== */
 
-    const shop =
-        document.getElementById("shop");
-
-    shop.style.display =
-        shop.style.display === "none"
-        ? "block"
-        : "none";
-}
-
-function toggleUpgrades() {
+function togglePanel(id) {
 
     const panel =
-        document.getElementById("upgrades");
+        document.getElementById(id);
 
     panel.style.display =
         panel.style.display === "none"
         ? "block"
         : "none";
+
 }
 
-/* =========================
+/* ==========================================
    UPGRADES
-========================= */
+========================================== */
 
 function buyUpgrade(type) {
 
     const prices = {
+
         speed:50,
+
         auto:250,
+
         sprinkler:400
+
     };
 
     if(game.upgrades[type]) {
-        alert("✅ Already owned!");
+
+        alert("✅ YOU ALREADY OWN THIS!");
+
         return;
     }
 
     if(game.cash < prices[type]) {
-        alert("❌ Not enough cash!");
+
+        alert("❌ NOT ENOUGH CASH!");
+
         return;
     }
 
     game.cash -= prices[type];
+
     game.upgrades[type] = true;
 
     saveGame();
     render();
 
-    alert("⚡ Upgrade purchased!");
+    alert("⚡ UPGRADE PURCHASED!");
+
 }
 
-/* =========================
-   SAVE
-========================= */
-
-function saveGame() {
-
-    localStorage.setItem(
-        "potatoGame",
-        JSON.stringify(game)
-    );
-}
-
-function loadGame() {
-
-    const saved =
-        localStorage.getItem("potatoGame");
-
-    if(saved) {
-
-        try {
-            game = JSON.parse(saved);
-        } catch(e) {
-            console.log("Save corrupted.");
-        }
-    }
-
-    render();
-}
-
-function saveAccount() {
-
-    const name =
-        document.getElementById("username").value;
-
-    if(!name.trim()) {
-        alert("Enter a username.");
-        return;
-    }
-
-    localStorage.setItem(
-        "potatoUsername",
-        name
-    );
-
-    render();
-
-    alert("💾 Account saved!");
-}
-
-const savedName =
-    localStorage.getItem("potatoUsername");
-
-if(savedName) {
-    document.getElementById("username").value =
-        savedName;
-}
-
-/* =========================
-   ADMIN
-========================= */
+/* ==========================================
+   ADMIN PANEL
+========================================== */
 
 function openAdmin() {
 
@@ -1040,14 +1583,17 @@ function openAdmin() {
         panel.style.display === "none"
         ? "block"
         : "none";
+
 }
 
 function loginAdmin() {
 
-    const password =
-        document.getElementById("adminPassword").value;
+    const code =
+        document.getElementById(
+            "adminPassword"
+        ).value;
 
-    if(password === ADMIN_CODE) {
+    if(code === ADMIN_CODE) {
 
         document.getElementById(
             "adminControls"
@@ -1058,8 +1604,14 @@ function loginAdmin() {
     } else {
 
         alert("❌ WRONG ADMIN CODE!");
+
     }
+
 }
+
+/* ==========================================
+   ADMIN CASH
+========================================== */
 
 function adminCash() {
 
@@ -1069,44 +1621,65 @@ function adminCash() {
     render();
 
     alert("💰 +$50,000!");
+
 }
+
+/* ==========================================
+   ADMIN SEEDS
+========================================== */
 
 function adminSeeds() {
 
     Object.keys(game.seeds)
-    .forEach(id => {
-        game.seeds[id] += 100;
-    });
+        .forEach(id => {
+
+            game.seeds[id] += 100;
+
+        });
 
     saveGame();
     render();
 
     alert("🥔 +100 OF EVERY SEED!");
+
 }
 
-/* GLOBAL RESTOCK */
+/* ==========================================
+   ADMIN RESTOCK
+========================================== */
+
 function adminRestock() {
 
     Object.keys(game.seeds)
-    .forEach(id => {
-        game.seeds[id] += 25;
-    });
+        .forEach(id => {
+
+            game.seeds[id] += 25;
+
+        });
 
     saveGame();
     render();
 
     sendBroadcastText(
-        "🌱 ADMIN RESTOCK: EVERYONE GOT +25 SEEDS!"
+        "🌱 ADMIN RESTOCK! EVERYONE GOT +25 SEEDS!"
     );
+
 }
+
+/* ==========================================
+   INSTA GROW
+========================================== */
 
 function adminGrow() {
 
     game.plots.forEach(plot => {
 
         if(plot) {
+
             plot.finish = Date.now();
+
             plot.ready = true;
+
         }
 
     });
@@ -1114,8 +1687,40 @@ function adminGrow() {
     saveGame();
     render();
 
-    alert("⚡ FIELD INSTANTLY GROWN!");
+    sendBroadcastText(
+        "⚡ ADMIN EVENT: ALL POTATOES INSTANTLY GREW!"
+    );
+
 }
+
+/* ==========================================
+   RAINSTORM
+========================================== */
+
+function adminRain() {
+
+    game.plots.forEach(plot => {
+
+        if(plot && !plot.ready) {
+
+            plot.finish -= 5000;
+
+        }
+
+    });
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        "🌧️ A GIANT POTATO RAINSTORM HIT THE SERVER!"
+    );
+
+}
+
+/* ==========================================
+   ROBOT
+========================================== */
 
 function adminBot() {
 
@@ -1125,36 +1730,25 @@ function adminBot() {
     saveGame();
     render();
 
-    alert(
-        game.upgrades.auto
-        ? "🤖 ROBO BOT ACTIVATED!"
-        : "🤖 ROBO BOT DEACTIVATED!"
-    );
-}
-
-function adminRain() {
-
-    game.plots.forEach(plot => {
-
-        if(plot && !plot.ready) {
-
-            plot.finish -= 5000;
-        }
-    });
-
-    saveGame();
-    render();
-
     sendBroadcastText(
-        "🌧️ A GLOBAL RAINSTORM HIT THE POTATO FIELDS!"
+        game.upgrades.auto
+        ? "🤖 ADMIN ACTIVATED ROBO-HARVESTERS!"
+        : "🤖 ROBO-HARVESTERS DEACTIVATED!"
     );
+
 }
+
+/* ==========================================
+   WIPE
+========================================== */
 
 function adminWipe() {
 
-    if(!confirm(
-        "Destroy every potato currently growing?"
-    )) return;
+    if(
+        !confirm(
+            "Destroy all potatoes in the field?"
+        )
+    ) return;
 
     game.plots =
         Array(12).fill(null);
@@ -1162,8 +1756,13 @@ function adminWipe() {
     saveGame();
     render();
 
-    alert("💥 FIELD RESET!");
+    alert("💥 FIELD DESTROYED!");
+
 }
+
+/* ==========================================
+   BAN
+========================================== */
 
 function adminBan() {
 
@@ -1178,16 +1777,109 @@ function adminBan() {
         : "none";
 
     saveGame();
+
 }
+
+/* ==========================================
+   LIMITED SEEDS
+========================================== */
+
+function toggleLimited(type) {
+
+    game.limited[type] =
+        !game.limited[type];
+
+    saveGame();
+    render();
+
+    const names = {
+
+        golden:"🌟 GOLDEN SPUD",
+
+        ghost:"👻 GHOST SPUD",
+
+        tree:"🎄 CHRISTMAS TREE ROOT",
+
+        diamond:"💎 DIAMOND POTATO"
+
+    };
+
+    sendBroadcastText(
+        game.limited[type]
+        ? `${names[type]} EVENT ACTIVATED!`
+        : `${names[type]} EVENT DEACTIVATED!`
+    );
+
+}
+
+function renderLimitedButtons() {
+
+    const data = {
+
+        golden:"goldenToggle",
+
+        ghost:"ghostToggle",
+
+        tree:"treeToggle",
+
+        diamond:"diamondToggle"
+
+    };
+
+    Object.entries(data)
+        .forEach(([type,id]) => {
+
+            const button =
+                document.getElementById(id);
+
+            if(!button) return;
+
+            const names = {
+
+                golden:"🌟 GOLDEN",
+
+                ghost:"👻 GHOST",
+
+                tree:"🎄 TREE ROOT",
+
+                diamond:"💎 DIAMOND"
+
+            };
+
+            button.textContent =
+                names[type] +
+                ": " +
+                (
+                    game.limited[type]
+                    ? "ON"
+                    : "OFF"
+                );
+
+            button.className =
+                "btn " +
+                (
+                    game.limited[type]
+                    ? "toggle-on"
+                    : "toggle-off"
+                );
+
+        });
+
+}
+
+/* ==========================================
+   BROADCAST
+========================================== */
 
 function sendBroadcast() {
 
-    const msg =
+    const message =
         document.getElementById(
             "broadcastMessage"
         ).value;
 
-    sendBroadcastText(msg);
+    sendBroadcastText(message);
+
 }
 
 function sendBroadcastText(message) {
@@ -1207,19 +1899,176 @@ function sendBroadcastText(message) {
             "none";
 
     },5000);
+
 }
 
-/* =========================
-   START
-========================= */
+/* ==========================================
+   ACCOUNT
+========================================== */
+
+function saveAccount() {
+
+    const name =
+        document.getElementById("username")
+        .value
+        .trim();
+
+    if(!name) {
+
+        alert("ENTER A USERNAME!");
+
+        return;
+    }
+
+    localStorage.setItem(
+        "potatoUsername",
+        name
+    );
+
+    render();
+
+    alert("💾 ACCOUNT SAVED!");
+
+}
+
+const savedUsername =
+    localStorage.getItem(
+        "potatoUsername"
+    );
+
+if(savedUsername) {
+
+    document.getElementById(
+        "username"
+    ).value =
+        savedUsername;
+
+}
+
+/* ==========================================
+   SAVE / LOAD
+========================================== */
+
+function saveGame() {
+
+    localStorage.setItem(
+        "potatoGame",
+        JSON.stringify(game)
+    );
+
+}
+
+function loadGame() {
+
+    const saved =
+        localStorage.getItem(
+            "potatoGame"
+        );
+
+    if(saved) {
+
+        try {
+
+            const loaded =
+                JSON.parse(saved);
+
+            game = {
+                ...game,
+                ...loaded,
+                seeds:{
+                    ...game.seeds,
+                    ...(loaded.seeds || {})
+                },
+                upgrades:{
+                    ...game.upgrades,
+                    ...(loaded.upgrades || {})
+                },
+                limited:{
+                    ...game.limited,
+                    ...(loaded.limited || {})
+                }
+            };
+
+        } catch(error) {
+
+            console.log(
+                "Could not load save."
+            );
+
+        }
+
+    }
+
+    render();
+
+}
+
+/* ==========================================
+   GAME TIMER
+========================================== */
+
+setInterval(() => {
+
+    let changed = false;
+
+    game.plots.forEach(plot => {
+
+        if(
+            plot &&
+            !plot.ready &&
+            Date.now() >= plot.finish
+        ) {
+
+            plot.ready = true;
+
+            changed = true;
+
+        }
+
+    });
+
+    if(game.upgrades.auto) {
+
+        game.plots.forEach(
+            (plot,index) => {
+
+                if(
+                    plot &&
+                    plot.ready
+                ) {
+
+                    harvest(index);
+
+                }
+
+            }
+        );
+
+    }
+
+    if(changed) {
+
+        render();
+
+    }
+
+},500);
+
+/* ==========================================
+   START GAME
+========================================== */
 
 loadGame();
 
 if(game.banned) {
+
     document.getElementById(
         "banScreen"
-    ).style.display = "flex";
+    ).style.display =
+        "flex";
+
 }
+
 </script>
 
 </body>
