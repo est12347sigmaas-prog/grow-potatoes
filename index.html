@@ -25,6 +25,27 @@
             position: relative;
         }
 
+        /* SITE VISITOR PASSCODE BARRIER SECURITY OVERLAY CONTAINER */
+        #site-friend-gate-lock {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #111111;
+            color: #ffffff;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .gate-header { font-size: 12px; color: #4285F4; margin-bottom: 25px; line-height: 1.8; letter-spacing: -1px; }
+        .gate-input { font-size: 10px; padding: 10px; border: 3px solid #ffffff; background: #000000; color: #00ff00; text-align: center; width: 260px; margin-bottom: 15px; }
+        .gate-hint { font-size: 6px; color: #70757a; margin-top: 15px; }
+
         #admin-alert-banner {
             display: none;
             width: 100%;
@@ -228,31 +249,3 @@
 
         .market-shelf { background: #ffffff; border: 1px solid #dadce0; border-radius: 6px; padding: 5px; margin-bottom: 10px; }
         .shelf-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #f1f3f4; font-size: 5px; line-height: 1.4; }
-        .shelf-details { color: #70757a; font-size: 4px; margin-top: 2px; }
-
-        .panel {
-            background: #ffffff;
-            border: 1px solid #dadce0;
-            border-radius: 8px;
-            padding: 10px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 15px;
-            display: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .panel.active { display: block; }
-
-        .btn {
-            background: #f8f9fa;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            color: #3c4043;
-            padding: 6px 10px;
-            font-size: 6px;
-            cursor: pointer;
-        }
-        .btn:hover { background: #f1f3f4; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .admin-trigger-zone { margin-top: 15px; text-align: center; }
