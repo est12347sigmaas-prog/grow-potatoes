@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potatoes Search Tycoon - Web Edition</title>
+    <style>
+        @import url('https://googleapis.com');
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', monospace;
+            image-rendering: pixelated;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #202124;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #admin-alert-banner {
+            display: none;
+            width: 100%;
+            background: #d93025;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-bottom: 4px solid black;
+        }
+
+        .google-logo {
+            font-size: 24px;
+            text-align: center;
+            margin: 15px 0 25px 0;
+            font-weight: bold;
+            letter-spacing: -2px;
+            user-select: none;
+        }
+        .g-p1 { color: #4285F4; }
+        .g-o1 { color: #EA4335; }
+        .g-t1 { color: #FBBC05; }
+        .g-a  { color: #4285F4; }
+        .g-t2 { color: #34A853; }
+        .g-o2 { color: #EA4335; }
+        .g-e  { color: #FBBC05; }
+        .g-s  { color: #4285F4; }
+
+        .account-registry-zone {
+            width: 100%;
+            max-width: 600px;
+            background: #f8f9fa;
+            border: 2px solid #e8eaed;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .reg-box { display: flex; flex-direction: column; gap: 5px; background: #ffffff; border: 1px solid #dadce0; padding: 8px; border-radius: 6px; }
+        .reg-title { font-size: 6px; font-weight: bold; margin-bottom: 2px; color: #1a73e8; }
+        .reg-input { font-size: 6px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 100%; }
+
+        .changelog-panel {
+            width: 100%;
+            max-width: 600px;
+            background: #e8f0fe;
+            border: 2px dashed #1a73e8;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 5px;
+            color: #3c4043;
+            line-height: 1.8;
+        }
+        .changelog-header { font-size: 7px; color: #1a73e8; font-weight: bold; margin-bottom: 8px; text-align: center; }
+        .changelog-item { border-bottom: 1px solid #d2e3fc; padding-bottom: 4px; margin-bottom: 4px; }
+
+        .menu-zone {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .btn-toggle {
+            background: #4285F4;
+            color: white;
+            border: 2px solid #000;
+            padding: 8px 12px;
+            font-size: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-upgrade-toggle { background: #e8f0fe; color: #1a73e8; border: 2px solid #000; }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .player-cabinet {
+            background: #ffffff;
+            border: 2px solid #dadce0;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .ban-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            color: #d93025;
+            z-index: 50;
+            border-radius: 10px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            line-height: 2;
+        }
+
+        .player-title {
+            font-size: 8px;
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px dashed #dadce0;
+            color: #1a73e8;
+        }
+
+        .hud {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 6px;
+            color: #3c4043;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .garden-grid {
+            background: #e8eaed;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .plot {
+            background: #f1f3f4;
+            border: 2px dashed #bdc3c7;
+            border-radius: 6px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .plot:hover {
+            background: #e8eaed;
+            transform: scale(1.04);
+        }
+
+        .plot-status {
+            font-size: 5px;
+            text-align: center;
+            margin-top: 4px;
+            color: #70757a;
+        }
+
+        .potato-art {
+            width: 32px;
+            height: 24px;
+            border-radius: 50% 40% 45% 50%;
+            position: relative;
+            border: 2px solid #000;
+            box-shadow: inset -3px -3px 0px rgba(0,0,0,0.2);
+        }
+        .spud-common { background: #b8860b; }
+        .spud-rare { background: #00bcd4; border-color: #0d47a1; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.3), 0 0 8px #00bcd4; }
+        .spud-quantum { background: #00ffcc; border-color: #006655; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.2), 0 0 10px #00ffcc; animation: spudPulse 0.4s infinite alternate ease-in-out; }
+        .spud-glitchfil { background: #ff5252; border-color: #b71c1c; border-radius: 10%; box-shadow: inset -3px -3px 0px #ffeb3b, 0 0 10px #ff5252; animation: spudPulse 0.3s infinite alternate ease-in-out; }
+        .spud-epic { background: #8e24aa; border-color: #4a148c; box-shadow: inset -3px -3px 0px rgba(0,0,0,0.3), 0 0 10px #ba68c8; animation: spudFloat 1.2s infinite alternate ease-in-out; }
+        .spud-nebula { background: #4a00e0; border-color: #8e24aa; box-shadow: inset -3px -3px 0px #ff007f, 0 0 12px #8e24aa; animation: spudFloat 1.5s infinite alternate ease-in-out; }
+        .spud-supernova { background: #ffeb3b; border-color: #ff9800; box-shadow: inset -3px -3px 0px #fff, 0 0 18px #ffeb3b; animation: spudPulse 0.2s infinite alternate ease-in-out; }
+        .spud-mythic { background: #ff3d00; border-color: #3700b3; box-shadow: inset -3px -3px 0px #ffea00, 0 0 12px #ff3d00; animation: spudPulse 0.6s infinite alternate ease-in-out; }
+        .spud-void { background: #111111; border-color: #333333; box-shadow: inset -3px -3px 0px #4a148c, 0 0 15px #4a148c; animation: spudPulse 0.8s infinite alternate ease-in-out; }
+        .spud-ancient { background: #ffd700; border-color: #ff6f00; box-shadow: inset -3px -3px 0px #fff, 0 0 16px #ffd700; animation: spudFloat 0.8s infinite alternate ease-in-out; }
+        .spud-infinity { background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff); border-color: #ffffff; box-shadow: 0 0 25px rgba(255,255,255,0.8); animation: spudFloat 0.5s infinite alternate ease-in-out; }
+        .spud-bedrock { background: #555555; border-color: #222222; box-shadow: inset -3px -3px 0px #000; border-radius: 4px !important; }
+        .spud-matrix { background: #000000; border-color: #00ff00; box-shadow: 0 0 15px #00ff00; animation: spudPulse 0.1s infinite alternate; }
+        .spud-golden { background: #ffd700; border-color: #b8860b; box-shadow: inset -3px -3px 0px #fff, 0 0 15px rgba(255,215,0,0.6); }
+        .spud-ghost { background: #e0f7fa; border-color: #b2ebf2; opacity: 0.8; box-shadow: 0 0 15px #fff; animation: spudFloat 0.7s infinite alternate ease-in-out; }
+        .spud-tree { background: #2e7d32; border-color: #1b5e20; border-radius: 50% 50% 10% 10%; box-shadow: inset -3px -3px 0px #81c784; }
+
+        .sprout-art {
+            width: 8px;
+            height: 12px;
+            background: #4caf50;
+            border: 1px solid #1b5e20;
+            border-radius: 0 100% 0 100%;
+        }
+
+        .market-shelf { background: #ffffff; border: 1px solid #dadce0; border-radius: 6px; padding: 5px; margin-bottom: 10px; }
+        .shelf-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #f1f3f4; font-size: 5px; line-height: 1.4; }
+        .shelf-details { color: #70757a; font-size: 4px; margin-top: 2px; }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 15px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .panel.active { display: block; }
+
+        .btn {
+            background: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            color: #3c4043;
+            padding: 6px 10px;
+            font-size: 6px;
+            cursor: pointer;
+        }
+        .btn:hover { background: #f1f3f4; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .admin-trigger-zone { margin-top: 15px; text-align: center; }
