@@ -1,4 +1,4 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1457,6 +1457,182 @@ body{
 
 
 
+
+<style>
+/* ===== V3.9 MORE HIGH-TIER SEED DETAILS ===== */
+.potato-wrap{overflow:visible}
+
+/* Shared animated aura for powerful potatoes */
+.potato.quantum,.potato.epic,.potato.nebula,.potato.supernova,.potato.mythic,
+.potato.void,.potato.ancient,.potato.infinity,.potato.bedrock,.potato.matrix,
+.potato.golden,.potato.ghost,.potato.diamond,.potato.shadowsecret,
+.potato.prismaticsecret,.potato.eclipsesecret,.potato.corruptedsecret{
+  z-index:2;
+}
+
+/* RARE: little icy crystal horns */
+.potato.rare{
+  border-color:#bffcff;
+}
+.potato.rare .potato-face::before{
+  content:"";
+  position:absolute;left:-11px;top:-17px;width:7px;height:15px;
+  background:linear-gradient(#eaffff,#00cfe8);
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  transform:rotate(-25deg);
+  filter:drop-shadow(0 0 3px #00e5ff);
+}
+.potato.rare .potato-face::after{
+  content:"";
+  position:absolute;right:-10px;top:-15px;width:6px;height:13px;
+  background:linear-gradient(#fff,#00cfe8);
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  transform:rotate(28deg);
+  filter:drop-shadow(0 0 3px #00e5ff);
+}
+
+/* QUANTUM: orbiting particles */
+.potato.quantum{animation:quantumGlow 1.3s infinite alternate}
+.potato.quantum .potato-face::before{
+  content:"";position:absolute;width:6px;height:6px;border-radius:50%;
+  background:#fff;left:-14px;top:-8px;
+  box-shadow:43px 13px 0 #5ffff0,22px -10px 0 #fff,17px 28px 0 #00ffcc;
+  animation:seedParticleFloat 1.6s ease-in-out infinite alternate;
+}
+@keyframes quantumGlow{to{box-shadow:0 0 25px #00ffcc,0 0 8px white}}
+@keyframes seedParticleFloat{to{transform:translateY(-4px) rotate(18deg)}}
+
+/* EPIC: purple spikes */
+.potato.epic .potato-face::before{
+  content:"";position:absolute;left:-10px;top:-18px;width:9px;height:16px;
+  background:#e26cff;clip-path:polygon(50% 0,100% 100%,0 100%);
+  transform:rotate(-32deg);filter:drop-shadow(0 0 4px #d94fff);
+}
+.potato.epic .potato-face::after{
+  content:"";position:absolute;right:-10px;top:-17px;width:9px;height:16px;
+  background:#a72ddd;clip-path:polygon(50% 0,100% 100%,0 100%);
+  transform:rotate(32deg);filter:drop-shadow(0 0 4px #d94fff);
+}
+
+/* NEBULA: star dust */
+.potato.nebula .potato-face::before{
+  content:"✦";position:absolute;left:-16px;top:-17px;color:#fff;font-size:9px;
+  text-shadow:35px 7px #ff62dc,20px 28px #9c78ff,45px 27px #fff;
+  animation:starTwinkle .8s infinite alternate;
+}
+@keyframes starTwinkle{to{opacity:.35;transform:scale(.75)}}
+
+/* SUPERNOVA: sun rays */
+.potato.supernova::before{
+  box-shadow:19px 5px 0 #3b1d0b,11px 13px 0 #3b1d0b,0 0 12px #fff!important;
+}
+.potato.supernova .potato-face::before{
+  content:"";position:absolute;inset:-22px -20px;
+  border:3px dashed #ffd000;border-radius:50%;
+  animation:seedSpin 5s linear infinite;
+  filter:drop-shadow(0 0 5px #ff8a00);
+}
+
+/* MYTHIC: lava cracks */
+.potato.mythic .potato-face::before{
+  content:"";position:absolute;left:-5px;top:-8px;width:38px;height:25px;
+  background:
+    linear-gradient(125deg,transparent 43%,#ffd84d 45% 50%,transparent 52%) 0 0/18px 18px,
+    linear-gradient(55deg,transparent 43%,#ff8a00 45% 50%,transparent 52%) 12px 8px/18px 18px;
+  opacity:.9;pointer-events:none;
+}
+
+/* VOID: black/purple thorns */
+.potato.void .potato-face::before{
+  content:"";position:absolute;left:-17px;top:-20px;width:62px;height:53px;
+  background:#722cff;
+  clip-path:polygon(4% 50%,16% 42%,8% 18%,30% 31%,40% 0,50% 28%,67% 8%,69% 34%,96% 25%,79% 48%,100% 65%,72% 65%,77% 94%,55% 73%,42% 100%,37% 72%,12% 84%,24% 62%);
+  z-index:-1;opacity:.75;filter:drop-shadow(0 0 5px #711fff);
+}
+
+/* ANCIENT: crown */
+.potato.ancient .potato-face::before,.potato.golden .potato-face::before{
+  content:"♛";position:absolute;left:5px;top:-25px;font-size:18px;color:#ffe55c;
+  text-shadow:0 0 5px #ffb300;
+}
+
+/* INFINITY: rotating rainbow halo */
+.potato.infinity .potato-face::before,.potato.prismaticsecret .potato-face::before{
+  content:"";position:absolute;left:-12px;top:-15px;width:50px;height:36px;
+  border:3px solid transparent;border-radius:50%;
+  background:linear-gradient(#111,#111) padding-box,
+             conic-gradient(#ff3333,#ffe600,#35ff63,#00d9ff,#8d48ff,#ff36d3,#ff3333) border-box;
+  animation:seedSpin 2.2s linear infinite;z-index:-1;
+}
+
+/* BEDROCK: jagged stone spikes */
+.potato.bedrock .potato-face::before{
+  content:"";position:absolute;left:-13px;top:-17px;width:53px;height:48px;
+  background:#444;z-index:-1;
+  clip-path:polygon(0 45%,15% 35%,10% 12%,31% 28%,42% 0,53% 27%,73% 10%,72% 32%,100% 27%,83% 52%,96% 76%,70% 70%,59% 100%,46% 73%,22% 91%,27% 65%);
+}
+
+/* MATRIX: falling code-ish pixels */
+.potato.matrix .potato-face::before{
+  content:"01";position:absolute;left:-11px;top:-17px;color:#78ff8e;font-size:6px;
+  text-shadow:10px 9px #00ff44,38px 3px #00ff44,44px 21px #7cff94,5px 27px #00ff44;
+  animation:matrixBlink .7s steps(2) infinite;
+}
+@keyframes matrixBlink{50%{opacity:.25}}
+
+/* GHOST: wisps */
+.potato.ghost .potato-face::before{
+  content:"";position:absolute;left:-13px;top:-17px;width:7px;height:18px;
+  border-radius:50%;background:#dfffff;
+  box-shadow:43px 5px 0 #dfffff,29px -8px 0 #fff;
+  filter:blur(1px) drop-shadow(0 0 5px #bfffff);
+  animation:ghostWisp 1.4s ease-in-out infinite alternate;
+}
+@keyframes ghostWisp{to{transform:translateY(-7px);opacity:.3}}
+
+/* DIAMOND: crystal crown/shards */
+.potato.diamond .potato-face::before{
+  content:"";position:absolute;left:-9px;top:-20px;width:47px;height:20px;
+  background:linear-gradient(135deg,#fff,#65dfff);
+  clip-path:polygon(0 100%,12% 20%,25% 100%,43% 0,58% 100%,76% 12%,88% 100%);
+  filter:drop-shadow(0 0 5px #76eaff);
+}
+
+/* SECRET SHADOW: giant thorn silhouette */
+.potato.shadowsecret .potato-face::before{
+  content:"";position:absolute;left:-21px;top:-25px;width:70px;height:62px;
+  background:#8d36ff;z-index:-1;
+  clip-path:polygon(0 52%,19% 40%,5% 15%,31% 30%,40% 0,52% 28%,72% 5%,69% 35%,100% 21%,81% 51%,98% 77%,70% 67%,57% 100%,45% 72%,18% 92%,27% 62%);
+  filter:drop-shadow(0 0 8px #7d2cff);
+  animation:shadowPulse 1.2s infinite alternate;
+}
+@keyframes shadowPulse{to{transform:scale(1.1);opacity:.55}}
+
+/* ECLIPSE: fiery orbital ring */
+.potato.eclipsesecret .potato-face::before{
+  content:"";position:absolute;left:-17px;top:-19px;width:60px;height:47px;
+  border:4px solid #ff9d00;border-left-color:#fff35c;border-right-color:#7d2100;
+  border-radius:50%;z-index:-1;box-shadow:0 0 10px #ff6a00;
+  animation:seedSpin 1.7s linear infinite;
+}
+
+/* CORRUPTED: detached glitch blocks */
+.potato.corruptedsecret .potato-face::before{
+  content:"";position:absolute;width:7px;height:5px;background:#00ff66;left:-14px;top:-10px;
+  box-shadow:45px 7px #ff48ff,8px 34px #c400ff,39px 31px #00ff66,25px -9px #fff;
+  animation:glitchBits .35s steps(2) infinite;
+}
+@keyframes glitchBits{
+  50%{transform:translate(4px,-2px)}
+  100%{transform:translate(-2px,3px)}
+}
+
+@keyframes seedSpin{to{transform:rotate(360deg)}}
+
+/* Keep details from covering plot labels/buttons */
+.plot .potato-wrap{margin-bottom:3px}
+</style>
+
 </head>
 
 <body>
@@ -1556,6 +1732,10 @@ body{
 
         <button class="btn dark-btn" onclick="saveGame()">
             💾 SAVE GAME
+        </button>
+
+        <button id="playerAutoHarvesterBtn" class="btn toggle-off" onclick="togglePlayerAutoHarvester()">
+            🤖 AUTO HARVEST: OFF
         </button>
 
         <button class="btn" onclick="togglePanel('questsPanel')">📋 QUESTS</button>
@@ -2427,6 +2607,7 @@ function render() {
     renderPlotUpgrades();
     if(typeof renderBigSystems === "function") renderBigSystems();
     if(typeof renderQuickEquip === "function") renderQuickEquip();
+    if(typeof updateAutoHarvesterButtons === "function") updateAutoHarvesterButtons();
 
 }
 
@@ -3075,30 +3256,49 @@ function adminRain() {
    ROBOT
 ========================================== */
 
-function updateAutoHarvesterAdminButton() {
-    const btn = document.getElementById("autoHarvesterAdminBtn");
-    if(!btn) return;
+function updateAutoHarvesterButtons() {
     const on = !!game.upgrades.auto;
-    btn.textContent = on ? "🤖 AUTO HARVESTER: ON" : "🤖 AUTO HARVESTER: OFF";
-    btn.classList.toggle("toggle-on", on);
-    btn.classList.toggle("toggle-off", !on);
+
+    const adminBtn = document.getElementById("autoHarvesterAdminBtn");
+    if(adminBtn) {
+        adminBtn.textContent = on ? "🤖 AUTO HARVESTER: ON" : "🤖 AUTO HARVESTER: OFF";
+        adminBtn.classList.toggle("toggle-on", on);
+        adminBtn.classList.toggle("toggle-off", !on);
+    }
+
+    const playerBtn = document.getElementById("playerAutoHarvesterBtn");
+    if(playerBtn) {
+        playerBtn.textContent = on ? "🤖 AUTO HARVEST: ON" : "🤖 AUTO HARVEST: OFF";
+        playerBtn.classList.toggle("toggle-on", on);
+        playerBtn.classList.toggle("toggle-off", !on);
+    }
+}
+
+function setAutoHarvester(enabled, announceAdmin = false) {
+    game.upgrades.auto = !!enabled;
+    saveGame();
+    render();
+    updateAutoHarvesterButtons();
+
+    if(announceAdmin) {
+        sendBroadcastText(
+            game.upgrades.auto
+            ? "🤖 ADMIN ACTIVATED AUTO HARVESTER!"
+            : "🤖 AUTO HARVESTER DEACTIVATED!"
+        );
+    }
+}
+
+function togglePlayerAutoHarvester() {
+    setAutoHarvester(!game.upgrades.auto, false);
 }
 
 function adminBot() {
-    game.upgrades.auto = !game.upgrades.auto;
-    saveGame();
-    render();
-    updateAutoHarvesterAdminButton();
-
-    sendBroadcastText(
-        game.upgrades.auto
-        ? "🤖 ADMIN ACTIVATED AUTO HARVESTER!"
-        : "🤖 AUTO HARVESTER DEACTIVATED!"
-    );
+    setAutoHarvester(!game.upgrades.auto, true);
 }
 
-// Keep the admin toggle label synced after loading/rendering.
-setInterval(updateAutoHarvesterAdminButton, 500);
+// Keep both player and admin toggle labels synced after loading/rendering.
+setInterval(updateAutoHarvesterButtons, 500);
 
 /* ==========================================
    WIPE
