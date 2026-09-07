@@ -799,6 +799,25 @@ body {
       }
       return {ok:true, stock:Number(result.snapshot.val() || 0)};
     },
+    async autoRestockIfDue() {
+      if (!window.GlobalDB.ready) return {restocked:false, reason:"offline"};
+
+      const claimRef = ref(window.GlobalDB.db, "global/shopMeta/lastAutoRestockAt");
+      const now = Date.now();
+      const claim = await runTransaction(claimRef, current => {
+        const last = Number(current || 0);
+        if (now - last < 60000) return;
+        return now;
+      });
+
+      if (!claim.committed) {
+        return {restocked:false, reason:"not-due"};
+      }
+
+      const stock = window.makeRandomShopStock ? window.makeRandomShopStock() : {};
+      await set(ref(window.GlobalDB.db, "global/shopStock"), stock);
+      return {restocked:true, stock};
+    },
     listen() {
       if (!window.GlobalDB.ready) return;
       onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
@@ -1000,7 +1019,10 @@ body {
 
             <h3>🥔 POTATO SEED MARKET</h3>
 
-            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">📦 Every shop seed has finite stock: 1–5 per restock.</div>
+            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">
+📦 Every shop seed has finite stock: 1–5 per restock.<br>
+⏱️ Auto restock in <span id="restockCountdown">1:00</span>
+</div>
 <div id="shopItems"></div>
 
         </div>
@@ -1058,6 +1080,7 @@ body {
 <button class="menu-btn" onclick="togglePanel('updateLog')">📜 UPDATE LOG</button>
 <div id="updateLog" class="panel" style="display:none;">
   <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V2.4 — 1-Minute Restock + Admin Update</b><br>⏱️ Shop now auto-restocks every minute. Added more admin tools and fixed seed/equip bugs.</div>
 <div class="log-entry"><b>V2.3 — Firebase Fix</b><br>🔥 Added transaction-safe global stock purchases so two players cannot buy the same last seed.</div>
 <div class="log-entry"><b>V2.3 — Shop Bug Fixes</b><br>🛒 Fixed helper load order, missing crop definitions, old-save stock repair, and safer purchase charging.</div>
 <div class="log-entry"><b>V2.2 — Shop Fix</b><br>🛒 Fixed finite stock, sold-out buttons, purchases, equip/unequip, and Firebase stock syncing.</div>
@@ -1109,7 +1132,7 @@ body {
                         🥔 +100 ALL SEEDS
                     </button>
 
-                    <button class="btn green-btn" onclick="adminRestock()" onclick="globalRestockEveryone()">
+                    <button class="btn green-btn" onclick="adminRestockEveryone()">
                         🌱 RESTOCK EVERYONE
                     </button>
 
@@ -1134,6 +1157,16 @@ body {
                     </button>
 
                     <button class="btn" onclick="resetGlobalShopStock()">🌎 RESTOCK SHOP GLOBALLY (1–5)</button>
+
+                    <button class="btn gold-btn" onclick="adminMillion()">💰 +$1,000,000</button>
+
+                    <button class="btn" onclick="adminSelectedSeeds()">🎒 +25 EQUIPPED SEED</button>
+
+                    <button class="btn" onclick="adminHarvestAll()">🥔 HARVEST ALL READY</button>
+
+                    <button class="btn gold-btn" onclick="adminMaxPlots()">🌾 MAX ALL PLOTS</button>
+
+                    <button class="btn green-btn" onclick="adminEnableAllLimited()">✨ ENABLE ALL LIMITED</button>
 <div class="admin-heading">
                         ✨ LIMITED SEED TOGGLES
                     </div>
@@ -1356,6 +1389,13 @@ const crops = {
         grow:45000,
         className:"matrix"
     },
+    prism: {name:"Prism Potato",price:150000000,sell:750000000,grow:50000,className:"matrix"},
+    glitch: {name:"Glitch Potato",price:750000000,sell:4500000000,grow:60000,className:"void"},
+    cosmic: {name:"Cosmic Potato",price:5000000000,sell:35000000000,grow:75000,className:"nebula"},
+    galaxy: {name:"Galaxy Potato",price:30000000000,sell:250000000000,grow:90000,className:"infinity"},
+    infinity2: {name:"Infinity X",price:250000000000,sell:2500000000000,grow:105000,className:"infinity"},
+    adminium: {name:"Adminium Potato",price:2500000000000,sell:30000000000000,grow:120000,className:"bedrock"},
+
     crystal: {name:"Crystal Spud",price:12000000000000,sell:150000000000000,grow:135000,className:"diamond"},
     storm: {name:"Storm Potato",price:60000000000000,sell:800000000000000,grow:150000,className:"quantum"},
     lunar: {name:"Lunar Spud",price:300000000000000,sell:4500000000000000,grow:170000,className:"ghost"},
@@ -1530,13 +1570,15 @@ function render() {
         .textContent =
         game.level;
 
+    const selectedCrop = game.selected ? crops[game.selected] : null;
+
     document.getElementById("selectedSeed")
         .textContent =
-        crops[game.selected].name;
+        selectedCrop ? selectedCrop.name : "None";
 
     document.getElementById("seedCount")
         .textContent =
-        game.seeds[game.selected];
+        selectedCrop ? Number(game.seeds[game.selected] || 0) : 0;
 
     document.getElementById("playerName")
         .textContent =
@@ -1644,11 +1686,10 @@ function plant(index) {
     if(game.plots[index]) return;
 
     const selected = game.selected;
-    const crop = crops[selected];
+    const crop = selected ? crops[selected] : null;
 
     if(!crop) {
-        game.selected = "common";
-        render();
+        alert("🎒 Equip a seed first!");
         return;
     }
 
@@ -2048,6 +2089,75 @@ function adminRestock() {
         "🌱 ADMIN RESTOCK! EVERYONE GOT +25 SEEDS!"
     );
 
+}
+
+
+/* ==========================================
+   EXTRA ADMIN TOOLS
+========================================== */
+
+async function adminRestockEveryone() {
+    adminRestock();
+    if(typeof window.resetGlobalShopStock === "function") {
+        await window.resetGlobalShopStock();
+    }
+}
+
+function adminMillion() {
+    game.cash += 1000000;
+    saveGame();
+    render();
+    alert("💰 +$1,000,000!");
+}
+
+function adminSelectedSeeds() {
+    const type = game.selected;
+    if(!type || !crops[type]) {
+        alert("🎒 Equip a seed first!");
+        return;
+    }
+    game.seeds[type] = Number(game.seeds[type] || 0) + 25;
+    saveGame();
+    render();
+    alert("🥔 +25 " + crops[type].name + " seeds!");
+}
+
+function adminHarvestAll() {
+    let total = 0;
+    game.plots.forEach((plot,index) => {
+        if(!plot || !plot.ready || !crops[plot.type]) return;
+        const level = Number(game.plotLevels[index] || 0);
+        total += Math.floor(crops[plot.type].sell * (1 + level * 0.10));
+        game.plots[index] = null;
+    });
+    game.cash += total;
+    game.level = Math.max(1, Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1);
+    saveGame();
+    render();
+    alert(total > 0 ? "🥔 Harvested everything for $" + total.toLocaleString() + "!" : "🌱 Nothing is ready yet!");
+}
+
+function adminMaxPlots() {
+    game.plotLevels = Array(12).fill(5);
+    saveGame();
+    render();
+    alert("🌾 ALL PLOTS ARE LEVEL 5!");
+}
+
+async function adminEnableAllLimited() {
+    ["golden","ghost","tree","diamond"].forEach(type => {
+        game.limited[type] = true;
+    });
+    saveGame();
+    render();
+
+    if(window.GlobalDB?.ready && window.GlobalAPI?.setLimited) {
+        for(const type of ["golden","ghost","tree","diamond"]) {
+            try { await window.GlobalAPI.setLimited(type, true); } catch(e) {}
+        }
+    }
+
+    sendBroadcastText("✨ ADMIN ENABLED ALL LIMITED SEEDS!");
 }
 
 /* ==========================================
@@ -2641,10 +2751,9 @@ window.EXTRA_POTATO_SEEDS = {
 /* ===== EQUIP / UNEQUIP SEEDS ===== */
 (function(){
   function getCropCatalog(){
-    const candidates = ["CROPS","crops","SEEDS","seeds"];
-    for (const n of candidates) {
-      try { if (window[n] && typeof window[n] === "object") return window[n]; } catch(e){}
-    }
+    try {
+      if (typeof crops !== "undefined" && crops && typeof crops === "object") return crops;
+    } catch(e){}
     return window.EXTRA_POTATO_SEEDS || {};
   }
 
@@ -2652,7 +2761,7 @@ window.EXTRA_POTATO_SEEDS = {
     if (typeof game === "undefined") return;
     game.selected = type;
     game.equippedSeed = type;
-    if (typeof save === "function") save();
+    if (typeof saveGame === "function") saveGame();
     if (typeof render === "function") render();
     if (typeof renderSeedEquip === "function") renderSeedEquip();
   };
@@ -2665,7 +2774,7 @@ window.EXTRA_POTATO_SEEDS = {
     if (game.equippedSeed === type) {
       game.equippedSeed = null;
     }
-    if (typeof save === "function") save();
+    if (typeof saveGame === "function") saveGame();
     if (typeof render === "function") render();
     if (typeof renderSeedEquip === "function") renderSeedEquip();
   };
@@ -2732,42 +2841,109 @@ window.EXTRA_POTATO_SEEDS = {
 
 
 <script>
-/* ===== GLOBAL SHOP RUNTIME ===== */
-window.resetGlobalShopStock = async function(){
-  const stock = window.makeRandomShopStock();
+/* ===== GLOBAL SHOP RUNTIME + 1 MINUTE AUTO RESTOCK ===== */
+(function(){
+  const RESTOCK_MS = 60000;
+  const LOCAL_KEY = "potatoShopLastAutoRestock";
+  let nextLocalRestock = Number(localStorage.getItem(LOCAL_KEY) || 0) + RESTOCK_MS;
 
-  if(typeof game !== "undefined"){
-    game.shopStock = {...stock};
-    saveGame();
-    render();
+  function setLocalRestockNow(){
+    const now = Date.now();
+    localStorage.setItem(LOCAL_KEY, String(now));
+    nextLocalRestock = now + RESTOCK_MS;
   }
 
-  if(window.GlobalDB?.ready && window.GlobalAPI?.setShopStock){
-    try {
-      await window.GlobalAPI.setShopStock(stock);
-      if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! Every seed now has 1–5 stock.");
-    } catch(e) {
-      console.warn("Global restock failed:", e);
-      if(window.showGlobalToast) window.showGlobalToast("⚠️ Firebase restock failed; local stock was reset.");
-    }
-  } else if(window.showGlobalToast) {
-    window.showGlobalToast("📦 Local restock done. Connect Firebase for global stock.");
-  }
-};
+  function updateCountdown(){
+    const el = document.getElementById("restockCountdown");
+    if(!el) return;
 
-window.addEventListener("global-shop-stock", e => {
-  if(typeof game === "undefined") return;
-  const incoming = e.detail || {};
-  const cleaned = {};
-  (window.ALL_SHOP_SEEDS || []).forEach(k => {
-    if(incoming[k] !== undefined){
-      cleaned[k] = Math.max(0, Math.min(5, Number(incoming[k] || 0)));
+    let remaining;
+    if(window.GlobalDB?.ready) {
+      // Global mode is checked every few seconds; show a simple rolling minute timer.
+      const last = Number(localStorage.getItem("potatoGlobalRestockSeenAt") || Date.now());
+      remaining = Math.max(0, RESTOCK_MS - (Date.now() - last));
+    } else {
+      remaining = Math.max(0, nextLocalRestock - Date.now());
     }
+
+    const sec = Math.ceil(remaining / 1000);
+    el.textContent = `0:${String(sec % 60).padStart(2,"0")}`;
+  }
+
+  window.resetGlobalShopStock = async function(){
+    const stock = window.makeRandomShopStock();
+
+    if(typeof game !== "undefined"){
+      game.shopStock = {...stock};
+      if(typeof saveGame === "function") saveGame();
+      if(typeof render === "function") render();
+    }
+
+    setLocalRestockNow();
+
+    if(window.GlobalDB?.ready && window.GlobalAPI?.setShopStock){
+      try {
+        await window.GlobalAPI.setShopStock(stock);
+        localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+        if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! Every seed now has 1–5 stock.");
+      } catch(e) {
+        console.warn("Global restock failed:", e);
+        if(window.showGlobalToast) window.showGlobalToast("⚠️ Firebase restock failed; local stock was reset.");
+      }
+    } else if(window.showGlobalToast) {
+      window.showGlobalToast("📦 Local restock done. Connect Firebase for global stock.");
+    }
+  };
+
+  async function autoRestockTick(){
+    if(window.GlobalDB?.ready && window.GlobalAPI?.autoRestockIfDue){
+      try {
+        const result = await window.GlobalAPI.autoRestockIfDue();
+        if(result?.restocked){
+          localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+          if(window.showGlobalToast) window.showGlobalToast("⏱️ 1-MINUTE GLOBAL SHOP RESTOCK!");
+        }
+      } catch(e) {
+        console.warn("Auto global restock check failed:", e);
+      }
+      return;
+    }
+
+    if(Date.now() >= nextLocalRestock){
+      const stock = window.makeRandomShopStock();
+      if(typeof game !== "undefined"){
+        game.shopStock = {...stock};
+        if(typeof saveGame === "function") saveGame();
+        if(typeof render === "function") render();
+      }
+      setLocalRestockNow();
+      if(window.showGlobalToast) window.showGlobalToast("⏱️ SHOP AUTO-RESTOCKED! New 1–5 stock.");
+    }
+  }
+
+  window.addEventListener("global-shop-stock", e => {
+    if(typeof game === "undefined") return;
+    const incoming = e.detail || {};
+    const cleaned = {};
+    (window.ALL_SHOP_SEEDS || []).forEach(k => {
+      if(incoming[k] !== undefined){
+        cleaned[k] = Math.max(0, Math.min(5, Number(incoming[k] || 0)));
+      }
+    });
+    game.shopStock = {...(game.shopStock || {}), ...cleaned};
+    localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+    if(typeof saveGame === "function") saveGame();
+    if(typeof render === "function") render();
   });
-  game.shopStock = {...(game.shopStock || {}), ...cleaned};
-  saveGame();
-  render();
-});
+
+  if(!Number(localStorage.getItem(LOCAL_KEY))){
+    setLocalRestockNow();
+  }
+
+  setInterval(updateCountdown, 1000);
+  setInterval(autoRestockTick, 5000);
+  updateCountdown();
+})();
 </script>
 
 </body>
