@@ -714,6 +714,12 @@ body {
     const c = window.GLOBAL_FIREBASE_CONFIG;
     if (!c || !c.enabled || !c.apiKey || c.apiKey.startsWith("PASTE_")) {
       console.log("[Global] Firebase is disabled; using local save mode.");
+      const status = document.getElementById("global-status");
+      if(status){
+        status.textContent = "🌐 FIREBASE: SETUP NEEDED";
+        status.style.color = "#ffd54f";
+        status.title = "Paste your real Firebase config and set enabled:true.";
+      }
       return;
     }
     try {
@@ -758,7 +764,7 @@ body {
       const clean = {};
       Object.entries(stock || {}).forEach(([k,v]) => {
         if (window.ALL_SHOP_SEEDS?.includes(k)) {
-          clean[k] = Math.max(0, Math.min(5, Number(v) || 0));
+          clean[k] = k === "common" ? 999999 : Math.max(0, Math.min(5, Number(v) || 0));
         }
       });
       await set(ref(window.GlobalDB.db, "global/shopStock"), clean);
@@ -785,6 +791,7 @@ body {
       return true;
     },
     async buySeedFromGlobalStock(type) {
+      if(type === "common") return {ok:true, stock:999999, infinite:true};
       if (!window.GlobalDB.ready) return {ok:false, reason:"offline"};
       const stockRef = ref(window.GlobalDB.db, `global/shopStock/${type}`);
       let sawStock = 0;
@@ -867,12 +874,549 @@ body {
 .stock-badge{display:inline-block;margin-top:4px;padding:4px 7px;border-radius:6px;background:rgba(255,255,255,.07);font-size:8px}
 .shop-item button:disabled{opacity:.45;cursor:not-allowed}
 </style>
+
+<style>
+/* ===== V3.0 BIG TYCOON SYSTEMS ===== */
+.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.feature-card{border:2px solid #222;border-radius:8px;padding:9px;background:#f8f9fa;font-size:6px;line-height:1.7}
+.feature-card b{color:#1a73e8}
+.mini-progress{height:8px;background:#222;border-radius:5px;overflow:hidden;margin-top:6px}
+.mini-progress > div{height:100%;background:#34a853}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.stat-box{background:#111;color:#fff;border-radius:6px;padding:8px;font-size:6px;line-height:1.7}
+.event-banner{background:#2b1459;color:#fff;border:2px solid #8b5cf6;border-radius:8px;padding:9px;margin-bottom:8px;font-size:6px;line-height:1.7}
+.pet-card{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #ddd;padding:8px 0}
+.achievement.unlocked{background:#e8f5e9;border-color:#34a853}
+.achievement.locked{opacity:.6}
+.weather-pill{display:inline-block;padding:4px 7px;border-radius:999px;background:#111;color:#fff;font-size:5px;margin:2px}
+.farm-tabs{display:flex;gap:6px;margin:8px 0}
+.farm-tabs button{flex:1}
+@media(max-width:500px){.feature-grid,.stat-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style>
+/* ===== V3.1 UI CLEANUP / MORE SCREEN ROOM ===== */
+:root{
+  --page-max:1180px;
+  --gap:12px;
+}
+
+body{
+  padding:10px;
+}
+
+.page{
+  max-width:var(--page-max);
+  margin:auto;
+}
+
+.header-card{
+  padding:10px 14px;
+  margin-bottom:8px;
+}
+
+.logo{
+  font-size:22px;
+  margin-bottom:6px;
+}
+
+.account{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:8px;
+  align-items:end;
+  padding:8px;
+  margin-bottom:8px;
+}
+
+.account-title{
+  grid-column:1/-1;
+  margin-bottom:0;
+}
+
+.account input{
+  margin-bottom:0;
+}
+
+.menu{
+  position:sticky;
+  top:8px;
+  z-index:50;
+  background:rgba(8,8,8,.94);
+  border:2px solid #333;
+  border-radius:10px;
+  padding:8px;
+  margin-bottom:10px;
+  backdrop-filter:blur(8px);
+}
+
+.menu .btn,
+.menu .menu-btn{
+  min-width:100px;
+}
+
+#gameWorkspace{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(300px,.8fr);
+  gap:var(--gap);
+  align-items:start;
+}
+
+#mainGameColumn,
+#sidePanelColumn{
+  min-width:0;
+}
+
+#sidePanelColumn{
+  position:sticky;
+  top:78px;
+  max-height:calc(100vh - 90px);
+  overflow:auto;
+  padding-right:4px;
+}
+
+.cabinet{
+  padding:10px;
+}
+
+.garden{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  padding:10px;
+}
+
+.plot{
+  min-height:135px;
+}
+
+.panel{
+  margin-top:0;
+  margin-bottom:10px;
+  padding:9px;
+  max-height:520px;
+  overflow:auto;
+}
+
+.panel h2,
+.panel h3{
+  position:sticky;
+  top:-9px;
+  z-index:2;
+  background:inherit;
+  padding:8px 0;
+  margin:0 0 8px;
+}
+
+.hud{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px 14px;
+  line-height:1.6;
+  padding:8px 10px;
+}
+
+.hud br{
+  display:none;
+}
+
+.admin-area{
+  margin-top:10px;
+}
+
+.admin-panel{
+  max-height:520px;
+  overflow:auto;
+}
+
+.admin-grid{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.admin-heading{
+  grid-column:1/-1;
+}
+
+.feature-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.stat-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+/* Hide all utility panels until opened, and keep them in the side column */
+#shop,#upgrades,#plotUpgrades,#questsPanel,#dailyPanel,#petsPanel,
+#achievementsPanel,#statsPanel,#prestigePanel,#updateLog,#seedEquipPanel{
+  width:100%;
+}
+
+/* Compact scrollbar */
+#sidePanelColumn::-webkit-scrollbar,
+.panel::-webkit-scrollbar,
+.admin-panel::-webkit-scrollbar{
+  width:8px;
+}
+#sidePanelColumn::-webkit-scrollbar-thumb,
+.panel::-webkit-scrollbar-thumb,
+.admin-panel::-webkit-scrollbar-thumb{
+  background:#555;
+  border-radius:10px;
+}
+
+@media(max-width:900px){
+  #gameWorkspace{
+    grid-template-columns:1fr;
+  }
+
+  #sidePanelColumn{
+    position:static;
+    max-height:none;
+    overflow:visible;
+  }
+
+  .panel{
+    max-height:none;
+  }
+
+  .admin-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  body{padding:6px;}
+
+  .page{max-width:100%;}
+
+  .account{
+    grid-template-columns:1fr;
+  }
+
+  .account-title{
+    grid-column:1;
+  }
+
+  .menu{
+    position:static;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .menu .btn,
+  .menu .menu-btn{
+    min-width:0;
+    width:100%;
+  }
+
+  .hud{
+    grid-template-columns:repeat(2,1fr);
+    font-size:5px;
+  }
+
+  .garden{
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+  }
+
+  .plot{
+    min-height:105px;
+  }
+
+  .admin-grid,
+  .feature-grid,
+  .stat-grid{
+    grid-template-columns:1fr;
+  }
+
+  .admin-heading{
+    grid-column:1;
+  }
+}
+</style>
+
+
+<style>
+/* ===== V3.2 QUICK EQUIP BESIDE PLOTS ===== */
+#farmPlayArea{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 210px;
+  gap:10px;
+  align-items:start;
+}
+
+#quickEquipRail{
+  background:#101010;
+  color:#fff;
+  border:3px solid #333;
+  border-radius:10px;
+  padding:8px;
+  max-height:565px;
+  overflow:auto;
+  position:sticky;
+  top:78px;
+}
+
+.quick-equip-title{
+  color:#ffd54f;
+  font-size:7px;
+  text-align:center;
+  padding:5px 3px 9px;
+  border-bottom:1px solid #444;
+  margin-bottom:5px;
+}
+
+.quick-equip-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:5px;
+  align-items:center;
+  padding:6px 3px;
+  border-bottom:1px solid #292929;
+  font-size:5px;
+  line-height:1.5;
+}
+
+.quick-equip-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.quick-equip-count{
+  color:#aaa;
+  font-size:4px;
+}
+
+.quick-equip-row .btn{
+  padding:6px 7px;
+  font-size:5px;
+}
+
+.quick-equip-row.active{
+  background:#17331d;
+  border-radius:5px;
+}
+
+#quickEquipRail::-webkit-scrollbar{width:7px}
+#quickEquipRail::-webkit-scrollbar-thumb{background:#555;border-radius:8px}
+
+@media(max-width:900px){
+  #farmPlayArea{
+    grid-template-columns:minmax(0,1fr) 180px;
+  }
+  #quickEquipRail{
+    position:static;
+    max-height:500px;
+  }
+}
+
+@media(max-width:650px){
+  #farmPlayArea{
+    grid-template-columns:1fr;
+  }
+  #quickEquipRail{
+    max-height:260px;
+    order:-1;
+  }
+  #quickEquipList{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px;
+  }
+}
+</style>
+
+
+<style>
+/* ===== V3.3 EQUIP SEEDS IN THE OUTER SIDE SPACE ===== */
+/* Keep the plots/garden full width. Put Quick Equip in the empty outer-right space. */
+#farmPlayArea{
+  display:block !important;
+  position:relative;
+}
+
+#quickEquipRail{
+  position:absolute !important;
+  left:calc(100% + 14px);
+  top:0;
+  width:210px;
+  max-height:calc(100vh - 100px);
+  z-index:20;
+}
+
+/* Make enough page room for the outside rail on wide screens. */
+@media(min-width:1250px){
+  .page{
+    max-width:1180px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
+
+/* If the browser isn't wide enough, keep it safely beside the plots
+   inside the game area rather than covering them. */
+@media(max-width:1249px) and (min-width:651px){
+  #farmPlayArea{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 190px;
+    gap:10px;
+  }
+
+  #quickEquipRail{
+    position:static !important;
+    width:auto;
+    max-height:520px;
+  }
+}
+
+@media(max-width:650px){
+  #farmPlayArea{
+    display:grid !important;
+    grid-template-columns:1fr;
+  }
+
+  #quickEquipRail{
+    position:static !important;
+    width:auto;
+    max-height:260px;
+  }
+}
+</style>
+
+
+<style>
+/* ===== V3.4 LAYOUT REPAIR ===== */
+#farmPlayArea{
+  display:block !important;
+  position:static !important;
+}
+
+#garden{
+  width:100%;
+}
+
+#quickEquipRail{
+  position:static !important;
+  left:auto !important;
+  top:auto !important;
+  width:100% !important;
+  max-height:300px;
+  box-sizing:border-box;
+  margin:0 0 10px 0;
+  overflow:auto;
+  background:#101010;
+  color:#fff;
+  border:3px solid #333;
+  border-radius:10px;
+  padding:8px;
+}
+
+#sidePanelColumn{
+  position:sticky;
+  top:78px;
+  max-height:calc(100vh - 90px);
+  overflow:auto;
+}
+
+#quickEquipList{
+  display:block;
+}
+
+.quick-equip-row{
+  grid-template-columns:minmax(0,1fr) auto;
+}
+
+/* Panels appear below Quick Equip in the same right-side column. */
+#sidePanelColumn > .panel{
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* Desktop: give the farm more room while keeping a useful right rail. */
+@media(min-width:901px){
+  #gameWorkspace{
+    grid-template-columns:minmax(0,1.7fr) minmax(260px,.62fr);
+    gap:12px;
+  }
+}
+
+/* Tablet/mobile: move the right column below the farm. */
+@media(max-width:900px){
+  #sidePanelColumn{
+    position:static;
+    max-height:none;
+    overflow:visible;
+  }
+
+  #quickEquipRail{
+    max-height:260px;
+  }
+
+  #quickEquipList{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px;
+  }
+}
+
+@media(max-width:500px){
+  #quickEquipList{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+
+<style>
+/* ===== V3.5 QUICK EQUIP VISUAL UPDATE ===== */
+#quickEquipRail{
+  background:#fff !important;
+  color:#111 !important;
+  border-color:#d0d0d0 !important;
+}
+
+.quick-equip-title{
+  color:#111 !important;
+  font-size:10px !important;
+  font-weight:900;
+  border-bottom:2px solid #ddd !important;
+}
+
+.quick-equip-row{
+  font-size:8px !important;
+  color:#111 !important;
+  border-bottom:1px solid #ddd !important;
+  padding:8px 4px !important;
+}
+
+.quick-equip-name{
+  font-size:8px !important;
+  font-weight:800;
+}
+
+.quick-equip-count{
+  color:#555 !important;
+  font-size:6px !important;
+  font-weight:700;
+}
+
+.quick-equip-row.active{
+  background:#e8f5e9 !important;
+}
+
+.quick-equip-row .btn{
+  font-size:6px !important;
+  padding:7px 8px !important;
+}
+</style>
+
 </head>
 
 <body>
 
 <div id="global-status" style="position:fixed;left:12px;bottom:12px;z-index:9998;padding:8px 11px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.72);font:10px 'Press Start 2P',monospace;color:#aaa;">
-  🌐 FIREBASE: NOT CONNECTED
+  🌐 FIREBASE: SETUP NEEDED
 </div>
 
 
@@ -968,10 +1512,19 @@ body {
             💾 SAVE GAME
         </button>
 
+        <button class="btn" onclick="togglePanel('questsPanel')">📋 QUESTS</button>
+        <button class="btn" onclick="togglePanel('dailyPanel')">🎁 DAILY</button>
+        <button class="btn" onclick="togglePanel('petsPanel')">🐾 PETS</button>
+        <button class="btn" onclick="togglePanel('achievementsPanel')">🏆 ACHIEVEMENTS</button>
+        <button class="btn" onclick="togglePanel('statsPanel')">📊 STATS</button>
+        <button class="btn gold-btn" onclick="togglePanel('prestigePanel')">♻️ REBIRTH</button>
+
     </div>
 
     <!-- GAME -->
-    <div class="cabinet">
+    <div id="gameWorkspace">
+<div id="mainGameColumn">
+<div class="cabinet">
 
         <div id="banScreen">
             🔨
@@ -1010,64 +1563,48 @@ body {
             🌱 SEEDS:
             <span id="seedCount">5</span>
 
+            <br>
+            👑 TITLE:
+            <span id="playerTitle">Spud Rookie</span>
+
+            <br>
+            🌦️ WEATHER:
+            <span id="weatherHud">Clear</span>
+
         </div>
 
-        <div id="garden" class="garden"></div>
+        
+<div class="farm-tabs">
+  <button class="btn" onclick="switchFarm(0)">🌾 MAIN FARM</button>
+  <button class="btn dark-btn" id="caveFarmBtn" onclick="switchFarm(1)">🕳️ CAVE FARM</button>
+</div>
+<div id="farmInfo" style="font-size:6px;margin:6px 0;color:#ffd54f;">🌾 Main Farm</div>
+<div id="farmPlayArea">
+  <div id="garden" class="garden"></div>
+</div>
 
         <!-- SHOP -->
-        <div id="shop" class="panel" style="display:none;">
-
-            <h3>🥔 POTATO SEED MARKET</h3>
-
-            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">
-📦 Every shop seed has finite stock: 1–5 per restock.<br>
-⏱️ Auto restock in <span id="restockCountdown">1:00</span>
-</div>
-<div id="shopItems"></div>
-
-        </div>
+        
 
         <!-- UPGRADES -->
-        <div id="upgrades" class="panel" style="display:none;">
+        
 
-            <h3>⚙️ EQUIPMENT UPGRADES</h3>
+        
 
-            <div class="shop-item">
-                👟 Fertilizer Boots
-                <button class="btn" onclick="buyUpgrade('speed')">
-                    $50
-                </button>
-            </div>
+        
 
-            <div class="shop-item">
-                🤖 Robo-Harvester
-                <button class="btn" onclick="buyUpgrade('auto')">
-                    $250
-                </button>
-            </div>
+        
 
-            <div class="shop-item">
-                💧 Automated Sprinkler
-                <button class="btn" onclick="buyUpgrade('sprinkler')">
-                    $400
-                </button>
-            </div>
+        
 
-        </div>
+        
 
-        <div id="plotUpgrades" class="panel" style="display:none;">
-            <h3>🌾 PLOT UPGRADES</h3>
-            <div class="upgrade-note">
-                Upgrade individual plots to make them faster and more valuable.
-                Click a plot, then choose an upgrade below.
-            </div>
-            <div id="plotUpgradeItems"></div>
-        </div>
+        
+
+        
 
     </div>
-
-    <!-- ADMIN -->
-    <div class="admin-area">
+<div class="admin-area">
 
         <button
             class="btn red-btn"
@@ -1078,29 +1615,6 @@ body {
 
         
 <button class="menu-btn" onclick="togglePanel('updateLog')">📜 UPDATE LOG</button>
-<div id="updateLog" class="panel" style="display:none;">
-  <h2>📜 UPDATE LOG</h2>
-<div class="log-entry"><b>V2.4 — 1-Minute Restock + Admin Update</b><br>⏱️ Shop now auto-restocks every minute. Added more admin tools and fixed seed/equip bugs.</div>
-<div class="log-entry"><b>V2.3 — Firebase Fix</b><br>🔥 Added transaction-safe global stock purchases so two players cannot buy the same last seed.</div>
-<div class="log-entry"><b>V2.3 — Shop Bug Fixes</b><br>🛒 Fixed helper load order, missing crop definitions, old-save stock repair, and safer purchase charging.</div>
-<div class="log-entry"><b>V2.2 — Shop Fix</b><br>🛒 Fixed finite stock, sold-out buttons, purchases, equip/unequip, and Firebase stock syncing.</div>
-<div class="log-entry"><b>V2.2 — Rarities</b><br>✨ Added rarity labels from Common through Godly/Admin.</div>
-<div class="log-entry"><b>V2.2 — New Seeds</b><br>🥔 Added Crystal, Storm, Lunar, Solar, Chaos, and Celestial potatoes.</div>
-  <div class="log-entry"><b>V2.0 — Global Update</b><br>🌎 Added Firebase global systems, global restocks, broadcasts, and limited-seed syncing.</div>
-  <div class="log-entry"><b>V2.1 — Bigger Potato Update</b><br>🌈 Added Prism, Glitch, Cosmic, Galaxy, Infinity X, and Adminium potatoes.</div>
-  <div class="log-entry"><b>V2.1 — Economy + Plots</b><br>💰 Rebalanced the economy and added upgradeable plots with faster growth and better sell value.</div>
-  <div class="log-entry"><b>V2.1 — Bug Fixes</b><br>🛠️ Safer saves, safer crop loading, better auto-harvest handling, and ban-state rendering.</div>
-  <div class="log-entry"><b>Next</b><br>🚀 More crops, events, quests, pets, and global events coming soon.</div>
-</div>
-
-
-<button class="menu-btn" onclick="togglePanel('seedEquipPanel')">🎒 EQUIP SEEDS</button>
-<div id="seedEquipPanel" class="panel" style="display:none;">
-  <h2>🎒 EQUIP SEEDS</h2>
-  <p style="opacity:.75">Equip a seed to make it your active planting seed. Unequip it to stop using it.</p>
-  <div id="seedEquipList"></div>
-</div>
-
 <div id="adminPanel" class="admin-panel">
 
             <div class="admin-title">
@@ -1167,6 +1681,11 @@ body {
                     <button class="btn gold-btn" onclick="adminMaxPlots()">🌾 MAX ALL PLOTS</button>
 
                     <button class="btn green-btn" onclick="adminEnableAllLimited()">✨ ENABLE ALL LIMITED</button>
+                    <button class="btn gold-btn" onclick="startAdminEvent('double')">💰 2X SELL EVENT (2 MIN)</button>
+                    <button class="btn" onclick="startAdminEvent('rare')">✨ RARE SEED SURGE (2 MIN)</button>
+                    <button class="btn" onclick="startAdminEvent('potatoRain')">🥔 POTATO RAIN (2 MIN)</button>
+                    <button class="btn" onclick="randomizeWeather('rain')">🌧️ FORCE RAIN (2 MIN)</button>
+                    <button class="btn" onclick="randomizeWeather('rainbow')">🌈 FORCE RAINBOW (2 MIN)</button>
 <div class="admin-heading">
                         ✨ LIMITED SEED TOGGLES
                     </div>
@@ -1228,6 +1747,120 @@ body {
         </div>
 
     </div>
+</div>
+<div id="sidePanelColumn">
+<div id="quickEquipRail">
+  <div class="quick-equip-title">🎒 QUICK EQUIP</div>
+  <div id="quickEquipList"></div>
+</div>
+
+<div id="shop" class="panel" style="display:none;">
+
+            <h3>🥔 POTATO SEED MARKET</h3>
+
+            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">
+📦 Common Spud is ALWAYS IN STOCK ♾️ — other seeds roll a rarity-based chance every minute.<br>
+⏱️ Auto restock in <span id="restockCountdown">1:00</span>
+</div>
+<div id="shopItems"></div>
+
+        </div>
+<div id="upgrades" class="panel" style="display:none;">
+
+            <h3>⚙️ EQUIPMENT UPGRADES</h3>
+
+            <div class="shop-item">
+                👟 Fertilizer Boots
+                <button class="btn" onclick="buyUpgrade('speed')">
+                    $50
+                </button>
+            </div>
+
+            <div class="shop-item">
+                🤖 Robo-Harvester
+                <button class="btn" onclick="buyUpgrade('auto')">
+                    $250
+                </button>
+            </div>
+
+            <div class="shop-item">
+                💧 Automated Sprinkler
+                <button class="btn" onclick="buyUpgrade('sprinkler')">
+                    $400
+                </button>
+            </div>
+
+        </div>
+<div id="plotUpgrades" class="panel" style="display:none;">
+            <h3>🌾 PLOT UPGRADES</h3>
+            <div class="upgrade-note">
+                Upgrade individual plots to make them faster and more valuable.
+                Click a plot, then choose an upgrade below.
+            </div>
+            <div id="plotUpgradeItems"></div>
+        </div>
+<div id="questsPanel" class="panel" style="display:none;">
+          <h3>📋 QUESTS</h3>
+          <div id="questList"></div>
+        </div>
+<div id="dailyPanel" class="panel" style="display:none;">
+          <h3>🎁 DAILY REWARD</h3>
+          <div id="dailyRewardBox" class="feature-card"></div>
+        </div>
+<div id="petsPanel" class="panel" style="display:none;">
+          <h3>🐾 POTATO PETS</h3>
+          <div class="upgrade-note">Pets give permanent bonuses while equipped. Buy one, then equip it.</div>
+          <div id="petList"></div>
+        </div>
+<div id="achievementsPanel" class="panel" style="display:none;">
+          <h3>🏆 ACHIEVEMENTS</h3>
+          <div id="achievementList" class="feature-grid"></div>
+        </div>
+<div id="statsPanel" class="panel" style="display:none;">
+          <h3>📊 PLAYER STATS</h3>
+          <div id="weatherBox" class="event-banner"></div>
+          <div id="eventBox" class="event-banner"></div>
+          <div id="statsList" class="stat-grid"></div>
+        </div>
+<div id="prestigePanel" class="panel" style="display:none;">
+          <h3>♻️ POTATO REBIRTH</h3>
+          <div class="feature-card">
+            Reset cash, seeds, crops, and plot upgrades for a permanent sell bonus.<br><br>
+            Requirement: <b>$1,000,000</b><br>
+            Current rebirths: <span id="rebirthCount">0</span><br>
+            Permanent bonus: <span id="rebirthBonus">+0%</span><br><br>
+            <button class="btn gold-btn" onclick="doRebirth()">♻️ REBIRTH</button>
+          </div>
+        </div>
+<div id="updateLog" class="panel" style="display:none;">
+  <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V3.5 — Quick Equip Visuals</b><br>🎒 Quick Equip now has a white background and larger, easier-to-read seed names.</div>
+<div class="log-entry"><b>V3.4 — Layout Repair</b><br>🛠️ Fixed conflicting layout CSS and moved Quick Equip into the real right-side space beside the plots.</div>
+<div class="log-entry"><b>V3.3 — Side-Space Equip</b><br>🎒 Equip Seeds now uses the empty space outside the plots on wide screens instead of shrinking the farm.</div>
+<div class="log-entry"><b>V3.2 — Quick Equip</b><br>🎒 Moved a compact Equip Seeds list right beside the farm plots so planting is faster.</div>
+<div class="log-entry"><b>V3.1 — UI Cleanup</b><br>🧹 Wider desktop layout, cleaner sticky menu, roomy garden, compact HUD, and side-panel interface.</div>
+<div class="log-entry"><b>V3.0 — Mega Tycoon Update</b><br>🚀 Added quests, daily rewards, pets, rebirths, achievements, titles, weather, random events, mutations, admin events, stats, and Cave Farm.</div>
+<div class="log-entry"><b>V2.6 — Rarity Stock Chances</b><br>🎲 Seeds now have a chance to appear each 1-minute restock. Rarer seeds are much harder to find.</div>
+<div class="log-entry"><b>V2.5 — Infinite Common Spud</b><br>♾️ Common Spud is now permanently in stock and does not use the restock limit.</div>
+<div class="log-entry"><b>V2.4 — 1-Minute Restock + Admin Update</b><br>⏱️ Shop now auto-restocks every minute. Added more admin tools and fixed seed/equip bugs.</div>
+<div class="log-entry"><b>V2.3 — Firebase Fix</b><br>🔥 Added transaction-safe global stock purchases so two players cannot buy the same last seed.</div>
+<div class="log-entry"><b>V2.3 — Shop Bug Fixes</b><br>🛒 Fixed helper load order, missing crop definitions, old-save stock repair, and safer purchase charging.</div>
+<div class="log-entry"><b>V2.2 — Shop Fix</b><br>🛒 Fixed finite stock, sold-out buttons, purchases, equip/unequip, and Firebase stock syncing.</div>
+<div class="log-entry"><b>V2.2 — Rarities</b><br>✨ Added rarity labels from Common through Godly/Admin.</div>
+<div class="log-entry"><b>V2.2 — New Seeds</b><br>🥔 Added Crystal, Storm, Lunar, Solar, Chaos, and Celestial potatoes.</div>
+  <div class="log-entry"><b>V2.0 — Global Update</b><br>🌎 Added Firebase global systems, global restocks, broadcasts, and limited-seed syncing.</div>
+  <div class="log-entry"><b>V2.1 — Bigger Potato Update</b><br>🌈 Added Prism, Glitch, Cosmic, Galaxy, Infinity X, and Adminium potatoes.</div>
+  <div class="log-entry"><b>V2.1 — Economy + Plots</b><br>💰 Rebalanced the economy and added upgradeable plots with faster growth and better sell value.</div>
+  <div class="log-entry"><b>V2.1 — Bug Fixes</b><br>🛠️ Safer saves, safer crop loading, better auto-harvest handling, and ban-state rendering.</div>
+  <div class="log-entry"><b>Next</b><br>🚀 More crops, events, quests, pets, and global events coming soon.</div>
+</div>
+<div id="seedEquipPanel" class="panel" style="display:none !important;">
+  <h2>🎒 EQUIP SEEDS</h2>
+  <p style="opacity:.75">Equip a seed to make it your active planting seed. Unequip it to stop using it.</p>
+  <div id="seedEquipList"></div>
+</div>
+</div>
+</div>
 
 </div>
 
@@ -1258,21 +1891,62 @@ body {
     CELESTIAL:"#66e0ff", SECRET:"#ff5cff", GODLY:"#ffffff", ADMIN:"#ff3b30"
   };
 
+  // Chance that a seed appears on each 1-minute restock.
+  // Common Spud is handled separately and is always infinite.
+  const restockChanceByRarity = {
+    COMMON: 100,
+    UNCOMMON: 90,
+    RARE: 75,
+    EPIC: 60,
+    LEGENDARY: 40,
+    MYTHIC: 25,
+    DIVINE: 15,
+    CELESTIAL: 8,
+    SECRET: 4,
+    GODLY: 1,
+    ADMIN: 1
+  };
+
+  window.getSeedRestockChance = function(id){
+    if(id === "common") return 100;
+    const rarity = rarityMap[id] || "COMMON";
+    let chance = restockChanceByRarity[rarity] ?? 50;
+    try {
+      if(typeof getEventBonus === "function") chance += Number(getEventBonus().rare || 0);
+    } catch(e){}
+    return Math.min(100, chance);
+  };
+
   window.ALL_SHOP_SEEDS = ALL_SHOP_SEEDS;
   window.getSeedRarity = id => rarityMap[id] || "COMMON";
   window.getRarityColor = r => rarityColors[r] || "#bdbdbd";
 
   window.makeRandomShopStock = function(){
     const s = {};
-    ALL_SHOP_SEEDS.forEach(id => s[id] = Math.floor(Math.random()*5)+1);
+    ALL_SHOP_SEEDS.forEach(id => {
+      if(id === "common"){
+        s[id] = 999999;
+        return;
+      }
+
+      const chance = window.getSeedRestockChance(id);
+      const appears = (Math.random() * 100) < chance;
+
+      // If it appears, stock is 1–5. If it misses the roll, it is sold out.
+      s[id] = appears ? (Math.floor(Math.random()*5)+1) : 0;
+    });
     return s;
   };
 
   window.getShopStock = function(type){
+    if(type === "common") return Infinity;
     if(typeof game === "undefined") return 0;
     game.shopStock = game.shopStock || window.makeRandomShopStock();
     if(game.shopStock[type] === undefined){
-      game.shopStock[type] = Math.floor(Math.random()*5)+1;
+      const chance = window.getSeedRestockChance(type);
+      game.shopStock[type] = (Math.random()*100 < chance)
+        ? Math.floor(Math.random()*5)+1
+        : 0;
     }
     return Math.max(0, Math.min(5, Number(game.shopStock[type] || 0)));
   };
@@ -1505,7 +2179,33 @@ let game = {
         diamond:false
     },
 
-    banned:false
+    banned:false,
+
+    stats:{
+      harvested:0,
+      planted:0,
+      moneyEarned:0,
+      seedsBought:0,
+      mutations:0,
+      questsDone:0,
+      playSeconds:0
+    },
+
+    quests:[],
+    dailyLastClaim:0,
+    dailyStreak:0,
+    pets:{sprout:false,golden:false,void:false},
+    equippedPet:null,
+    rebirths:0,
+    achievements:{},
+    weather:{type:"clear", endsAt:0},
+    activeEvent:{type:null, endsAt:0},
+    activeFarm:0,
+    caveUnlocked:false,
+    farms:[
+      Array(12).fill(null),
+      Array(12).fill(null)
+    ]
 
 };
 
@@ -1589,6 +2289,8 @@ function render() {
     renderShop();
     renderLimitedButtons();
     renderPlotUpgrades();
+    if(typeof renderBigSystems === "function") renderBigSystems();
+    if(typeof renderQuickEquip === "function") renderQuickEquip();
 
 }
 
@@ -1646,11 +2348,14 @@ function renderGarden() {
             if(plot.ready) {
 
                 const bonus = 1 + (plotLevel * 0.10);
-                const payout = Math.floor(crop.sell * bonus);
+                const globalMult = (typeof getTotalSellMultiplier === "function") ? getTotalSellMultiplier() : 1;
+                const mutationMult = Number(plot.mutationMult || 1);
+                const payout = Math.floor(crop.sell * bonus * globalMult * mutationMult);
 
                 text.innerHTML =
                     `🥔 READY<br>+$${payout.toLocaleString()}<br>
-                     <span style="color:#ffd54f;">+${plotLevel * 10}% PLOT BONUS</span>`;
+                     <span style="color:#ffd54f;">+${plotLevel * 10}% PLOT BONUS</span>
+                     ${plot.mutation ? `<br><span style="color:#ff66ff;">${plot.mutation} x${plot.mutationMult}</span>` : ""}`;
 
                 text.style.color = "#7cff7c";
                 div.onclick = () => harvest(index);
@@ -1706,6 +2411,7 @@ function plant(index) {
     const plotLevel = Number(game.plotLevels[index] || 0);
 
     let grow = crop.grow;
+    if(typeof getGrowthMultiplier === "function") grow *= getGrowthMultiplier();
 
     if(game.upgrades.speed) grow *= .85;
     if(game.upgrades.sprinkler) grow *= .8;
@@ -1714,11 +2420,17 @@ function plant(index) {
     grow *= Math.max(.45, 1 - (plotLevel * .07));
 
     game.seeds[selected]--;
+    if(game.stats) game.stats.planted = Number(game.stats.planted||0) + 1;
+
+    const mutation = (typeof rollMutation === "function") ? rollMutation() : null;
+    if(mutation && game.stats) game.stats.mutations = Number(game.stats.mutations||0) + 1;
 
     game.plots[index] = {
         type:selected,
         finish:Date.now() + Math.max(500, grow),
-        ready:false
+        ready:false,
+        mutation: mutation ? mutation.name : null,
+        mutationMult: mutation ? mutation.mult : 1
     };
 
     saveGame();
@@ -1748,7 +2460,14 @@ function harvest(index) {
     const plotLevel = Number(game.plotLevels[index] || 0);
     const payoutMultiplier = 1 + (plotLevel * 0.10);
 
-    game.cash += Math.floor(crop.sell * payoutMultiplier);
+    const globalMult = (typeof getTotalSellMultiplier === "function") ? getTotalSellMultiplier() : 1;
+    const mutationMult = Number(plot.mutationMult || 1);
+    const earned = Math.floor(crop.sell * payoutMultiplier * globalMult * mutationMult);
+    game.cash += earned;
+    if(game.stats){
+      game.stats.harvested = Number(game.stats.harvested||0) + 1;
+      game.stats.moneyEarned = Number(game.stats.moneyEarned||0) + earned;
+    }
 
     /* Level is based on lifetime cash earned, with a gentler progression. */
     game.level = Math.max(
@@ -1775,10 +2494,12 @@ function renderShop() {
         if(crop.limited && !game.limited[id]) return;
 
         const stock = getShopStock(id);
+        const infiniteStock = id === "common";
         const owned = Number(game.seeds[id] || 0);
         const equipped = game.selected === id || game.equippedSeed === id;
         const rarity = getSeedRarity(id);
         const rarityColor = getRarityColor(rarity);
+        const restockChance = getSeedRestockChance(id);
 
         const row = document.createElement("div");
         row.className = "shop-item";
@@ -1847,10 +2568,13 @@ function renderShop() {
                 // Only charge the player after stock was successfully reserved.
                 game.cash -= crop.price;
                 game.seeds[id] = Number(game.seeds[id] || 0) + 1;
+                if(game.stats) game.stats.seedsBought = Number(game.stats.seedsBought||0) + 1;
                 game.selected = id;
                 game.equippedSeed = id;
                 game.shopStock = game.shopStock || {};
-                game.shopStock[id] = Math.max(0, Number(newStock || 0));
+                if(id !== "common"){
+                    game.shopStock[id] = Math.max(0, Number(newStock || 0));
+                }
 
                 saveGame();
                 render();
@@ -2444,6 +3168,8 @@ if(savedUsername) {
 ========================================== */
 
 function saveGame() {
+    if(game.farms && Array.isArray(game.farms)) game.farms[game.activeFarm || 0] = game.plots;
+
 
     localStorage.setItem(
         "potatoGame",
@@ -2944,6 +3670,358 @@ window.EXTRA_POTATO_SEEDS = {
   setInterval(autoRestockTick, 5000);
   updateCountdown();
 })();
+</script>
+
+
+<script>
+/* ===== V3.0 QUESTS / EVENTS / PETS / REBIRTH / STATS ===== */
+(function(){
+  const QUEST_POOL = [
+    {id:"harvest10", text:"Harvest 10 potatoes", stat:"harvested", goal:10, reward:500},
+    {id:"harvest50", text:"Harvest 50 potatoes", stat:"harvested", goal:50, reward:5000},
+    {id:"plant25", text:"Plant 25 seeds", stat:"planted", goal:25, reward:1500},
+    {id:"buy10", text:"Buy 10 seeds", stat:"seedsBought", goal:10, reward:3000},
+    {id:"earn100k", text:"Earn $100,000", stat:"moneyEarned", goal:100000, reward:25000},
+    {id:"mutate1", text:"Discover 1 mutation", stat:"mutations", goal:1, reward:10000}
+  ];
+
+  const PETS = {
+    sprout:{name:"Sprout Buddy",price:5000,desc:"+10% growth speed",growth:.10,sell:0},
+    golden:{name:"Golden Tater",price:100000,desc:"+15% sell value",growth:0,sell:.15},
+    void:{name:"Voidling",price:5000000,desc:"+25% sell value & +10% speed",growth:.10,sell:.25}
+  };
+
+  const WEATHER = {
+    clear:{name:"☀️ Clear",speed:0,sell:0,mutation:0},
+    rain:{name:"🌧️ Rain",speed:.20,sell:0,mutation:.01},
+    rainbow:{name:"🌈 Rainbow",speed:.10,sell:.10,mutation:.05},
+    heat:{name:"🔥 Heatwave",speed:-.10,sell:.20,mutation:0}
+  };
+
+  const EVENTS = {
+    none:{name:"No server event",sell:0,rare:0},
+    double:{name:"💰 2x Sell Event",sell:1,rare:0},
+    rare:{name:"✨ Rare Seed Surge",sell:0,rare:20},
+    potatoRain:{name:"🥔 Potato Rain",sell:.25,rare:10}
+  };
+
+  window.ensureBigSystems = function(){
+    game.stats = Object.assign({harvested:0,planted:0,moneyEarned:0,seedsBought:0,mutations:0,questsDone:0,playSeconds:0}, game.stats||{});
+    game.quests = Array.isArray(game.quests) ? game.quests : [];
+    game.pets = Object.assign({sprout:false,golden:false,void:false}, game.pets||{});
+    game.achievements = game.achievements || {};
+    game.weather = Object.assign({type:"clear",endsAt:0}, game.weather||{});
+    game.activeEvent = Object.assign({type:null,endsAt:0}, game.activeEvent||{});
+    game.rebirths = Number(game.rebirths||0);
+    game.dailyLastClaim = Number(game.dailyLastClaim||0);
+    game.dailyStreak = Number(game.dailyStreak||0);
+    game.activeFarm = Number(game.activeFarm||0);
+    game.caveUnlocked = !!game.caveUnlocked;
+
+    if(!Array.isArray(game.farms) || game.farms.length < 2){
+      const current = Array.isArray(game.plots) ? game.plots : Array(12).fill(null);
+      game.farms = [current, Array(12).fill(null)];
+    }
+    if(!Array.isArray(game.farms[0])) game.farms[0] = Array(12).fill(null);
+    if(!Array.isArray(game.farms[1])) game.farms[1] = Array(12).fill(null);
+    game.plots = game.farms[game.activeFarm] || game.farms[0];
+
+    if(game.quests.length === 0){
+      game.quests = QUEST_POOL.slice(0,3).map(q=>({...q,base:Number(game.stats[q.stat]||0),claimed:false}));
+    }
+  };
+
+  window.getPetBonus = function(){
+    const p = PETS[game.equippedPet];
+    return p || {growth:0,sell:0};
+  };
+
+  window.getWeatherBonus = function(){
+    if(Date.now() >= Number(game.weather.endsAt||0)){
+      game.weather = {type:"clear",endsAt:0};
+    }
+    return WEATHER[game.weather.type] || WEATHER.clear;
+  };
+
+  window.getEventBonus = function(){
+    if(Date.now() >= Number(game.activeEvent.endsAt||0)){
+      game.activeEvent = {type:null,endsAt:0};
+    }
+    return EVENTS[game.activeEvent.type] || EVENTS.none;
+  };
+
+  window.getTotalSellMultiplier = function(){
+    const pet = getPetBonus();
+    const weather = getWeatherBonus();
+    const event = getEventBonus();
+    return (1 + pet.sell + weather.sell + event.sell + (game.rebirths*.20));
+  };
+
+  window.getGrowthMultiplier = function(){
+    const pet = getPetBonus();
+    const weather = getWeatherBonus();
+    return Math.max(.35, 1 - pet.growth - Math.max(0,weather.speed) + Math.max(0,-weather.speed));
+  };
+
+  window.rollMutation = function(){
+    const weather = getWeatherBonus();
+    const chance = .02 + weather.mutation;
+    if(Math.random() >= chance) return null;
+    const pool = [
+      {name:"✨ SHINY",mult:1.5},
+      {name:"🌟 GOLDEN",mult:2},
+      {name:"🌈 RAINBOW",mult:3},
+      {name:"🧬 GLITCHED",mult:5},
+      {name:"🦣 GIANT",mult:8}
+    ];
+    const r = Math.random();
+    if(r<.45) return pool[0];
+    if(r<.72) return pool[1];
+    if(r<.88) return pool[2];
+    if(r<.97) return pool[3];
+    return pool[4];
+  };
+
+  window.generateQuest = function(){
+    const q = QUEST_POOL[Math.floor(Math.random()*QUEST_POOL.length)];
+    return {...q,base:Number(game.stats[q.stat]||0),claimed:false};
+  };
+
+  window.claimQuest = function(i){
+    const q = game.quests[i];
+    if(!q || q.claimed) return;
+    const progress = Number(game.stats[q.stat]||0) - Number(q.base||0);
+    if(progress < q.goal) return;
+    game.cash += q.reward;
+    game.stats.questsDone++;
+    game.quests[i] = generateQuest();
+    saveGame(); render();
+  };
+
+  window.renderQuests = function(){
+    const el = document.getElementById("questList");
+    if(!el) return;
+    ensureBigSystems();
+    el.innerHTML = game.quests.map((q,i)=>{
+      const p = Math.max(0,Number(game.stats[q.stat]||0)-Number(q.base||0));
+      const pct = Math.min(100,Math.floor((p/q.goal)*100));
+      return `<div class="feature-card"><b>${q.text}</b><br>${Math.min(p,q.goal).toLocaleString()} / ${q.goal.toLocaleString()}<br>Reward: $${q.reward.toLocaleString()}
+      <div class="mini-progress"><div style="width:${pct}%"></div></div>
+      <button class="btn ${p>=q.goal?'green-btn':''}" onclick="claimQuest(${i})" ${p<q.goal?'disabled':''}>${p>=q.goal?'CLAIM':'IN PROGRESS'}</button></div>`;
+    }).join("");
+  };
+
+  window.claimDailyReward = function(){
+    ensureBigSystems();
+    const now = Date.now(), day=86400000;
+    if(now - game.dailyLastClaim < day) return;
+    if(game.dailyLastClaim && now-game.dailyLastClaim < day*2) game.dailyStreak++;
+    else game.dailyStreak=1;
+    game.dailyLastClaim=now;
+    const reward = 1000 * game.dailyStreak;
+    game.cash += reward;
+    saveGame(); render();
+    alert(`🎁 Daily reward: $${reward.toLocaleString()}! Streak ${game.dailyStreak}`);
+  };
+
+  window.renderDaily = function(){
+    const el=document.getElementById("dailyRewardBox"); if(!el) return;
+    const left=Math.max(0,86400000-(Date.now()-Number(game.dailyLastClaim||0)));
+    const ready=left<=0;
+    const hrs=Math.floor(left/3600000), mins=Math.floor((left%3600000)/60000);
+    el.innerHTML=`🔥 Streak: <b>${game.dailyStreak||0}</b><br>Next reward: <b>$${((game.dailyStreak||0)+1)*1000}</b><br><br>
+    <button class="btn gold-btn" onclick="claimDailyReward()" ${ready?'':'disabled'}>${ready?'🎁 CLAIM DAILY':`⏳ ${hrs}h ${mins}m`}</button>`;
+  };
+
+  window.buyPet = function(id){
+    const p=PETS[id]; if(!p || game.pets[id]) return;
+    if(game.cash<p.price){alert("❌ Not enough cash!");return;}
+    game.cash-=p.price; game.pets[id]=true; game.equippedPet=id;
+    saveGame(); render();
+  };
+
+  window.equipPet = function(id){
+    if(!game.pets[id]) return;
+    game.equippedPet = game.equippedPet===id ? null : id;
+    saveGame(); render();
+  };
+
+  window.renderPets = function(){
+    const el=document.getElementById("petList"); if(!el) return;
+    el.innerHTML=Object.entries(PETS).map(([id,p])=>`<div class="pet-card">
+      <div><b>${p.name}</b><br><span style="font-size:5px">${p.desc}<br>$${p.price.toLocaleString()}</span></div>
+      ${game.pets[id] ? `<button class="btn ${game.equippedPet===id?'green-btn':''}" onclick="equipPet('${id}')">${game.equippedPet===id?'EQUIPPED':'EQUIP'}</button>` :
+      `<button class="btn" onclick="buyPet('${id}')">BUY</button>`}
+    </div>`).join("");
+  };
+
+  const ACHIEVEMENTS = [
+    {id:"first",name:"First Harvest",test:g=>g.stats.harvested>=1},
+    {id:"hundred",name:"100 Harvests",test:g=>g.stats.harvested>=100},
+    {id:"million",name:"Millionaire",test:g=>g.cash>=1000000 || g.stats.moneyEarned>=1000000},
+    {id:"mutant",name:"Mutation Hunter",test:g=>g.stats.mutations>=1},
+    {id:"quester",name:"Quest Master",test:g=>g.stats.questsDone>=10},
+    {id:"reborn",name:"Reborn Spud",test:g=>g.rebirths>=1},
+    {id:"cave",name:"Cave Farmer",test:g=>g.caveUnlocked},
+    {id:"pet",name:"Pet Owner",test:g=>Object.values(g.pets||{}).some(Boolean)}
+  ];
+
+  window.updateAchievements = function(){
+    ACHIEVEMENTS.forEach(a=>{ if(a.test(game)) game.achievements[a.id]=true; });
+  };
+
+  window.renderAchievements = function(){
+    const el=document.getElementById("achievementList"); if(!el)return;
+    updateAchievements();
+    el.innerHTML=ACHIEVEMENTS.map(a=>`<div class="feature-card achievement ${game.achievements[a.id]?'unlocked':'locked'}">
+      ${game.achievements[a.id]?'🏆':'🔒'} <b>${a.name}</b>
+    </div>`).join("");
+  };
+
+  window.getPlayerTitle = function(){
+    const h=game.stats.harvested||0, r=game.rebirths||0;
+    if(r>=5) return "🌌 Eternal Tater";
+    if(r>=1) return "♻️ Reborn Spud";
+    if(h>=1000) return "👑 Potato King";
+    if(h>=250) return "💎 Tater Baron";
+    if(h>=50) return "🌟 Spud Farmer";
+    if(h>=10) return "🥔 Potato Picker";
+    return "🌱 Spud Rookie";
+  };
+
+  window.renderStats = function(){
+    const el=document.getElementById("statsList"); if(!el)return;
+    const s=game.stats;
+    const rows=[
+      ["🥔 Harvested",s.harvested],["🌱 Planted",s.planted],["💰 Earned","$"+Math.floor(s.moneyEarned).toLocaleString()],
+      ["🛒 Seeds Bought",s.seedsBought],["🧬 Mutations",s.mutations],["📋 Quests",s.questsDone],
+      ["♻️ Rebirths",game.rebirths],["🐾 Pet",game.equippedPet?PETS[game.equippedPet].name:"None"]
+    ];
+    el.innerHTML=rows.map(([a,b])=>`<div class="stat-box">${a}<br><b>${b}</b></div>`).join("");
+    const w=getWeatherBonus(), e=getEventBonus();
+    document.getElementById("weatherBox").innerHTML=`🌦️ WEATHER: <b>${w.name}</b>`;
+    document.getElementById("eventBox").innerHTML=`🌎 EVENT: <b>${e.name}</b>`;
+  };
+
+  window.doRebirth = function(){
+    if(game.cash<1000000){alert("❌ You need $1,000,000 to rebirth!");return;}
+    if(!confirm("♻️ Rebirth? This resets cash, seeds, fields, and plot upgrades for +20% permanent sell value.")) return;
+    game.rebirths++;
+    game.cash=100;
+    Object.keys(game.seeds).forEach(k=>game.seeds[k]=0);
+    game.seeds.common=5;
+    game.farms=[Array(12).fill(null),Array(12).fill(null)];
+    game.activeFarm=0; game.plots=game.farms[0];
+    game.plotLevels=Array(12).fill(0);
+    game.caveUnlocked=false;
+    saveGame(); render();
+  };
+
+  window.switchFarm = function(i){
+    ensureBigSystems();
+    if(i===1 && !game.caveUnlocked){
+      if(game.cash<250000){alert("🕳️ Cave Farm unlock costs $250,000!");return;}
+      if(!confirm("Unlock Cave Farm for $250,000?")) return;
+      game.cash-=250000; game.caveUnlocked=true;
+    }
+    game.activeFarm=i;
+    game.plots=game.farms[i];
+    saveGame(); render();
+  };
+
+  window.randomizeWeather = function(force){
+    const types=["clear","rain","rainbow","heat"];
+    const type=force || types[Math.floor(Math.random()*types.length)];
+    game.weather={type,endsAt:Date.now()+120000};
+    saveGame(); render();
+  };
+
+  window.startAdminEvent = function(type){
+    game.activeEvent={type,endsAt:Date.now()+120000};
+    if(type==="rain") randomizeWeather("rain");
+    saveGame(); render();
+  };
+
+  window.renderBigSystems = function(){
+    ensureBigSystems();
+    updateAchievements();
+    renderQuests(); renderDaily(); renderPets(); renderAchievements(); renderStats();
+    const title=document.getElementById("playerTitle"); if(title) title.textContent=getPlayerTitle();
+    const wh=document.getElementById("weatherHud"); if(wh) wh.textContent=getWeatherBonus().name;
+    const rc=document.getElementById("rebirthCount"); if(rc) rc.textContent=game.rebirths;
+    const rb=document.getElementById("rebirthBonus"); if(rb) rb.textContent=`+${game.rebirths*20}%`;
+    const fi=document.getElementById("farmInfo"); if(fi) fi.textContent=game.activeFarm===1?"🕳️ Cave Farm":"🌾 Main Farm";
+    const caveBtn=document.getElementById("caveFarmBtn"); if(caveBtn) caveBtn.textContent=game.caveUnlocked?"🕳️ CAVE FARM":"🔒 CAVE FARM ($250K)";
+  };
+
+  setInterval(()=>{ 
+    if(typeof game!=="undefined"){ game.stats.playSeconds=(game.stats.playSeconds||0)+1; }
+  },1000);
+  setInterval(()=>{ if(typeof render==="function") render(); },5000);
+  setInterval(()=>{ if(typeof game!=="undefined" && (!game.weather.endsAt || Date.now()>game.weather.endsAt)) randomizeWeather(); },120000);
+  if(typeof game !== "undefined"){
+    ensureBigSystems();
+    if(typeof render === "function") render();
+  }
+})();
+</script>
+
+CAVE FARM":"🔒 CAVE FARM ($250K)";
+  };
+
+  setInterval(()=>{ 
+    if(typeof game!=="undefined"){ game.stats.playSeconds=(game.stats.playSeconds||0)+1; }
+  },1000);
+  setInterval(()=>{ if(typeof render==="function") render(); },5000);
+  setInterval(()=>{ if(typeof game!=="undefined" && (!game.weather.endsAt || Date.now()>game.weather.endsAt)) randomizeWeather(); },120000);
+  if(typeof game !== "undefined"){
+    ensureBigSystems();
+    if(typeof render === "function") render();
+  }
+})();
+</script>
+
+
+<script>
+/* ===== V3.2 QUICK EQUIP RAIL ===== */
+window.renderQuickEquip = function(){
+  const box = document.getElementById("quickEquipList");
+  if(!box || typeof game === "undefined" || typeof crops === "undefined") return;
+
+  const owned = Object.entries(crops).filter(([id]) => Number(game.seeds?.[id] || 0) > 0);
+
+  if(!owned.length){
+    box.innerHTML = '<div style="font-size:5px;color:#888;padding:8px;text-align:center;">No seeds owned.<br>Buy some in the shop!</div>';
+    return;
+  }
+
+  box.innerHTML = owned.map(([id,crop]) => {
+    const count = Number(game.seeds[id] || 0);
+    const active = game.selected === id;
+    const locked = crop.limited && !game.limited?.[id];
+
+    return `<div class="quick-equip-row ${active ? "active" : ""}">
+      <div class="quick-equip-name">
+        ${crop.name}
+        <div class="quick-equip-count">x${count}${locked ? " • 🔒 LIMITED OFF" : ""}</div>
+      </div>
+      <button class="btn ${active ? "green-btn" : ""}"
+        onclick="quickEquipSeed('${id}')"
+        ${locked ? "disabled" : ""}>
+        ${active ? "✓" : "EQUIP"}
+      </button>
+    </div>`;
+  }).join("");
+};
+
+window.quickEquipSeed = function(id){
+  if(!crops[id] || Number(game.seeds?.[id] || 0) <= 0) return;
+  if(crops[id].limited && !game.limited?.[id]) return;
+
+  game.selected = (game.selected === id) ? null : id;
+  if(typeof saveGame === "function") saveGame();
+  if(typeof render === "function") render();
+};
 </script>
 
 </body>
