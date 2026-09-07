@@ -1,337 +1,2782 @@
-<!-- ============================= -->
-<!-- POTATO GAME FIREBASE GLOBAL -->
-<!-- ============================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potatoes Search Tycoon</title>
 
-<script type="module">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-  getDatabase,
-  ref,
-  onValue,
-  set,
-  runTransaction
-}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-
-import {
-  getAuth,
-  signInAnonymously
-}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-
-/* =================================
-   🔥 PUT YOUR FIREBASE INFO HERE
-================================= */
-
-const firebaseConfig = {
-
-  apiKey: "PASTE_API_KEY_HERE",
-
-  authDomain:
-    "PASTE_PROJECT_ID.firebaseapp.com",
-
-  databaseURL:
-    "PASTE_DATABASE_URL_HERE",
-
-  projectId:
-    "PASTE_PROJECT_ID",
-
-  storageBucket:
-    "PASTE_PROJECT_ID.firebasestorage.app",
-
-  messagingSenderId:
-    "PASTE_SENDER_ID",
-
-  appId:
-    "PASTE_APP_ID"
-};
-
-
-/* =================================
-   START FIREBASE
-================================= */
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
-
-const auth = getAuth(app);
-
-let playerUID = null;
-
-
-/* =================================
-   LOGIN PLAYER
-================================= */
-
-async function connectFirebase(){
-
-  try{
-
-    const login =
-      await signInAnonymously(auth);
-
-    playerUID =
-      login.user.uid;
-
-    console.log(
-      "🔥 FIREBASE ONLINE"
-    );
-
-    listenForStock();
-
-  }
-
-  catch(error){
-
-    console.error(
-      "Firebase error:",
-      error
-    );
-
-  }
-
+* {
+    box-sizing: border-box;
+    font-family: "Press Start 2P", monospace;
+    image-rendering: pixelated;
 }
 
+body {
+    margin: 0;
+    padding: 14px;
+    min-height: 100vh;
+    color: #202124;
+    background:
+        radial-gradient(circle at top, #303030 0%, #111 35%, #050505 100%);
+}
 
-/* =================================
-   GLOBAL SHOP
-================================= */
+/* =========================
+   FRIEND GATE
+========================= */
 
-const stockRef =
-  ref(
-    db,
-    "global/shopStock"
-  );
+#site-friend-gate-lock {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background:
+        radial-gradient(circle, #252525, #050505 70%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
 
+.gate-potato {
+    font-size: 55px;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 15px #8b5a2b);
+}
 
-/* =================================
-   LISTEN FOR GLOBAL STOCK
-================================= */
+.gate-header {
+    color: #4285f4;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 20px;
+}
 
-function listenForStock(){
+.gate-input {
+    width: 280px;
+    max-width: 90vw;
+    padding: 13px;
+    background: #000;
+    color: #00ff66;
+    border: 3px solid #fff;
+    text-align: center;
+    font-size: 9px;
+    outline: none;
+}
 
-  onValue(
-    stockRef,
-    snapshot => {
+.gate-input:focus {
+    border-color: #4285f4;
+}
 
-      const stock =
-        snapshot.val();
+.gate-hint {
+    color: #777;
+    font-size: 6px;
+    margin-top: 14px;
+}
 
-      if(!stock){
-        return;
-      }
+/* =========================
+   GLOBAL
+========================= */
 
+.btn {
+    border: 2px solid #000;
+    background: #4285f4;
+    color: white;
+    padding: 8px 10px;
+    font-size: 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #000;
+}
 
-      console.log(
-        "🌎 Global stock:",
-        stock
-      );
+.btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #000;
+}
 
+.btn:hover {
+    filter: brightness(1.15);
+}
 
-      /*
-       Update your game's stock
-      */
+.dark-btn {
+    background: #111;
+    color: white;
+    border-color: #555;
+}
 
-      if(
-        typeof game !==
-        "undefined"
-      ){
+.green-btn {
+    background: #137333;
+}
 
-        game.shopStock =
-          stock;
+.red-btn {
+    background: #b31412;
+}
 
+.gold-btn {
+    background: #d89b00;
+    color: #111;
+}
 
-        if(
-          typeof saveGame ===
-          "function"
-        ){
+.page {
+    max-width: 680px;
+    margin: auto;
+}
 
-          saveGame();
+/* =========================
+   HEADER
+========================= */
 
-        }
+.header-card {
+    background: #111;
+    color: white;
+    border: 3px solid #333;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+}
 
+.logo {
+    text-align: center;
+    font-size: 27px;
+    letter-spacing: -3px;
+    margin-bottom: 10px;
+}
 
-        if(
-          typeof render ===
-          "function"
-        ){
+.logo span:nth-child(1) { color:#4285F4; }
+.logo span:nth-child(2) { color:#EA4335; }
+.logo span:nth-child(3) { color:#FBBC05; }
+.logo span:nth-child(4) { color:#4285F4; }
+.logo span:nth-child(5) { color:#34A853; }
+.logo span:nth-child(6) { color:#EA4335; }
+.logo span:nth-child(7) { color:#FBBC05; }
+.logo span:nth-child(8) { color:#4285F4; }
 
-          render();
+.subtitle {
+    text-align: center;
+    color: #aaa;
+    font-size: 6px;
+}
 
-        }
+/* =========================
+   ACCOUNT
+========================= */
 
-      }
+.account {
+    background: #f8f9fa;
+    border: 3px solid #333;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
 
+.account-title {
+    font-size: 7px;
+    color: #1a73e8;
+    margin-bottom: 8px;
+}
+
+.account input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 6px;
+    border: 1px solid #bbb;
+    font-size: 7px;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* =========================
+   GAME
+========================= */
+
+.cabinet {
+    position: relative;
+    background: #fff;
+    border: 4px solid #111;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.5),
+        inset 0 0 0 3px #ddd;
+}
+
+.player-title {
+    color: #1a73e8;
+    font-size: 8px;
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 9px;
+}
+
+.hud {
+    background: #111;
+    color: white;
+    border: 3px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 6px;
+    line-height: 2;
+}
+
+.hud span {
+    color: #7cff7c;
+}
+
+/* =========================
+   GARDEN
+========================= */
+
+.garden {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+    background: #181818;
+    border: 3px solid #000;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.plot {
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #5a3821;
+    border-radius: 8px;
+    background:
+        radial-gradient(circle, #80502c, #55331e);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+    color: white;
+    font-size: 5px;
+    text-align: center;
+    box-shadow: inset 0 -7px 0 rgba(0,0,0,.18);
+}
+
+.plot:hover {
+    transform: scale(1.035);
+}
+
+.plot.empty {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #694225,
+            #694225 6px,
+            #58351f 6px,
+            #58351f 12px
+        );
+}
+
+/* =========================
+   DETAILED 2D POTATO
+========================= */
+
+.potato-wrap {
+    position: relative;
+    width: 58px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.potato {
+    position: relative;
+    width: 43px;
+    height: 34px;
+    border: 3px solid #241408;
+    border-radius:
+        48% 58% 44% 55%
+        / 55% 45% 60% 48%;
+    background:
+        radial-gradient(circle at 30% 25%, #dca35b 0 9%, transparent 10%),
+        radial-gradient(circle at 70% 70%, #7b461c 0 8%, transparent 9%),
+        radial-gradient(circle at 55% 35%, #9b5b25 0 7%, transparent 8%),
+        linear-gradient(145deg,#d18a3c,#9a5a22);
+    box-shadow:
+        inset -5px -5px 0 rgba(60,25,5,.28),
+        inset 5px 4px 0 rgba(255,210,130,.28),
+        0 3px 0 rgba(0,0,0,.35);
+}
+
+/* potato eyes */
+.potato::before {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    left: 9px;
+    top: 10px;
+    border-radius: 50%;
+    background: #3b1d0b;
+    box-shadow:
+        19px 5px 0 #3b1d0b,
+        11px 13px 0 #3b1d0b;
+}
+
+/* potato highlight */
+.potato::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 4px;
+    left: 9px;
+    top: 5px;
+    border-radius: 50%;
+    background: rgba(255,235,180,.55);
+    transform: rotate(-20deg);
+}
+
+.potato-face {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-38%);
+    width: 30px;
+    height: 15px;
+}
+
+.face-eye {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #160b04;
+    border-radius: 50%;
+}
+
+.face-eye.left {
+    left: 3px;
+    top: 2px;
+}
+
+.face-eye.right {
+    right: 3px;
+    top: 2px;
+}
+
+.face-mouth {
+    position: absolute;
+    width: 9px;
+    height: 5px;
+    border-bottom: 2px solid #160b04;
+    border-radius: 50%;
+    left: 10px;
+    top: 5px;
+}
+
+/* =========================
+   RARITIES
+========================= */
+
+.potato.rare {
+    background:
+        radial-gradient(circle at 30% 25%,#a8ffff 0 10%,transparent 11%),
+        linear-gradient(145deg,#00e5ff,#087d91);
+    box-shadow:0 0 12px #00e5ff;
+}
+
+.potato.quantum {
+    background:
+        radial-gradient(circle at 25% 20%,#fff 0 7%,transparent 8%),
+        linear-gradient(145deg,#00ffcc,#008f75);
+    box-shadow:0 0 16px #00ffcc;
+}
+
+.potato.epic {
+    background:
+        radial-gradient(circle at 25% 20%,#f0aaff 0 8%,transparent 9%),
+        linear-gradient(145deg,#c12be0,#55116c);
+    box-shadow:0 0 15px #d94fff;
+}
+
+.potato.nebula {
+    background:
+        radial-gradient(circle at 25% 20%,#fff 0 5%,transparent 6%),
+        radial-gradient(circle at 70% 60%,#ff00cc 0 5%,transparent 6%),
+        linear-gradient(145deg,#6727e8,#19004f);
+    box-shadow:0 0 18px #8b42ff;
+}
+
+.potato.supernova {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 9%,transparent 10%),
+        linear-gradient(145deg,#fff700,#ff7b00);
+    box-shadow:0 0 22px #ffd000;
+}
+
+.potato.mythic {
+    background:
+        radial-gradient(circle at 30% 25%,#ffff99 0 7%,transparent 8%),
+        linear-gradient(145deg,#ff4d00,#9b1300);
+    box-shadow:0 0 18px #ff3500;
+}
+
+.potato.void {
+    background:
+        radial-gradient(circle at 35% 30%,#722cff 0 5%,transparent 6%),
+        linear-gradient(145deg,#242424,#020202);
+    box-shadow:0 0 20px #711fff;
+}
+
+.potato.ancient {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 7%,transparent 8%),
+        linear-gradient(145deg,#ffe44d,#b97900);
+    box-shadow:0 0 20px #ffd700;
+}
+
+.potato.infinity {
+    background:
+        linear-gradient(
+            45deg,
+            #ff2020,
+            #ffe600,
+            #20ff4c,
+            #00c8ff,
+            #842cff,
+            #ff20c8
+        );
+    box-shadow:0 0 25px white;
+}
+
+.potato.bedrock {
+    background:
+        radial-gradient(circle at 25% 20%,#888 0 8%,transparent 9%),
+        linear-gradient(145deg,#666,#222);
+    box-shadow:inset -5px -5px #111;
+}
+
+.potato.matrix {
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #001500,
+            #001500 4px,
+            #00a000 5px
+        );
+    border-color:#00ff44;
+    box-shadow:0 0 20px #00ff44;
+}
+
+.potato.golden {
+    background:
+        radial-gradient(circle at 25% 20%,white 0 8%,transparent 9%),
+        linear-gradient(145deg,#fff06a,#d89b00);
+    box-shadow:0 0 22px gold;
+}
+
+.potato.ghost {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.95),
+            rgba(180,240,255,.5)
+        );
+    border-color:#c9ffff;
+    box-shadow:0 0 22px #bfffff;
+}
+
+.potato.tree {
+    background:
+        linear-gradient(
+            145deg,
+            #41b94e,
+            #145c1b
+        );
+    border-color:#092f0d;
+    box-shadow:0 0 14px #31ff4c;
+}
+
+/* =========================
+   SHOP
+========================= */
+
+.panel {
+    background: #fff;
+    border: 3px solid #222;
+    border-radius: 9px;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+.panel h3 {
+    font-size: 8px;
+    text-align: center;
+    margin-top: 2px;
+}
+
+.shop-item {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    border-bottom:1px solid #ddd;
+    padding:9px 4px;
+    font-size:6px;
+    line-height:1.7;
+}
+
+.limited-label {
+    color:#d93025;
+    font-size:5px;
+}
+
+/* =========================
+   ADMIN
+========================= */
+
+.admin-area {
+    margin-top: 16px;
+    background:#111;
+    border:3px solid #333;
+    padding:10px;
+    border-radius:10px;
+}
+
+.admin-panel {
+    display:none;
+    margin-top:10px;
+    background:#f8f9fa;
+    color:#111;
+    border-radius:8px;
+    padding:10px;
+}
+
+.admin-title {
+    text-align:center;
+    color:#c5221f;
+    font-size:8px;
+    margin-bottom:10px;
+}
+
+.admin-grid {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:7px;
+}
+
+.admin-grid input,
+.admin-grid select {
+    width:100%;
+    padding:7px;
+    font-size:6px;
+}
+
+.admin-heading {
+    grid-column:span 2;
+    background:#111;
+    color:white;
+    padding:8px;
+    font-size:6px;
+    text-align:center;
+    margin-top:5px;
+}
+
+.toggle-on {
+    background:#137333 !important;
+}
+
+.toggle-off {
+    background:#555 !important;
+}
+
+/* =========================
+   BROADCAST
+========================= */
+
+#broadcast {
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    z-index:9998;
+    padding:14px;
+    background:#d93025;
+    color:white;
+    text-align:center;
+    font-size:7px;
+    border-bottom:4px solid #000;
+}
+
+/* =========================
+   BAN
+========================= */
+
+#banScreen {
+    display:none;
+    position:absolute;
+    inset:0;
+    z-index:100;
+    background:rgba(0,0,0,.97);
+    color:#ff3333;
+    border-radius:10px;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    text-align:center;
+    font-size:11px;
+    line-height:2;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:500px) {
+    .garden {
+        grid-template-columns:repeat(3,1fr);
     }
-  );
 
+    .admin-grid {
+        grid-template-columns:1fr;
+    }
+
+    .admin-heading {
+        grid-column:span 1;
+    }
+
+    .logo {
+        font-size:22px;
+    }
 }
 
+/* =========================
+   PLOT UPGRADES + ECONOMY UI
+========================= */
+.plot.upgraded {
+    border-color: #fbbc04;
+    box-shadow: inset 0 -7px 0 rgba(0,0,0,.18), 0 0 8px rgba(251,188,4,.45);
+}
+.plot-level {
+    position:absolute;
+    top:4px;
+    right:4px;
+    background:#111;
+    color:#ffd54f;
+    padding:3px 4px;
+    border:1px solid #ffd54f;
+    border-radius:3px;
+    font-size:4px;
+}
+.upgrade-note {
+    background:#111;
+    color:#fff;
+    border-radius:6px;
+    padding:8px;
+    margin-bottom:8px;
+    font-size:5px;
+    line-height:1.7;
+}
 
-/* =================================
-   BUY GLOBAL SEED
+</style>
 
-   Prevents 2 players from buying
-   the same last seed.
-================================= */
+<!-- GLOBAL MULTIPLAYER / SHARED STATE: Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, push, runTransaction } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-window.buyGlobalSeed =
-async function(seedName){
-
-  const seedRef =
-    ref(
-      db,
-      "global/shopStock/" +
-      seedName
-    );
-
-
-  const result =
-    await runTransaction(
-
-      seedRef,
-
-      stock => {
-
-        stock =
-          Number(stock || 0);
-
-
-        if(stock <= 0){
-
-          return;
-
-        }
-
-
-        return stock - 1;
-
-      }
-
-    );
-
-
-  if(!result.committed){
-
-    return {
-      success:false,
-      reason:"SOLD_OUT"
-    };
-
-  }
-
-
-  return {
-
-    success:true,
-
-    stock:
-      result.snapshot.val()
-
+  // IMPORTANT: Put your Firebase Web App config below and set enabled:true.
+  // GitHub Pages hosts the game; Firebase Realtime Database provides the shared global shop stock.
+  window.GLOBAL_FIREBASE_CONFIG = {
+    enabled: false, // Change to true AFTER pasting your real Firebase config.
+    apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "PASTE_YOUR_PROJECT",
+    storageBucket: "PASTE_YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
   };
 
-};
+  window.GlobalDB = { ready: false, app: null, db: null, auth: null, uid: null };
 
-
-/* =================================
-   🌎 ADMIN GLOBAL RESTOCK
-================================= */
-
-window.globalRestockSeeds =
-async function(){
-
-  const seeds = [
-
-    "common",
-    "rare",
-    "quantum",
-    "epic",
-    "nebula",
-    "supernova",
-    "mythic",
-    "void",
-    "ancient",
-    "infinity",
-    "bedrock",
-    "matrix",
-
-    "prism",
-    "glitch",
-    "cosmic",
-    "galaxy",
-
-    "infinity2",
-    "adminium",
-
-    "crystal",
-    "storm",
-    "lunar",
-    "solar",
-
-    "chaos",
-    "celestial",
-
-    "golden",
-    "ghost",
-    "tree",
-    "diamond"
-
-  ];
-
-
-  const newStock = {};
-
-
-  seeds.forEach(
-    seed => {
-
-      /*
-       RANDOM 1 - 5 STOCK
-      */
-
-      newStock[seed] =
-        Math.floor(
-          Math.random() * 5
-        ) + 1;
-
+  async function startGlobal() {
+    const c = window.GLOBAL_FIREBASE_CONFIG;
+    if (!c || !c.enabled || !c.apiKey || c.apiKey.startsWith("PASTE_")) {
+      console.log("[Global] Firebase is disabled; using local save mode.");
+      return;
     }
-  );
-
-
-  await set(
-    stockRef,
-    newStock
-  );
-
-
-  console.log(
-    "🌎 GLOBAL RESTOCK COMPLETE!"
-  );
-
-
-  if(
-    typeof showGlobalToast ===
-    "function"
-  ){
-
-    showGlobalToast(
-      "🌎 GLOBAL RESTOCK! 1-5 STOCK!"
-    );
-
+    try {
+      const app = initializeApp(c);
+      const db = getDatabase(app);
+      const auth = getAuth(app);
+      const credential = await signInAnonymously(auth);
+      window.GlobalDB = { ready: true, app, db, auth, uid: credential.user.uid };
+      window.dispatchEvent(new CustomEvent("global-ready"));
+    } catch (err) {
+      console.error("[Global] Firebase setup failed:", err);
+      window.dispatchEvent(new CustomEvent("global-error", { detail: err }));
+    }
   }
 
+  window.GlobalAPI = {
+    async restockAll(payload) {
+      if (!window.GlobalDB.ready) return false;
+      await set(ref(window.GlobalDB.db, "global/restock"), {
+        ...payload,
+        at: Date.now(),
+        by: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async broadcast(message) {
+      if (!window.GlobalDB.ready) return false;
+      await push(ref(window.GlobalDB.db, "global/broadcasts"), {
+        message, at: Date.now(), by: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async setLimited(type, enabled) {
+      if (!window.GlobalDB.ready) return false;
+      await update(ref(window.GlobalDB.db, "global/limited"), {
+        [type]: !!enabled
+      });
+      return true;
+    },
+    async setShopStock(stock) {
+      if (!window.GlobalDB.ready) return false;
+      const clean = {};
+      Object.entries(stock || {}).forEach(([k,v]) => {
+        if (window.ALL_SHOP_SEEDS?.includes(k)) {
+          clean[k] = Math.max(0, Math.min(5, Number(v) || 0));
+        }
+      });
+      await set(ref(window.GlobalDB.db, "global/shopStock"), clean);
+      await set(ref(window.GlobalDB.db, "global/shopMeta"), {
+        updatedAt: Date.now(),
+        updatedBy: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async ensureShopStock() {
+      if (!window.GlobalDB.ready) return false;
+      const stockRef = ref(window.GlobalDB.db, "global/shopStock");
+      const defaults = window.makeRandomShopStock ? window.makeRandomShopStock() : {};
+      await runTransaction(stockRef, current => {
+        if (current && typeof current === "object" && Object.keys(current).length) {
+          const merged = {...current};
+          for (const [k,v] of Object.entries(defaults)) {
+            if (merged[k] === undefined) merged[k] = v;
+          }
+          return merged;
+        }
+        return defaults;
+      });
+      return true;
+    },
+    async buySeedFromGlobalStock(type) {
+      if (!window.GlobalDB.ready) return {ok:false, reason:"offline"};
+      const stockRef = ref(window.GlobalDB.db, `global/shopStock/${type}`);
+      let sawStock = 0;
+      const result = await runTransaction(stockRef, current => {
+        const n = Math.max(0, Number(current || 0));
+        sawStock = n;
+        if (n <= 0) return;
+        return n - 1;
+      });
+      if (!result.committed) {
+        return {ok:false, reason:"soldout", stock:sawStock};
+      }
+      return {ok:true, stock:Number(result.snapshot.val() || 0)};
+    },
+    listen() {
+      if (!window.GlobalDB.ready) return;
+      onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-restock", { detail: v }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/limited"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-limited", { detail: v }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/shopStock"), snap => {
+        const v = snap.val();
+        if (v) window.dispatchEvent(new CustomEvent("global-shop-stock", { detail: v || {} }));
+      });
+      onValue(ref(window.GlobalDB.db, "global/broadcasts"), snap => {
+        const all = snap.val() || {};
+        const entries = Object.values(all).sort((a,b) => (b.at || 0) - (a.at || 0));
+        if (entries[0]) window.dispatchEvent(new CustomEvent("global-broadcast", { detail: entries[0] }));
+      });
+    }
+  };
+
+  window.addEventListener("global-ready", async () => {
+    try { await window.GlobalAPI.ensureShopStock(); } catch(e) { console.warn("[Global] stock init failed", e); }
+    window.GlobalAPI.listen();
+  });
+  startGlobal();
+</script>
+
+
+<style>
+.log-entry{margin:10px 0;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.04);line-height:1.7}
+</style>
+
+
+<style>
+.seed-equip-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.04)}
+.seed-equip-row .seed-info{display:flex;align-items:center;gap:8px;min-width:0}
+.seed-equip-row button{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#171717;color:#fff;cursor:pointer}
+.seed-equip-row button.equipped{background:#234d2a;border-color:#61d978}
+.seed-equip-row button:disabled{opacity:.5;cursor:not-allowed}
+</style>
+
+
+<style>
+.rarity-badge{display:inline-block;padding:4px 7px;margin:4px 0;border-radius:6px;border:1px solid currentColor;font-size:8px;font-weight:bold;letter-spacing:.5px}
+.stock-badge{display:inline-block;margin-top:4px;padding:4px 7px;border-radius:6px;background:rgba(255,255,255,.07);font-size:8px}
+.shop-item button:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+
+<body>
+
+<div id="global-status" style="position:fixed;left:12px;bottom:12px;z-index:9998;padding:8px 11px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.72);font:10px 'Press Start 2P',monospace;color:#aaa;">
+  🌐 FIREBASE: NOT CONNECTED
+</div>
+
+
+<!-- FRIEND LOCK -->
+<div id="site-friend-gate-lock">
+
+    <div class="gate-potato">🥔</div>
+
+    <div class="gate-header">
+        🔒 POTATO SEARCH TYCOON
+        <br>
+        <span style="color:white;font-size:7px;">
+            FRIENDS ONLY SECURITY PORTAL
+        </span>
+    </div>
+
+    <input
+        id="gate-pass-field"
+        class="gate-input"
+        type="password"
+        placeholder="ENTER ACCESS CODE"
+    >
+
+    <button class="btn" onclick="verifyFriendGateCode()">
+        UNLOCK SITE
+    </button>
+
+    <div class="gate-hint">
+        Hint: Code is case-insensitive
+    </div>
+</div>
+
+<div id="broadcast"></div>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header-card">
+
+        <div class="logo">
+            <span>P</span><span>o</span><span>t</span><span>a</span>
+            <span>t</span><span>o</span><span>e</span><span>s</span>
+        </div>
+
+        <div class="subtitle">
+            🥔 SEARCH • PLANT • GROW • SELL • BECOME THE POTATO KING 🥔
+        </div>
+
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="account">
+
+        <div class="account-title">
+            ⚙️ WEBSITE ACCOUNT PORTAL
+        </div>
+
+        <input
+            id="username"
+            value="Player1"
+            placeholder="USERNAME"
+        >
+
+        <input
+            id="accountPassword"
+            type="password"
+            placeholder="ACCOUNT PASSWORD"
+        >
+
+        <button class="btn green-btn" onclick="saveAccount()">
+            💾 SAVE ACCOUNT
+        </button>
+
+    </div>
+
+    <!-- MENU -->
+    <div class="menu">
+
+        <button class="btn" onclick="togglePanel('shop')">
+            🛒 SEED SHOP
+        </button>
+
+        <button class="btn" onclick="togglePanel('upgrades')">
+            ⚡ UPGRADES
+        </button>
+
+        <button class="btn gold-btn" onclick="togglePanel('plotUpgrades')">
+            🌾 PLOT UPGRADES
+        </button>
+
+        <button class="btn dark-btn" onclick="saveGame()">
+            💾 SAVE GAME
+        </button>
+
+    </div>
+
+    <!-- GAME -->
+    <div class="cabinet">
+
+        <div id="banScreen">
+            🔨
+            <br>
+            YOU HAVE BEEN BANNED
+            <br>
+            BY THE ADMIN
+            <br><br>
+            <span style="font-size:6px;color:#777;">
+                Admin abuse activated.
+            </span>
+        </div>
+
+        <div class="player-title">
+            🕹️ PROFILE:
+            <span id="playerName">Player1</span>
+        </div>
+
+        <div class="hud">
+
+            💰 BALANCE:
+            $<span id="cash">100</span>
+
+            <br>
+
+            ⭐ LEVEL:
+            <span id="level">1</span>
+
+            <br>
+
+            🥔 SELECTED:
+            <span id="selectedSeed">Common Spud</span>
+
+            <br>
+
+            🌱 SEEDS:
+            <span id="seedCount">5</span>
+
+        </div>
+
+        <div id="garden" class="garden"></div>
+
+        <!-- SHOP -->
+        <div id="shop" class="panel" style="display:none;">
+
+            <h3>🥔 POTATO SEED MARKET</h3>
+
+            <div style="margin:8px 0;color:#ffd54f;font-size:10px;">📦 Every shop seed has finite stock: 1–5 per restock.</div>
+<div id="shopItems"></div>
+
+        </div>
+
+        <!-- UPGRADES -->
+        <div id="upgrades" class="panel" style="display:none;">
+
+            <h3>⚙️ EQUIPMENT UPGRADES</h3>
+
+            <div class="shop-item">
+                👟 Fertilizer Boots
+                <button class="btn" onclick="buyUpgrade('speed')">
+                    $50
+                </button>
+            </div>
+
+            <div class="shop-item">
+                🤖 Robo-Harvester
+                <button class="btn" onclick="buyUpgrade('auto')">
+                    $250
+                </button>
+            </div>
+
+            <div class="shop-item">
+                💧 Automated Sprinkler
+                <button class="btn" onclick="buyUpgrade('sprinkler')">
+                    $400
+                </button>
+            </div>
+
+        </div>
+
+        <div id="plotUpgrades" class="panel" style="display:none;">
+            <h3>🌾 PLOT UPGRADES</h3>
+            <div class="upgrade-note">
+                Upgrade individual plots to make them faster and more valuable.
+                Click a plot, then choose an upgrade below.
+            </div>
+            <div id="plotUpgradeItems"></div>
+        </div>
+
+    </div>
+
+    <!-- ADMIN -->
+    <div class="admin-area">
+
+        <button
+            class="btn red-btn"
+            onclick="openAdmin()"
+        >
+            🔒 ADMIN TERMINAL
+        </button>
+
+        
+<button class="menu-btn" onclick="togglePanel('updateLog')">📜 UPDATE LOG</button>
+<div id="updateLog" class="panel" style="display:none;">
+  <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V2.3 — Firebase Fix</b><br>🔥 Added transaction-safe global stock purchases so two players cannot buy the same last seed.</div>
+<div class="log-entry"><b>V2.3 — Shop Bug Fixes</b><br>🛒 Fixed helper load order, missing crop definitions, old-save stock repair, and safer purchase charging.</div>
+<div class="log-entry"><b>V2.2 — Shop Fix</b><br>🛒 Fixed finite stock, sold-out buttons, purchases, equip/unequip, and Firebase stock syncing.</div>
+<div class="log-entry"><b>V2.2 — Rarities</b><br>✨ Added rarity labels from Common through Godly/Admin.</div>
+<div class="log-entry"><b>V2.2 — New Seeds</b><br>🥔 Added Crystal, Storm, Lunar, Solar, Chaos, and Celestial potatoes.</div>
+  <div class="log-entry"><b>V2.0 — Global Update</b><br>🌎 Added Firebase global systems, global restocks, broadcasts, and limited-seed syncing.</div>
+  <div class="log-entry"><b>V2.1 — Bigger Potato Update</b><br>🌈 Added Prism, Glitch, Cosmic, Galaxy, Infinity X, and Adminium potatoes.</div>
+  <div class="log-entry"><b>V2.1 — Economy + Plots</b><br>💰 Rebalanced the economy and added upgradeable plots with faster growth and better sell value.</div>
+  <div class="log-entry"><b>V2.1 — Bug Fixes</b><br>🛠️ Safer saves, safer crop loading, better auto-harvest handling, and ban-state rendering.</div>
+  <div class="log-entry"><b>Next</b><br>🚀 More crops, events, quests, pets, and global events coming soon.</div>
+</div>
+
+
+<button class="menu-btn" onclick="togglePanel('seedEquipPanel')">🎒 EQUIP SEEDS</button>
+<div id="seedEquipPanel" class="panel" style="display:none;">
+  <h2>🎒 EQUIP SEEDS</h2>
+  <p style="opacity:.75">Equip a seed to make it your active planting seed. Unequip it to stop using it.</p>
+  <div id="seedEquipList"></div>
+</div>
+
+<div id="adminPanel" class="admin-panel">
+
+            <div class="admin-title">
+                👑 ADMIN CONTROL CENTER
+            </div>
+
+            <input
+                id="adminPassword"
+                type="password"
+                placeholder="ENTER ADMIN CODE"
+                style="width:100%;padding:8px;font-size:7px;"
+            >
+
+            <br><br>
+
+            <button class="btn" onclick="loginAdmin()">
+                BYPASS
+            </button>
+
+            <div id="adminControls" style="display:none;">
+
+                <div class="admin-grid">
+
+                    <button class="btn" onclick="adminCash()">
+                        💰 +$50K
+                    </button>
+
+                    <button class="btn" onclick="adminSeeds()">
+                        🥔 +100 ALL SEEDS
+                    </button>
+
+                    <button class="btn green-btn" onclick="adminRestock()" onclick="globalRestockEveryone()">
+                        🌱 RESTOCK EVERYONE
+                    </button>
+
+                    <button class="btn" onclick="adminGrow()">
+                        ⚡ INSTA-GROW
+                    </button>
+
+                    <button class="btn" onclick="adminRain()">
+                        🌧️ RAINSTORM
+                    </button>
+
+                    <button class="btn" onclick="adminBot()">
+                        🤖 ROBO-BOT
+                    </button>
+
+                    <button class="btn red-btn" onclick="adminWipe()">
+                        💥 WIPE FIELD
+                    </button>
+
+                    <button class="btn red-btn" onclick="adminBan()">
+                        🔨 BAN / UNBAN
+                    </button>
+
+                    <button class="btn" onclick="resetGlobalShopStock()">🌎 RESTOCK SHOP GLOBALLY (1–5)</button>
+<div class="admin-heading">
+                        ✨ LIMITED SEED TOGGLES
+                    </div>
+
+                    <button
+                        id="goldenToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('golden')"
+                    >
+                        🌟 GOLDEN: OFF
+                    </button>
+
+                    <button
+                        id="ghostToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('ghost')"
+                    >
+                        👻 GHOST: OFF
+                    </button>
+
+                    <button
+                        id="treeToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('tree')"
+                    >
+                        🎄 TREE ROOT: OFF
+                    </button>
+
+                    <button
+                        id="diamondToggle"
+                        class="btn toggle-off"
+                        onclick="toggleLimited('diamond')"
+                    >
+                        💎 DIAMOND: OFF
+                    </button>
+
+                    <div class="admin-heading">
+                        📢 GLOBAL SERVER MESSAGE
+                    </div>
+
+                    <input
+                        id="broadcastMessage"
+                        value="🥔 POTATO SERVER EVENT!"
+                        style="grid-column:span 2;"
+                    >
+
+                    <button
+                        class="btn"
+                        style="grid-column:span 2;"
+                        onclick="sendBroadcast()"
+                    >
+                        📢 BROADCAST TO EVERYONE
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+/* ===== SHOP HELPERS - LOAD BEFORE GAME ===== */
+(function(){
+  const ALL_SHOP_SEEDS = [
+    "common","rare","quantum","epic","nebula","supernova","mythic","void",
+    "ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy",
+    "infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial",
+    "golden","ghost","tree","diamond"
+  ];
+
+  const rarityMap = {
+    common:"COMMON", rare:"UNCOMMON", quantum:"RARE", epic:"EPIC", nebula:"EPIC",
+    supernova:"LEGENDARY", mythic:"MYTHIC", void:"MYTHIC", ancient:"DIVINE",
+    infinity:"DIVINE", bedrock:"CELESTIAL", matrix:"CELESTIAL", prism:"CELESTIAL",
+    glitch:"SECRET", cosmic:"SECRET", galaxy:"SECRET", infinity2:"SECRET",
+    adminium:"ADMIN", crystal:"CELESTIAL", storm:"SECRET", lunar:"SECRET",
+    solar:"SECRET", chaos:"SECRET", celestial:"GODLY", golden:"LEGENDARY",
+    ghost:"MYTHIC", tree:"MYTHIC", diamond:"DIVINE"
+  };
+
+  const rarityColors = {
+    COMMON:"#bdbdbd", UNCOMMON:"#78c850", RARE:"#4dabf7", EPIC:"#b66dff",
+    LEGENDARY:"#ffb300", MYTHIC:"#ff4d8d", DIVINE:"#fff176",
+    CELESTIAL:"#66e0ff", SECRET:"#ff5cff", GODLY:"#ffffff", ADMIN:"#ff3b30"
+  };
+
+  window.ALL_SHOP_SEEDS = ALL_SHOP_SEEDS;
+  window.getSeedRarity = id => rarityMap[id] || "COMMON";
+  window.getRarityColor = r => rarityColors[r] || "#bdbdbd";
+
+  window.makeRandomShopStock = function(){
+    const s = {};
+    ALL_SHOP_SEEDS.forEach(id => s[id] = Math.floor(Math.random()*5)+1);
+    return s;
+  };
+
+  window.getShopStock = function(type){
+    if(typeof game === "undefined") return 0;
+    game.shopStock = game.shopStock || window.makeRandomShopStock();
+    if(game.shopStock[type] === undefined){
+      game.shopStock[type] = Math.floor(Math.random()*5)+1;
+    }
+    return Math.max(0, Math.min(5, Number(game.shopStock[type] || 0)));
+  };
+})();
+</script>
+
+<script>
+
+/* ==========================================
+   CODES
+========================================== */
+
+const FRIEND_CODE = "miniboys5151";
+const ADMIN_CODE = "goofy4321";
+
+/* ==========================================
+   CROPS
+========================================== */
+
+const crops = {
+
+    common: {
+        name:"Common Spud",
+        price:5,
+        sell:12,
+        grow:5000,
+        className:"common"
+    },
+
+    rare: {
+        name:"Glitch Spud",
+        price:25,
+        sell:65,
+        grow:7000,
+        className:"rare"
+    },
+
+    quantum: {
+        name:"Quantum Spud",
+        price:100,
+        sell:275,
+        grow:9000,
+        className:"quantum"
+    },
+
+    epic: {
+        name:"Cosmic Tater",
+        price:350,
+        sell:950,
+        grow:12000,
+        className:"epic"
+    },
+
+    nebula: {
+        name:"Nebula Spud",
+        price:1000,
+        sell:3200,
+        grow:15000,
+        className:"nebula"
+    },
+
+    supernova: {
+        name:"Supernova Mash",
+        price:3500,
+        sell:12000,
+        grow:18000,
+        className:"supernova"
+    },
+
+    mythic: {
+        name:"Magma Masher",
+        price:14000,
+        sell:50000,
+        grow:22000,
+        className:"mythic"
+    },
+
+    void: {
+        name:"Void Root",
+        price:65000,
+        sell:280000,
+        grow:26000,
+        className:"void"
+    },
+
+    ancient: {
+        name:"Divine Roots",
+        price:325000,
+        sell:1400000,
+        grow:30000,
+        className:"ancient"
+    },
+
+    infinity: {
+        name:"Infinity Root",
+        price:1300000,
+        sell:6500000,
+        grow:35000,
+        className:"infinity"
+    },
+
+    bedrock: {
+        name:"Admin Bedrock",
+        price:5000000,
+        sell:25000000,
+        grow:40000,
+        className:"bedrock"
+    },
+
+    matrix: {
+        name:"Admin Matrix",
+        price:25000000,
+        sell:100000000,
+        grow:45000,
+        className:"matrix"
+    },
+    crystal: {name:"Crystal Spud",price:12000000000000,sell:150000000000000,grow:135000,className:"diamond"},
+    storm: {name:"Storm Potato",price:60000000000000,sell:800000000000000,grow:150000,className:"quantum"},
+    lunar: {name:"Lunar Spud",price:300000000000000,sell:4500000000000000,grow:170000,className:"ghost"},
+    solar: {name:"Solar Potato",price:1500000000000000,sell:25000000000000000,grow:190000,className:"supernova"},
+    chaos: {name:"Chaos Spud",price:8000000000000000,sell:150000000000000000,grow:220000,className:"void"},
+    celestial: {name:"Celestial Potato",price:50000000000000000,sell:1200000000000000000,grow:260000,className:"infinity"},
+
+
+    golden: {
+        name:"Golden Spud",
+        price:1000,
+        sell:6000,
+        grow:12000,
+        className:"golden",
+        limited:true
+    },
+
+    ghost: {
+        name:"Ghost Spud",
+        price:5000,
+        sell:30000,
+        grow:15000,
+        className:"ghost",
+        limited:true
+    },
+
+    tree: {
+        name:"Christmas Tree Root",
+        price:15000,
+        sell:100000,
+        grow:18000,
+        className:"tree",
+        limited:true
+    },
+
+    diamond: {
+        name:"Diamond Potato",
+        price:100000,
+        sell:750000,
+        grow:22000,
+        className:"ancient",
+        limited:true
+    }
+
 };
 
+/* ==========================================
+   GAME
+========================================== */
 
-/* =================================
-   CONNECT
-================================= */
+let game = {
 
-connectFirebase();
+    cash:100,
 
+    level:1,
+
+    selected:"common",
+
+    seeds:{
+        common:5,
+        rare:0,
+        quantum:0,
+        epic:0,
+        nebula:0,
+        supernova:0,
+        mythic:0,
+        void:0,
+        ancient:0,
+        infinity:0,
+        bedrock:0,
+        matrix:0,
+        prism:0,
+        glitch:0,
+        cosmic:0,
+        galaxy:0,
+        infinity2:0,
+        adminium:0,
+        golden:0,
+        ghost:0,
+        tree:0,
+        diamond:0
+        crystal:0,
+        storm:0,
+        lunar:0,
+        solar:0,
+        chaos:0,
+        celestial:0,
+    },
+
+    plots:Array(12).fill(null),
+
+    /* Each plot has its own upgrade level. */
+    plotLevels:Array(12).fill(0),
+
+    shopStock:{},
+
+    upgrades:{
+        speed:false,
+        auto:false,
+        sprinkler:false
+    },
+
+    limited:{
+        golden:false,
+        ghost:false,
+        tree:false,
+        diamond:false
+    },
+
+    banned:false
+
+};
+
+/* ==========================================
+   FRIEND GATE
+========================================== */
+
+function verifyFriendGateCode() {
+
+    const input =
+        document.getElementById("gate-pass-field")
+        .value
+        .trim()
+        .toLowerCase();
+
+    if(input === FRIEND_CODE.toLowerCase()) {
+
+        document.getElementById(
+            "site-friend-gate-lock"
+        ).style.display = "none";
+
+        localStorage.setItem(
+            "potatoGateUnlocked",
+            "yes"
+        );
+
+    } else {
+
+        alert("❌ WRONG FRIEND CODE!");
+
+    }
+
+}
+
+document
+.getElementById("gate-pass-field")
+.addEventListener("keydown",e => {
+
+    if(e.key === "Enter") {
+        verifyFriendGateCode();
+    }
+
+});
+
+if(
+    localStorage.getItem("potatoGateUnlocked")
+    === "yes"
+) {
+
+    document.getElementById(
+        "site-friend-gate-lock"
+    ).style.display = "none";
+
+}
+
+/* ==========================================
+   RENDER
+========================================== */
+
+function render() {
+
+    const ban = document.getElementById("banScreen");
+    if(ban) ban.style.display = game.banned ? "flex" : "none";
+
+    document.getElementById("cash")
+        .textContent =
+        Math.floor(game.cash)
+        .toLocaleString();
+
+    document.getElementById("level")
+        .textContent =
+        game.level;
+
+    document.getElementById("selectedSeed")
+        .textContent =
+        crops[game.selected].name;
+
+    document.getElementById("seedCount")
+        .textContent =
+        game.seeds[game.selected];
+
+    document.getElementById("playerName")
+        .textContent =
+        document.getElementById("username")
+        .value || "Player1";
+
+    renderGarden();
+    renderShop();
+    renderLimitedButtons();
+    renderPlotUpgrades();
+
+}
+
+/* ==========================================
+   GARDEN
+========================================== */
+
+function renderGarden() {
+
+    const garden = document.getElementById("garden");
+    garden.innerHTML = "";
+
+    game.plots.forEach((plot,index) => {
+
+        const div = document.createElement("div");
+        const plotLevel = Number(game.plotLevels[index] || 0);
+
+        div.className =
+            "plot" + (!plot ? " empty" : "") +
+            (plotLevel > 0 ? " upgraded" : "");
+
+        if(plotLevel > 0) {
+            const badge = document.createElement("div");
+            badge.className = "plot-level";
+            badge.textContent = "LV " + plotLevel;
+            div.appendChild(badge);
+        }
+
+        if(!plot) {
+
+            div.innerHTML += `
+                <div style="font-size:18px;">🌱</div>
+                <div>EMPTY</div>
+                <div>CLICK TO PLANT</div>
+                ${plotLevel ? `<div style="color:#ffd54f;">UPGRADE +${plotLevel * 10}%</div>` : ""}
+            `;
+
+            div.onclick = () => plant(index);
+
+        } else {
+
+            const crop = crops[plot.type];
+
+            const wrap = document.createElement("div");
+            wrap.className = "potato-wrap";
+
+            const potato = document.createElement("div");
+            potato.className = "potato " + crop.className;
+
+            wrap.appendChild(potato);
+            div.appendChild(wrap);
+
+            const text = document.createElement("div");
+
+            if(plot.ready) {
+
+                const bonus = 1 + (plotLevel * 0.10);
+                const payout = Math.floor(crop.sell * bonus);
+
+                text.innerHTML =
+                    `🥔 READY<br>+$${payout.toLocaleString()}<br>
+                     <span style="color:#ffd54f;">+${plotLevel * 10}% PLOT BONUS</span>`;
+
+                text.style.color = "#7cff7c";
+                div.onclick = () => harvest(index);
+
+            } else {
+
+                const seconds = Math.max(
+                    0,
+                    Math.ceil((plot.finish - Date.now()) / 1000)
+                );
+
+                text.innerHTML =
+                    `🌱 GROWING<br>${seconds}s<br>
+                     <span style="color:#ffd54f;">PLOT LV ${plotLevel}</span>`;
+            }
+
+            div.appendChild(text);
+        }
+
+        garden.appendChild(div);
+    });
+
+}
+
+/* ==========================================
+   PLANT
+========================================== */
+
+function plant(index) {
+
+    if(game.banned) return;
+    if(!Number.isInteger(index) || index < 0 || index >= game.plots.length) return;
+    if(game.plots[index]) return;
+
+    const selected = game.selected;
+    const crop = crops[selected];
+
+    if(!crop) {
+        game.selected = "common";
+        render();
+        return;
+    }
+
+    if(crop.limited && !game.limited[selected]) {
+        alert("🔒 This limited seed is currently disabled!");
+        return;
+    }
+
+    if((game.seeds[selected] || 0) <= 0) {
+        alert("❌ You don't have that seed!");
+        return;
+    }
+
+    const plotLevel = Number(game.plotLevels[index] || 0);
+
+    let grow = crop.grow;
+
+    if(game.upgrades.speed) grow *= .85;
+    if(game.upgrades.sprinkler) grow *= .8;
+
+    /* Each plot level makes that plot 7% faster. */
+    grow *= Math.max(.45, 1 - (plotLevel * .07));
+
+    game.seeds[selected]--;
+
+    game.plots[index] = {
+        type:selected,
+        finish:Date.now() + Math.max(500, grow),
+        ready:false
+    };
+
+    saveGame();
+    render();
+}
+
+/* ==========================================
+   HARVEST
+========================================== */
+
+function harvest(index) {
+
+    if(game.banned) return;
+
+    const plot = game.plots[index];
+
+    if(!plot || !plot.ready) return;
+
+    const crop = crops[plot.type];
+    if(!crop) {
+        game.plots[index] = null;
+        saveGame();
+        render();
+        return;
+    }
+
+    const plotLevel = Number(game.plotLevels[index] || 0);
+    const payoutMultiplier = 1 + (plotLevel * 0.10);
+
+    game.cash += Math.floor(crop.sell * payoutMultiplier);
+
+    /* Level is based on lifetime cash earned, with a gentler progression. */
+    game.level = Math.max(
+        1,
+        Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1
+    );
+
+    game.plots[index] = null;
+
+    saveGame();
+    render();
+}
+
+/* ==========================================
+   SHOP
+========================================== */
+
+function renderShop() {
+    const container = document.getElementById("shopItems");
+    if(!container) return;
+    container.innerHTML = "";
+
+    Object.entries(crops).forEach(([id,crop]) => {
+        if(crop.limited && !game.limited[id]) return;
+
+        const stock = getShopStock(id);
+        const owned = Number(game.seeds[id] || 0);
+        const equipped = game.selected === id || game.equippedSeed === id;
+        const rarity = getSeedRarity(id);
+        const rarityColor = getRarityColor(rarity);
+
+        const row = document.createElement("div");
+        row.className = "shop-item";
+        row.innerHTML = `
+          <div>
+            <div style="font-size:14px;">🥔 ${crop.name}</div>
+            <span class="rarity-badge" style="color:${rarityColor}">${rarity}</span><br>
+            <span style="color:#777;">Buy: $${crop.price.toLocaleString()}</span><br>
+            <span style="color:#137333;">Sell: $${crop.sell.toLocaleString()}</span><br>
+            <span class="stock-badge">📦 Stock: ${stock}/5</span><br>
+            <span style="color:#aaa;">Owned: ${owned}</span>
+            ${crop.limited ? '<br><span class="limited-label">✨ LIMITED EVENT</span>' : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:105px;">
+            <button class="btn buy-seed-btn" ${stock <= 0 ? "disabled" : ""}>
+              ${stock <= 0 ? "SOLD OUT" : "BUY"}
+            </button>
+            ${
+              equipped
+              ? `<button class="btn" onclick="unequipSeed('${id}')">❌ UNEQUIP</button>`
+              : `<button class="btn" onclick="equipSeed('${id}')" ${owned <= 0 ? "disabled" : ""}>🎒 EQUIP</button>`
+            }
+          </div>
+        `;
+
+        const buyButton = row.querySelector(".buy-seed-btn");
+
+        buyButton.onclick = async () => {
+            if(game.cash < crop.price){
+                alert("❌ NOT ENOUGH CASH!");
+                return;
+            }
+
+            buyButton.disabled = true;
+            buyButton.textContent = "BUYING...";
+
+            let newStock = null;
+
+            try {
+                // ONLINE: atomically reserve one item from Firebase first.
+                if(window.GlobalDB?.ready && window.GlobalAPI?.buySeedFromGlobalStock){
+                    const result = await window.GlobalAPI.buySeedFromGlobalStock(id);
+
+                    if(!result.ok){
+                        if(result.reason === "soldout"){
+                            game.shopStock[id] = 0;
+                            render();
+                            alert("❌ SOLD OUT! Someone else bought the last one.");
+                            return;
+                        }
+                        throw new Error("Global stock purchase failed.");
+                    }
+
+                    newStock = result.stock;
+                } else {
+                    // LOCAL FALLBACK.
+                    const currentStock = getShopStock(id);
+                    if(currentStock <= 0){
+                        render();
+                        alert("❌ SOLD OUT! Wait for a restock.");
+                        return;
+                    }
+                    newStock = currentStock - 1;
+                }
+
+                // Only charge the player after stock was successfully reserved.
+                game.cash -= crop.price;
+                game.seeds[id] = Number(game.seeds[id] || 0) + 1;
+                game.selected = id;
+                game.equippedSeed = id;
+                game.shopStock = game.shopStock || {};
+                game.shopStock[id] = Math.max(0, Number(newStock || 0));
+
+                saveGame();
+                render();
+
+            } catch(err) {
+                console.warn("Seed purchase failed:", err);
+                alert("⚠️ Could not buy that seed. Your cash was not charged.");
+                render();
+            }
+        };
+
+        container.appendChild(row);
+    });
+}
+/* ==========================================
+   PANEL
+========================================== */
+
+function togglePanel(id) {
+
+    const panel =
+        document.getElementById(id);
+
+    panel.style.display =
+        panel.style.display === "none"
+        ? "block"
+        : "none";
+
+}
+
+/* ==========================================
+   UPGRADES
+========================================== */
+
+function buyUpgrade(type) {
+
+    const prices = {
+        speed:75,
+        auto:500,
+        sprinkler:900
+    };
+
+    if(!(type in prices)) return;
+
+    if(game.upgrades[type]) {
+        alert("✅ YOU ALREADY OWN THIS!");
+        return;
+    }
+
+    if(game.cash < prices[type]) {
+        alert("❌ NOT ENOUGH CASH!");
+        return;
+    }
+
+    game.cash -= prices[type];
+    game.upgrades[type] = true;
+
+    saveGame();
+    render();
+
+    alert("⚡ UPGRADE PURCHASED!");
+}
+
+
+/* ==========================================
+   PLOT UPGRADES
+========================================== */
+
+function renderPlotUpgrades() {
+
+    const container = document.getElementById("plotUpgradeItems");
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    game.plots.forEach((plot,index) => {
+
+        const level = Number(game.plotLevels[index] || 0);
+        const cost = Math.floor(250 * Math.pow(2, level));
+
+        const row = document.createElement("div");
+        row.className = "shop-item";
+
+        const cropName = plot && crops[plot.type]
+            ? crops[plot.type].name
+            : "Empty Plot";
+
+        row.innerHTML = `
+            <div>
+                🌾 PLOT ${index + 1} — LV ${level}
+                <br>
+                <span style="color:#777;">
+                    ${cropName}
+                </span>
+                <br>
+                <span style="color:#137333;">
+                    +${level * 10}% sell value
+                </span>
+                <br>
+                <span style="color:#1a73e8;">
+                    Next: +10% value / 7% faster
+                </span>
+            </div>
+            <button class="btn gold-btn">
+                $${cost.toLocaleString()}
+            </button>
+        `;
+
+        row.querySelector("button").onclick = () => buyPlotUpgrade(index);
+
+        container.appendChild(row);
+    });
+}
+
+function buyPlotUpgrade(index) {
+
+    if(game.banned) return;
+
+    if(!Number.isInteger(index) || index < 0 || index >= game.plots.length)
+        return;
+
+    const level = Number(game.plotLevels[index] || 0);
+
+    if(level >= 5) {
+        alert("🏆 THIS PLOT IS MAXED!");
+        return;
+    }
+
+    const cost = Math.floor(250 * Math.pow(2, level));
+
+    if(game.cash < cost) {
+        alert(`❌ NOT ENOUGH CASH! You need $${cost.toLocaleString()}.`);
+        return;
+    }
+
+    game.cash -= cost;
+    game.plotLevels[index] = level + 1;
+
+    saveGame();
+    render();
+
+    alert(`🌾 PLOT ${index + 1} UPGRADED TO LV ${level + 1}!`);
+}
+
+/* ==========================================
+   ADMIN PANEL
+========================================== */
+
+function openAdmin() {
+
+    const panel =
+        document.getElementById("adminPanel");
+
+    panel.style.display =
+        panel.style.display === "none"
+        ? "block"
+        : "none";
+
+}
+
+function loginAdmin() {
+
+    const code =
+        document.getElementById(
+            "adminPassword"
+        ).value;
+
+    if(code === ADMIN_CODE) {
+
+        document.getElementById(
+            "adminControls"
+        ).style.display = "block";
+
+        alert("👑 ADMIN ACCESS GRANTED!");
+
+    } else {
+
+        alert("❌ WRONG ADMIN CODE!");
+
+    }
+
+}
+
+/* ==========================================
+   ADMIN CASH
+========================================== */
+
+function adminCash() {
+
+    game.cash += 50000;
+
+    saveGame();
+    render();
+
+    alert("💰 +$50,000!");
+
+}
+
+/* ==========================================
+   ADMIN SEEDS
+========================================== */
+
+function adminSeeds() {
+
+    Object.keys(game.seeds)
+        .forEach(id => {
+
+            game.seeds[id] += 100;
+
+        });
+
+    saveGame();
+    render();
+
+    alert("🥔 +100 OF EVERY SEED!");
+
+}
+
+/* ==========================================
+   ADMIN RESTOCK
+========================================== */
+
+function adminRestock() {
+
+    Object.keys(game.seeds)
+        .forEach(id => {
+
+            game.seeds[id] += 25;
+
+        });
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        "🌱 ADMIN RESTOCK! EVERYONE GOT +25 SEEDS!"
+    );
+
+}
+
+/* ==========================================
+   INSTA GROW
+========================================== */
+
+function adminGrow() {
+
+    game.plots.forEach(plot => {
+
+        if(plot) {
+
+            plot.finish = Date.now();
+
+            plot.ready = true;
+
+        }
+
+    });
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        "⚡ ADMIN EVENT: ALL POTATOES INSTANTLY GREW!"
+    );
+
+}
+
+/* ==========================================
+   RAINSTORM
+========================================== */
+
+function adminRain() {
+
+    game.plots.forEach(plot => {
+
+        if(plot && !plot.ready) {
+
+            plot.finish -= 5000;
+
+        }
+
+    });
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        "🌧️ A GIANT POTATO RAINSTORM HIT THE SERVER!"
+    );
+
+}
+
+/* ==========================================
+   ROBOT
+========================================== */
+
+function adminBot() {
+
+    game.upgrades.auto =
+        !game.upgrades.auto;
+
+    saveGame();
+    render();
+
+    sendBroadcastText(
+        game.upgrades.auto
+        ? "🤖 ADMIN ACTIVATED ROBO-HARVESTERS!"
+        : "🤖 ROBO-HARVESTERS DEACTIVATED!"
+    );
+
+}
+
+/* ==========================================
+   WIPE
+========================================== */
+
+function adminWipe() {
+
+    if(
+        !confirm(
+            "Destroy all potatoes in the field?"
+        )
+    ) return;
+
+    game.plots =
+        Array(12).fill(null);
+
+    saveGame();
+    render();
+
+    alert("💥 FIELD DESTROYED!");
+
+}
+
+/* ==========================================
+   BAN
+========================================== */
+
+function adminBan() {
+
+    game.banned =
+        !game.banned;
+
+    document.getElementById(
+        "banScreen"
+    ).style.display =
+        game.banned
+        ? "flex"
+        : "none";
+
+    saveGame();
+
+}
+
+/* ==========================================
+   LIMITED SEEDS
+========================================== */
+
+function toggleLimited(type) {
+
+    game.limited[type] =
+        !game.limited[type];
+
+    saveGame();
+    render();
+
+    const names = {
+
+        golden:"🌟 GOLDEN SPUD",
+
+        ghost:"👻 GHOST SPUD",
+
+        tree:"🎄 CHRISTMAS TREE ROOT",
+
+        diamond:"💎 DIAMOND POTATO"
+
+    };
+
+    sendBroadcastText(
+        game.limited[type]
+        ? `${names[type]} EVENT ACTIVATED!`
+        : `${names[type]} EVENT DEACTIVATED!`
+    );
+
+}
+
+function renderLimitedButtons() {
+
+    const data = {
+
+        golden:"goldenToggle",
+
+        ghost:"ghostToggle",
+
+        tree:"treeToggle",
+
+        diamond:"diamondToggle"
+
+    };
+
+    Object.entries(data)
+        .forEach(([type,id]) => {
+
+            const button =
+                document.getElementById(id);
+
+            if(!button) return;
+
+            const names = {
+
+                golden:"🌟 GOLDEN",
+
+                ghost:"👻 GHOST",
+
+                tree:"🎄 TREE ROOT",
+
+                diamond:"💎 DIAMOND"
+
+            };
+
+            button.textContent =
+                names[type] +
+                ": " +
+                (
+                    game.limited[type]
+                    ? "ON"
+                    : "OFF"
+                );
+
+            button.className =
+                "btn " +
+                (
+                    game.limited[type]
+                    ? "toggle-on"
+                    : "toggle-off"
+                );
+
+        });
+
+}
+
+/* ==========================================
+   BROADCAST
+========================================== */
+
+function sendBroadcast() {
+
+    const message =
+        document.getElementById(
+            "broadcastMessage"
+        ).value;
+
+    sendBroadcastText(message);
+
+}
+
+function sendBroadcastText(message) {
+
+    const banner =
+        document.getElementById("broadcast");
+
+    banner.textContent =
+        "📢 " + message;
+
+    banner.style.display =
+        "block";
+
+    setTimeout(() => {
+
+        banner.style.display =
+            "none";
+
+    },5000);
+
+}
+
+/* ==========================================
+   ACCOUNT
+========================================== */
+
+function saveAccount() {
+
+    const name =
+        document.getElementById("username")
+        .value
+        .trim();
+
+    if(!name) {
+
+        alert("ENTER A USERNAME!");
+
+        return;
+    }
+
+    localStorage.setItem(
+        "potatoUsername",
+        name
+    );
+
+    render();
+
+    alert("💾 ACCOUNT SAVED!");
+
+}
+
+const savedUsername =
+    localStorage.getItem(
+        "potatoUsername"
+    );
+
+if(savedUsername) {
+
+    document.getElementById(
+        "username"
+    ).value =
+        savedUsername;
+
+}
+
+/* ==========================================
+   SAVE / LOAD
+========================================== */
+
+function saveGame() {
+
+    localStorage.setItem(
+        "potatoGame",
+        JSON.stringify(game)
+    );
+
+}
+
+function loadGame() {
+
+    const saved =
+        localStorage.getItem(
+            "potatoGame"
+        );
+
+    if(saved) {
+
+        try {
+
+            const loaded =
+                JSON.parse(saved);
+
+            game = {
+                ...game,
+                ...loaded,
+                seeds:{
+                    ...game.seeds,
+                    ...(loaded.seeds || {})
+                },
+                upgrades:{
+                    ...game.upgrades,
+                    ...(loaded.upgrades || {})
+                },
+                limited:{
+                    ...game.limited,
+                    ...(loaded.limited || {})
+                },
+                shopStock:{
+                    ...(game.shopStock || {}),
+                    ...(loaded.shopStock || {})
+                },
+                equippedSeed: loaded.equippedSeed ?? loaded.selected ?? game.selected,
+                plotLevels:Array.isArray(loaded.plotLevels)
+                    ? game.plotLevels.map((_,i) =>
+                        Math.max(0, Math.min(5, Number(loaded.plotLevels[i]) || 0))
+                    )
+                    : game.plotLevels
+            };
+
+            /* Repair malformed or old saves safely. */
+            if(!Array.isArray(game.plots) || game.plots.length !== 12) {
+                game.plots = Array(12).fill(null);
+            }
+            game.plots = game.plots.map(plot =>
+                plot && crops[plot.type]
+                    ? {
+                        type:plot.type,
+                        finish:Number(plot.finish) || Date.now(),
+                        ready:Boolean(plot.ready) || Date.now() >= Number(plot.finish)
+                    }
+                    : null
+            );
+
+            /* Repair seed inventory and finite shop stock from old saves. */
+            Object.keys(crops).forEach(id => {
+                game.seeds[id] = Math.max(0, Number(game.seeds[id] || 0));
+                if(game.shopStock[id] === undefined || !Number.isFinite(Number(game.shopStock[id]))){
+                    game.shopStock[id] = Math.floor(Math.random()*5)+1;
+                } else {
+                    game.shopStock[id] = Math.max(0, Math.min(5, Number(game.shopStock[id])));
+                }
+            });
+
+            if(!crops[game.selected] || (game.seeds[game.selected] || 0) <= 0){
+                game.selected = null;
+                game.equippedSeed = null;
+            }
+
+        } catch(error) {
+
+            console.log(
+                "Could not load save."
+            );
+
+        }
+
+    }
+
+    render();
+
+}
+
+/* ==========================================
+   GAME TIMER
+========================================== */
+
+setInterval(() => {
+
+    let changed = false;
+
+    game.plots.forEach(plot => {
+
+        if(
+            plot &&
+            !plot.ready &&
+            Date.now() >= plot.finish
+        ) {
+
+            plot.ready = true;
+
+            changed = true;
+
+        }
+
+    });
+
+    if(game.upgrades.auto) {
+
+        let harvested = false;
+
+        game.plots.forEach((plot,index) => {
+
+            if(plot && plot.ready) {
+                const crop = crops[plot.type];
+                const level = Number(game.plotLevels[index] || 0);
+
+                if(crop) {
+                    game.cash += Math.floor(
+                        crop.sell * (1 + level * 0.10)
+                    );
+                    harvested = true;
+                }
+
+                game.plots[index] = null;
+            }
+
+        });
+
+        if(harvested) {
+            game.level = Math.max(
+                1,
+                Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1
+            );
+            saveGame();
+            render();
+        }
+    }
+
+    if(changed) {
+
+        render();
+
+    }
+
+},500);
+
+/* ==========================================
+   START GAME
+========================================== */
+
+loadGame();
+
+if(game.banned) {
+
+    document.getElementById(
+        "banScreen"
+    ).style.display =
+        "flex";
+
+}
+
+
+window.addEventListener("beforeunload", saveGame);
 </script>
+
+
+<script>
+/* ===== GLOBAL SHARED GAME PATCH ===== */
+(function () {
+  const status = () => document.getElementById("global-status");
+
+  window.addEventListener("global-ready", () => {
+    if (status()) {
+      status().textContent = "🌐 FIREBASE: ONLINE";
+      status().style.color = "#7cff8a";
+    }
+  });
+
+  window.addEventListener("global-error", () => {
+    if (status()) {
+      status().textContent = "🌐 FIREBASE: LOCAL MODE";
+      status().style.color = "#ffd166";
+    }
+  });
+
+  // A global restock changes the shop stock for EVERY connected player.
+  window.addEventListener("global-restock", (ev) => {
+    const data = ev.detail || {};
+    try {
+      if (typeof game !== "undefined") {
+        if (!game.globalSeedStock) game.globalSeedStock = {};
+        if (data.stock) game.globalSeedStock = data.stock;
+
+        // If the original game has a seed stock object, sync it too.
+        if (typeof seedStock !== "undefined" && data.stock) {
+          Object.keys(data.stock).forEach(k => {
+            seedStock[k] = data.stock[k];
+          });
+        }
+
+        if (typeof save === "function") save();
+        if (typeof render === "function") render();
+
+        if (data.by !== window.GlobalDB?.uid) {
+          showGlobalToast("🌾 GLOBAL RESTOCK! Everyone's seed shop was restocked.");
+        }
+      }
+    } catch (e) {
+      console.warn("Global restock apply error:", e);
+    }
+  });
+
+  window.addEventListener("global-limited", (ev) => {
+    try {
+      if (typeof game === "undefined") return;
+      const d = ev.detail || {};
+      game.limited = game.limited || {};
+      Object.keys(d).forEach(k => game.limited[k] = !!d[k]);
+      if (typeof save === "function") save();
+      if (typeof render === "function") render();
+      if (typeof showGlobalToast === "function") showGlobalToast("🌐 Limited seeds updated globally!");
+    } catch (e) {}
+  });
+
+  window.addEventListener("global-broadcast", (ev) => {
+    const d = ev.detail || {};
+    if (d.message && d.by !== window.GlobalDB?.uid) showGlobalToast("📢 " + d.message);
+  });
+
+  window.showGlobalToast = function(msg) {
+    let box = document.getElementById("global-toast");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "global-toast";
+      box.style.cssText = "position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:10000;padding:13px 18px;border:2px solid #fff;border-radius:12px;background:#111;color:#fff;font:11px 'Press Start 2P',monospace;box-shadow:0 8px 30px #000;";
+      document.body.appendChild(box);
+    }
+    box.textContent = msg;
+    clearTimeout(window.__globalToastTimer);
+    window.__globalToastTimer = setTimeout(() => box.remove(), 4500);
+  };
+
+  // Global admin functions. They do nothing until Firebase is configured.
+  window.globalRestockEveryone = async function () {
+    if (!window.GlobalDB?.ready) {
+      showGlobalToast("⚠️ Global server is not connected. Add your Firebase config first.");
+      return;
+    }
+
+    const stock = {};
+    try {
+      if (typeof seedStock !== "undefined") {
+        Object.keys(seedStock).forEach(k => stock[k] = 99);
+      } else if (typeof CROPS !== "undefined") {
+        Object.keys(CROPS).forEach(k => stock[k] = 99);
+      } else {
+        // Matches the crop list in this game.
+        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial","golden","ghost","tree","diamond"]
+          .forEach(k => stock[k] = 99);
+      }
+    } catch(e) {}
+
+    await window.GlobalAPI.restockAll({ stock, amount: 99 });
+    showGlobalToast("🌎 GLOBAL RESTOCK SENT TO EVERYONE!");
+  };
+
+  window.globalBroadcast = async function(message) {
+    if (!window.GlobalDB?.ready) return showGlobalToast("⚠️ Global server is not connected.");
+    await window.GlobalAPI.broadcast(message);
+    showGlobalToast("📢 Broadcast sent globally!");
+  };
+
+  window.globalToggleLimited = async function(type, enabled) {
+    if (!window.GlobalDB?.ready) return showGlobalToast("⚠️ Global server is not connected.");
+    await window.GlobalAPI.setLimited(type, enabled);
+    showGlobalToast("🌎 Limited seed setting updated for everyone.");
+  };
+})();
+</script>
+
+
+<script>
+window.EXTRA_POTATO_SEEDS = {
+  prism:{name:"Prism Potato",price:150000000,sell:750000000,grow:50000,emoji:"🌈"},
+  glitch:{name:"Glitch Potato",price:750000000,sell:4500000000,grow:60000,emoji:"👾"},
+  cosmic:{name:"Cosmic Potato",price:5000000000,sell:35000000000,grow:75000,emoji:"🌌"},
+  galaxy:{name:"Galaxy Potato",price:30000000000,sell:250000000000,grow:90000,emoji:"🌠"},
+  infinity2:{name:"Infinity X",price:250000000000,sell:2500000000000,grow:105000,emoji:"♾️"},
+  adminium:{name:"Adminium Potato",price:2500000000000,sell:30000000000000,grow:120000,emoji:"🛡️"}
+};
+</script>
+
+
+<script>
+/* ===== EQUIP / UNEQUIP SEEDS ===== */
+(function(){
+  function getCropCatalog(){
+    const candidates = ["CROPS","crops","SEEDS","seeds"];
+    for (const n of candidates) {
+      try { if (window[n] && typeof window[n] === "object") return window[n]; } catch(e){}
+    }
+    return window.EXTRA_POTATO_SEEDS || {};
+  }
+
+  window.equipSeed = function(type){
+    if (typeof game === "undefined") return;
+    game.selected = type;
+    game.equippedSeed = type;
+    if (typeof save === "function") save();
+    if (typeof render === "function") render();
+    if (typeof renderSeedEquip === "function") renderSeedEquip();
+  };
+
+  window.unequipSeed = function(type){
+    if (typeof game === "undefined") return;
+    if (game.selected === type) {
+      game.selected = null;
+    }
+    if (game.equippedSeed === type) {
+      game.equippedSeed = null;
+    }
+    if (typeof save === "function") save();
+    if (typeof render === "function") render();
+    if (typeof renderSeedEquip === "function") renderSeedEquip();
+  };
+
+  window.renderSeedEquip = function(){
+    const box = document.getElementById("seedEquipList");
+    if (!box || typeof game === "undefined") return;
+
+    const catalog = getCropCatalog();
+    const keys = Object.keys(catalog);
+    const allKeys = [...new Set(keys.concat(Object.keys(window.EXTRA_POTATO_SEEDS || {})))];
+
+    if (!allKeys.length) {
+      box.innerHTML = "<p>No seeds found.</p>";
+      return;
+    }
+
+    box.innerHTML = allKeys.map(type => {
+      const c = catalog[type] || (window.EXTRA_POTATO_SEEDS || {})[type];
+      if (!c) return "";
+      const count = Number((game.seeds || {})[type] || 0);
+      const equipped = game.selected === type || game.equippedSeed === type;
+      const label = c.name || type;
+      const emoji = c.emoji || "🥔";
+      return `
+        <div class="seed-equip-row">
+          <div class="seed-info">
+            <span style="font-size:22px">${emoji}</span>
+            <div><b>${label}</b><br><small>Owned: ${count}</small></div>
+          </div>
+          ${
+            equipped
+            ? `<button class="equipped" onclick="unequipSeed('${type}')">UNEQUIP</button>`
+            : `<button onclick="equipSeed('${type}')" ${count <= 0 ? "disabled" : ""}>EQUIP</button>`
+          }
+        </div>`;
+    }).join("");
+  };
+
+  // Preserve equipped seed through saves/loads when the game state supports it.
+  const oldRender = window.render;
+  if (typeof oldRender === "function") {
+    window.render = function(){
+      oldRender.apply(this, arguments);
+      try { renderSeedEquip(); } catch(e){}
+    };
+  }
+
+  window.addEventListener("load", () => {
+    try {
+      if (typeof game !== "undefined" && game.equippedSeed === undefined)
+        game.equippedSeed = game.selected || null;
+      renderSeedEquip();
+    } catch(e){}
+  });
+})();
+</script>
+
+
+
+
+
+
+
+
+<script>
+/* ===== GLOBAL SHOP RUNTIME ===== */
+window.resetGlobalShopStock = async function(){
+  const stock = window.makeRandomShopStock();
+
+  if(typeof game !== "undefined"){
+    game.shopStock = {...stock};
+    saveGame();
+    render();
+  }
+
+  if(window.GlobalDB?.ready && window.GlobalAPI?.setShopStock){
+    try {
+      await window.GlobalAPI.setShopStock(stock);
+      if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! Every seed now has 1–5 stock.");
+    } catch(e) {
+      console.warn("Global restock failed:", e);
+      if(window.showGlobalToast) window.showGlobalToast("⚠️ Firebase restock failed; local stock was reset.");
+    }
+  } else if(window.showGlobalToast) {
+    window.showGlobalToast("📦 Local restock done. Connect Firebase for global stock.");
+  }
+};
+
+window.addEventListener("global-shop-stock", e => {
+  if(typeof game === "undefined") return;
+  const incoming = e.detail || {};
+  const cleaned = {};
+  (window.ALL_SHOP_SEEDS || []).forEach(k => {
+    if(incoming[k] !== undefined){
+      cleaned[k] = Math.max(0, Math.min(5, Number(incoming[k] || 0)));
+    }
+  });
+  game.shopStock = {...(game.shopStock || {}), ...cleaned};
+  saveGame();
+  render();
+});
+</script>
+
+</body>
+</html>
