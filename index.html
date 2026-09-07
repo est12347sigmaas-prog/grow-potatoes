@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Potatoes Search Tycoon</title>
+<title>Potatoes Search Tycoon — Pet Equip Rail Update</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -1409,7 +1409,52 @@ body{
   font-size:6px !important;
   padding:7px 8px !important;
 }
+
+/* ===== V3.7 SEED / PET EQUIP RAIL TABS ===== */
+.equip-rail-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.equip-rail-tabs .btn{font-size:6px!important;padding:7px 5px!important}
+.quick-pet-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 4px;border-bottom:1px solid #ddd;font-size:7px;color:#111}
+.quick-pet-row.active{background:#fff3d6;border-radius:5px}
+.quick-pet-row.secret{background:linear-gradient(90deg,#fff,#ffe9ff);border-left:3px solid #ff39d4}
+.quick-pet-name{font-size:7px;font-weight:900;line-height:1.45}
+.quick-pet-bonus{font-size:5px;color:#555;line-height:1.5;margin-top:2px}
+.quick-pet-row .btn{font-size:5px!important;padding:6px 7px!important}
+
 </style>
+
+
+<style>
+/* ===== SECRET LIMITED SEED UPDATE ===== */
+.secret-shop-item{
+  border:2px solid #ff5cff !important;
+  border-radius:10px;
+  margin:7px 0;
+  padding:10px 7px !important;
+  background:linear-gradient(135deg,#160018,#080008) !important;
+  color:#fff;
+  box-shadow:0 0 14px rgba(255,92,255,.35);
+}
+.secret-label{
+  display:inline-block;
+  color:#fff;
+  background:#7b087f;
+  border:1px solid #ff8cff;
+  border-radius:5px;
+  padding:4px 6px;
+  font-size:5px;
+  margin-top:4px;
+  animation:secretPulse 1.5s infinite alternate;
+}
+@keyframes secretPulse{from{filter:brightness(.9)}to{filter:brightness(1.45)}}
+.potato.shadowsecret{background:radial-gradient(circle at 30% 25%,#8d36ff 0 7%,transparent 8%),linear-gradient(145deg,#19002f,#020003);box-shadow:0 0 25px #7d2cff;border-color:#b480ff}
+.potato.prismaticsecret{background:linear-gradient(45deg,#ff3b8d,#ffdf3b,#40ff88,#35c8ff,#994cff,#ff3b8d);box-shadow:0 0 25px #fff;border-color:#fff}
+.potato.eclipsesecret{background:radial-gradient(circle at 70% 25%,#fff56b 0 12%,#ff8a00 13% 19%,transparent 20%),linear-gradient(145deg,#241800,#030303);box-shadow:0 0 25px #ff9d00;border-color:#ffc04d}
+.potato.corruptedsecret{background:repeating-linear-gradient(90deg,#001400 0 5px,#00a93b 5px 7px,#070007 7px 11px,#c400ff 11px 13px);box-shadow:0 0 25px #00ff66;border-color:#ff48ff}
+.pet-card.secret-pet{border:2px solid #ff5cff;border-radius:8px;padding:9px;background:linear-gradient(135deg,#180019,#060006);color:white;margin:6px 0;box-shadow:0 0 12px rgba(255,92,255,.3)}
+</style>
+
+
+
 
 </head>
 
@@ -1722,6 +1767,11 @@ body{
                         💎 DIAMOND: OFF
                     </button>
 
+                    <button id="shadowsecretToggle" class="btn toggle-off" onclick="toggleLimited('shadowsecret')">🌑 ??? SHADOW: OFF</button>
+                    <button id="prismaticsecretToggle" class="btn toggle-off" onclick="toggleLimited('prismaticsecret')">🌈 PRISMATIC SECRET: OFF</button>
+                    <button id="eclipsesecretToggle" class="btn toggle-off" onclick="toggleLimited('eclipsesecret')">🌘 ECLIPSE: OFF</button>
+                    <button id="corruptedsecretToggle" class="btn toggle-off" onclick="toggleLimited('corruptedsecret')">🧿 404 CORRUPTED: OFF</button>
+
                     <div class="admin-heading">
                         📢 GLOBAL SERVER MESSAGE
                     </div>
@@ -1750,8 +1800,13 @@ body{
 </div>
 <div id="sidePanelColumn">
 <div id="quickEquipRail">
-  <div class="quick-equip-title">🎒 QUICK EQUIP</div>
+  <div class="quick-equip-title">🎒 EQUIP RAIL</div>
+  <div class="equip-rail-tabs">
+    <button id="seedEquipTabBtn" class="btn green-btn" onclick="switchEquipRail('seeds')">🌱 SEEDS</button>
+    <button id="petEquipTabBtn" class="btn dark-btn" onclick="switchEquipRail('pets')">🐾 PETS</button>
+  </div>
   <div id="quickEquipList"></div>
+  <div id="quickPetEquipList" style="display:none;"></div>
 </div>
 
 <div id="shop" class="panel" style="display:none;">
@@ -1759,7 +1814,7 @@ body{
             <h3>🥔 POTATO SEED MARKET</h3>
 
             <div style="margin:8px 0;color:#ffd54f;font-size:10px;">
-📦 Common Spud is ALWAYS IN STOCK ♾️ — other seeds roll a rarity-based chance every minute.<br>
+📦 Common Spud is ALWAYS IN STOCK ♾️ — other seeds roll a rarity-based chance every minute.<br>🔒 SECRET limited seeds only appear when an admin activates their event and can stock just 1–2 copies.<br>
 ⏱️ Auto restock in <span id="restockCountdown">1:00</span>
 </div>
 <div id="shopItems"></div>
@@ -1809,7 +1864,7 @@ body{
         </div>
 <div id="petsPanel" class="panel" style="display:none;">
           <h3>🐾 POTATO PETS</h3>
-          <div class="upgrade-note">Pets give permanent bonuses while equipped. Buy one, then equip it.</div>
+          <div class="upgrade-note">Pets give permanent bonuses while equipped. Buy one, then equip it. Secret pets are the strongest and most expensive.</div>
           <div id="petList"></div>
         </div>
 <div id="achievementsPanel" class="panel" style="display:none;">
@@ -1872,7 +1927,8 @@ body{
     "common","rare","quantum","epic","nebula","supernova","mythic","void",
     "ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy",
     "infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial",
-    "golden","ghost","tree","diamond"
+    "golden","ghost","tree","diamond",
+    "shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"
   ];
 
   const rarityMap = {
@@ -1882,7 +1938,8 @@ body{
     glitch:"SECRET", cosmic:"SECRET", galaxy:"SECRET", infinity2:"SECRET",
     adminium:"ADMIN", crystal:"CELESTIAL", storm:"SECRET", lunar:"SECRET",
     solar:"SECRET", chaos:"SECRET", celestial:"GODLY", golden:"LEGENDARY",
-    ghost:"MYTHIC", tree:"MYTHIC", diamond:"DIVINE"
+    ghost:"MYTHIC", tree:"MYTHIC", diamond:"DIVINE",
+    shadowsecret:"SECRET", prismaticsecret:"SECRET", eclipsesecret:"SECRET", corruptedsecret:"SECRET"
   };
 
   const rarityColors = {
@@ -1932,8 +1989,10 @@ body{
       const chance = window.getSeedRestockChance(id);
       const appears = (Math.random() * 100) < chance;
 
-      // If it appears, stock is 1–5. If it misses the roll, it is sold out.
-      s[id] = appears ? (Math.floor(Math.random()*5)+1) : 0;
+      // Secret seeds are scarcer: 1–2 stock. Other finite seeds are 1–5.
+      const rarity = window.getSeedRarity(id);
+      const maxStock = rarity === "SECRET" ? 2 : 5;
+      s[id] = appears ? (Math.floor(Math.random()*maxStock)+1) : 0;
     });
     return s;
   };
@@ -1944,11 +2003,14 @@ body{
     game.shopStock = game.shopStock || window.makeRandomShopStock();
     if(game.shopStock[type] === undefined){
       const chance = window.getSeedRestockChance(type);
+      const rarity = window.getSeedRarity(type);
+      const maxStock = rarity === "SECRET" ? 2 : 5;
       game.shopStock[type] = (Math.random()*100 < chance)
-        ? Math.floor(Math.random()*5)+1
+        ? Math.floor(Math.random()*maxStock)+1
         : 0;
     }
-    return Math.max(0, Math.min(5, Number(game.shopStock[type] || 0)));
+    const maxStock = window.getSeedRarity(type) === "SECRET" ? 2 : 5;
+    return Math.max(0, Math.min(maxStock, Number(game.shopStock[type] || 0)));
   };
 })();
 </script>
@@ -2112,6 +2174,46 @@ const crops = {
         grow:22000,
         className:"ancient",
         limited:true
+    },
+
+    shadowsecret: {
+        name:"??? Shadow Spud",
+        price:2500000,
+        sell:20000000,
+        grow:30000,
+        className:"shadowsecret",
+        limited:true,
+        secret:true
+    },
+
+    prismaticsecret: {
+        name:"Prismatic Secret Root",
+        price:25000000,
+        sell:250000000,
+        grow:38000,
+        className:"prismaticsecret",
+        limited:true,
+        secret:true
+    },
+
+    eclipsesecret: {
+        name:"Eclipse Potato",
+        price:250000000,
+        sell:3000000000,
+        grow:48000,
+        className:"eclipsesecret",
+        limited:true,
+        secret:true
+    },
+
+    corruptedsecret: {
+        name:"404 Corrupted Spud",
+        price:2500000000,
+        sell:40000000000,
+        grow:60000,
+        className:"corruptedsecret",
+        limited:true,
+        secret:true
     }
 
 };
@@ -2157,6 +2259,10 @@ let game = {
         solar:0,
         chaos:0,
         celestial:0,
+        shadowsecret:0,
+        prismaticsecret:0,
+        eclipsesecret:0,
+        corruptedsecret:0,
     },
 
     plots:Array(12).fill(null),
@@ -2176,7 +2282,11 @@ let game = {
         golden:false,
         ghost:false,
         tree:false,
-        diamond:false
+        diamond:false,
+        shadowsecret:false,
+        prismaticsecret:false,
+        eclipsesecret:false,
+        corruptedsecret:false
     },
 
     banned:false,
@@ -2194,7 +2304,7 @@ let game = {
     quests:[],
     dailyLastClaim:0,
     dailyStreak:0,
-    pets:{sprout:false,golden:false,void:false},
+    pets:{sprout:false,mudpup:false,golden:false,beetle:false,ghost:false,void:false,dragon:false,prism:false,eclipse:false,glitchorb:false},
     equippedPet:null,
     rebirths:0,
     achievements:{},
@@ -2502,16 +2612,16 @@ function renderShop() {
         const restockChance = getSeedRestockChance(id);
 
         const row = document.createElement("div");
-        row.className = "shop-item";
+        row.className = "shop-item" + (crop.secret ? " secret-shop-item" : "");
         row.innerHTML = `
           <div>
             <div style="font-size:14px;">🥔 ${crop.name}</div>
             <span class="rarity-badge" style="color:${rarityColor}">${rarity}</span><br>
             <span style="color:#777;">Buy: $${crop.price.toLocaleString()}</span><br>
             <span style="color:#137333;">Sell: $${crop.sell.toLocaleString()}</span><br>
-            <span class="stock-badge">📦 Stock: ${stock}/5</span><br>
+            <span class="stock-badge">📦 Stock: ${infiniteStock ? "∞" : (stock + "/" + (rarity === "SECRET" ? 2 : 5))}</span><br>
             <span style="color:#aaa;">Owned: ${owned}</span>
-            ${crop.limited ? '<br><span class="limited-label">✨ LIMITED EVENT</span>' : ''}
+            ${crop.secret ? '<br><span class="secret-label">🔒 SECRET LIMITED</span>' : (crop.limited ? '<br><span class="limited-label">✨ LIMITED EVENT</span>' : '')}
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;min-width:105px;">
             <button class="btn buy-seed-btn" ${stock <= 0 ? "disabled" : ""}>
@@ -2869,14 +2979,14 @@ function adminMaxPlots() {
 }
 
 async function adminEnableAllLimited() {
-    ["golden","ghost","tree","diamond"].forEach(type => {
+    ["golden","ghost","tree","diamond","shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"].forEach(type => {
         game.limited[type] = true;
     });
     saveGame();
     render();
 
     if(window.GlobalDB?.ready && window.GlobalAPI?.setLimited) {
-        for(const type of ["golden","ghost","tree","diamond"]) {
+        for(const type of ["golden","ghost","tree","diamond","shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"]) {
             try { await window.GlobalAPI.setLimited(type, true); } catch(e) {}
         }
     }
@@ -3002,13 +3112,18 @@ function adminBan() {
    LIMITED SEEDS
 ========================================== */
 
-function toggleLimited(type) {
+async function toggleLimited(type) {
 
-    game.limited[type] =
-        !game.limited[type];
+    game.limited[type] = !game.limited[type];
 
     saveGame();
     render();
+
+    if(window.GlobalDB?.ready && window.GlobalAPI?.setLimited) {
+        try { await window.GlobalAPI.setLimited(type, game.limited[type]); } catch(e) {
+            console.warn("Could not sync limited seed toggle globally", e);
+        }
+    }
 
     const names = {
 
@@ -3018,7 +3133,11 @@ function toggleLimited(type) {
 
         tree:"🎄 CHRISTMAS TREE ROOT",
 
-        diamond:"💎 DIAMOND POTATO"
+        diamond:"💎 DIAMOND POTATO",
+        shadowsecret:"🌑 ??? SHADOW SPUD",
+        prismaticsecret:"🌈 PRISMATIC SECRET ROOT",
+        eclipsesecret:"🌘 ECLIPSE POTATO",
+        corruptedsecret:"🧿 404 CORRUPTED SPUD"
 
     };
 
@@ -3040,7 +3159,11 @@ function renderLimitedButtons() {
 
         tree:"treeToggle",
 
-        diamond:"diamondToggle"
+        diamond:"diamondToggle",
+        shadowsecret:"shadowsecretToggle",
+        prismaticsecret:"prismaticsecretToggle",
+        eclipsesecret:"eclipsesecretToggle",
+        corruptedsecret:"corruptedsecretToggle"
 
     };
 
@@ -3060,7 +3183,11 @@ function renderLimitedButtons() {
 
                 tree:"🎄 TREE ROOT",
 
-                diamond:"💎 DIAMOND"
+                diamond:"💎 DIAMOND",
+                shadowsecret:"🌑 ??? SHADOW",
+                prismaticsecret:"🌈 PRISMATIC SECRET",
+                eclipsesecret:"🌘 ECLIPSE",
+                corruptedsecret:"🧿 404 CORRUPTED"
 
             };
 
@@ -3239,7 +3366,8 @@ function loadGame() {
                 if(game.shopStock[id] === undefined || !Number.isFinite(Number(game.shopStock[id]))){
                     game.shopStock[id] = Math.floor(Math.random()*5)+1;
                 } else {
-                    game.shopStock[id] = Math.max(0, Math.min(5, Number(game.shopStock[id])));
+                    const maxStock = (typeof getSeedRarity === "function" && getSeedRarity(id) === "SECRET") ? 2 : 5;
+                    game.shopStock[id] = Math.max(0, Math.min(maxStock, Number(game.shopStock[id])));
                 }
             });
 
@@ -3437,7 +3565,7 @@ window.addEventListener("beforeunload", saveGame);
         Object.keys(CROPS).forEach(k => stock[k] = 99);
       } else {
         // Matches the crop list in this game.
-        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial","golden","ghost","tree","diamond"]
+        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial","golden","ghost","tree","diamond","shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"]
           .forEach(k => stock[k] = 99);
       }
     } catch(e) {}
@@ -3686,10 +3814,19 @@ window.EXTRA_POTATO_SEEDS = {
   ];
 
   const PETS = {
-    sprout:{name:"Sprout Buddy",price:5000,desc:"+10% growth speed",growth:.10,sell:0},
-    golden:{name:"Golden Tater",price:100000,desc:"+15% sell value",growth:0,sell:.15},
-    void:{name:"Voidling",price:5000000,desc:"+25% sell value & +10% speed",growth:.10,sell:.25}
+    sprout:{name:"🌱 Sprout Buddy",price:5000,desc:"+10% growth speed",growth:.10,sell:0},
+    mudpup:{name:"🐶 Mud Pup",price:25000,desc:"+8% sell value & +5% speed",growth:.05,sell:.08},
+    golden:{name:"🌟 Golden Tater",price:100000,desc:"+15% sell value",growth:0,sell:.15},
+    beetle:{name:"🪲 Tater Beetle",price:500000,desc:"+15% speed & +10% sell value",growth:.15,sell:.10},
+    ghost:{name:"👻 Ghost Tot",price:1500000,desc:"+20% sell value & +8% speed",growth:.08,sell:.20},
+    void:{name:"🌌 Voidling",price:5000000,desc:"+25% sell value & +10% speed",growth:.10,sell:.25},
+    dragon:{name:"🐉 Spud Dragon",price:25000000,desc:"+35% sell value & +15% speed",growth:.15,sell:.35},
+    prism:{name:"🌈 Prism Blob",price:150000000,desc:"+50% sell value & +20% speed",growth:.20,sell:.50},
+    eclipse:{name:"🌘 Eclipse Wisp",price:1000000000,desc:"SECRET PET • +75% sell & +25% speed",growth:.25,sell:.75,secret:true},
+    glitchorb:{name:"👁️ Glitch Orb",price:10000000000,desc:"SECRET PET • +125% sell & +35% speed",growth:.35,sell:1.25,secret:true}
   };
+
+  window.PET_CATALOG = PETS;
 
   const WEATHER = {
     clear:{name:"☀️ Clear",speed:0,sell:0,mutation:0},
@@ -3708,7 +3845,7 @@ window.EXTRA_POTATO_SEEDS = {
   window.ensureBigSystems = function(){
     game.stats = Object.assign({harvested:0,planted:0,moneyEarned:0,seedsBought:0,mutations:0,questsDone:0,playSeconds:0}, game.stats||{});
     game.quests = Array.isArray(game.quests) ? game.quests : [];
-    game.pets = Object.assign({sprout:false,golden:false,void:false}, game.pets||{});
+    game.pets = Object.assign({sprout:false,mudpup:false,golden:false,beetle:false,ghost:false,void:false,dragon:false,prism:false,eclipse:false,glitchorb:false}, game.pets||{});
     game.achievements = game.achievements || {};
     game.weather = Object.assign({type:"clear",endsAt:0}, game.weather||{});
     game.activeEvent = Object.assign({type:null,endsAt:0}, game.activeEvent||{});
@@ -3847,12 +3984,15 @@ window.EXTRA_POTATO_SEEDS = {
   };
 
   window.renderPets = function(){
-    const el=document.getElementById("petList"); if(!el) return;
-    el.innerHTML=Object.entries(PETS).map(([id,p])=>`<div class="pet-card">
-      <div><b>${p.name}</b><br><span style="font-size:5px">${p.desc}<br>$${p.price.toLocaleString()}</span></div>
-      ${game.pets[id] ? `<button class="btn ${game.equippedPet===id?'green-btn':''}" onclick="equipPet('${id}')">${game.equippedPet===id?'EQUIPPED':'EQUIP'}</button>` :
-      `<button class="btn" onclick="buyPet('${id}')">BUY</button>`}
-    </div>`).join("");
+    const el=document.getElementById("petList");
+    if(el){
+      el.innerHTML=Object.entries(PETS).map(([id,p])=>`<div class="pet-card ${p.secret?'secret-pet':''}">
+        <div><b>${p.name}</b>${p.secret?'<br><span class="secret-label">SECRET PET</span>':''}<br><span style="font-size:5px">${p.desc}<br>$${p.price.toLocaleString()}</span></div>
+        ${game.pets[id] ? `<button class="btn ${game.equippedPet===id?'green-btn':''}" onclick="equipPet('${id}')">${game.equippedPet===id?'EQUIPPED':'EQUIP'}</button>` :
+        `<button class="btn" onclick="buyPet('${id}')">BUY</button>`}
+      </div>`).join("");
+    }
+    if(typeof renderQuickPetEquip === "function") renderQuickPetEquip();
   };
 
   const ACHIEVEMENTS = [
@@ -3964,7 +4104,7 @@ window.EXTRA_POTATO_SEEDS = {
     if(typeof render === "function") render();
   }
 })();
-</script></script>
+</script>
 
 
 <script>
@@ -4007,7 +4147,51 @@ window.quickEquipSeed = function(id){
   if(typeof saveGame === "function") saveGame();
   if(typeof render === "function") render();
 };
+
+window.switchEquipRail = function(mode){
+  const seeds = document.getElementById("quickEquipList");
+  const pets = document.getElementById("quickPetEquipList");
+  const seedBtn = document.getElementById("seedEquipTabBtn");
+  const petBtn = document.getElementById("petEquipTabBtn");
+  const petMode = mode === "pets";
+  if(seeds) seeds.style.display = petMode ? "none" : "block";
+  if(pets) pets.style.display = petMode ? "block" : "none";
+  if(seedBtn) seedBtn.className = `btn ${petMode ? "dark-btn" : "green-btn"}`;
+  if(petBtn) petBtn.className = `btn ${petMode ? "green-btn" : "dark-btn"}`;
+  try{ localStorage.setItem("potatoEquipRailMode", petMode ? "pets" : "seeds"); }catch(e){}
+  if(petMode) renderQuickPetEquip(); else renderQuickEquip();
+};
+
+window.renderQuickPetEquip = function(){
+  const box = document.getElementById("quickPetEquipList");
+  if(!box || typeof game === "undefined") return;
+  const pets = window.PET_CATALOG || {};
+  const owned = Object.entries(pets).filter(([id]) => !!game.pets?.[id]);
+  if(!owned.length){
+    box.innerHTML = '<div style="font-size:5px;color:#888;padding:8px;text-align:center;line-height:1.7;">No pets owned yet.<br>Open 🐾 PETS to buy one!</div>';
+    return;
+  }
+  box.innerHTML = owned.map(([id,p]) => {
+    const active = game.equippedPet === id;
+    return `<div class="quick-pet-row ${active ? "active" : ""} ${p.secret ? "secret" : ""}">
+      <div>
+        <div class="quick-pet-name">${p.name}${p.secret ? " 🔐" : ""}</div>
+        <div class="quick-pet-bonus">${p.desc || ""}</div>
+      </div>
+      <button class="btn ${active ? "green-btn" : ""}" onclick="equipPet('${id}')">${active ? "UNEQUIP" : "EQUIP"}</button>
+    </div>`;
+  }).join("");
+};
+
+window.addEventListener("DOMContentLoaded",()=>{
+  let mode="seeds";
+  try{ mode=localStorage.getItem("potatoEquipRailMode")||"seeds"; }catch(e){}
+  setTimeout(()=>switchEquipRail(mode),0);
+});
 </script>
+
+
+
 
 </body>
 </html>
