@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Potatoes Search Tycoon — Pet Equip Rail Update</title>
+<title>Potatoes Search Tycoon — Infinite Money + Multi Pets</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -1868,6 +1868,10 @@ body{
                         💰 +$50K
                     </button>
 
+                    <button id="infiniteMoneyAdminBtn" class="btn toggle-off" onclick="toggleInfiniteMoney()">
+                        ♾️ INFINITE MONEY: OFF
+                    </button>
+
                     <button class="btn" onclick="adminSeeds()">
                         🥔 +100 ALL SEEDS
                     </button>
@@ -2045,7 +2049,8 @@ body{
         </div>
 <div id="petsPanel" class="panel" style="display:none;">
           <h3>🐾 POTATO PETS</h3>
-          <div class="upgrade-note">Pets give permanent bonuses while equipped. Buy one, then equip it. Secret pets are the strongest and most expensive.</div>
+          <div class="upgrade-note">Pets give bonuses while equipped. Upgrade your pet slots to equip multiple pets at the same time. Their bonuses stack together.</div>
+          <div id="petSlotUpgradeBox" class="feature-card" style="margin-bottom:8px;"></div>
           <div id="petList"></div>
         </div>
 <div id="achievementsPanel" class="panel" style="display:none;">
@@ -2487,6 +2492,9 @@ let game = {
     dailyStreak:0,
     pets:{sprout:false,mudpup:false,golden:false,beetle:false,ghost:false,void:false,dragon:false,prism:false,eclipse:false,glitchorb:false},
     equippedPet:null,
+    equippedPets:[],
+    petSlots:1,
+    adminInfiniteMoney:false,
     rebirths:0,
     achievements:{},
     weather:{type:"clear", endsAt:0},
@@ -2579,8 +2587,9 @@ function render() {
 
     document.getElementById("cash")
         .textContent =
-        Math.floor(game.cash)
-        .toLocaleString();
+        game.adminInfiniteMoney ? "∞" : Math.floor(game.cash).toLocaleString();
+
+    if(typeof updateInfiniteMoneyButton === "function") updateInfiniteMoneyButton();
 
     document.getElementById("level")
         .textContent =
@@ -3073,6 +3082,38 @@ function loginAdmin() {
     }
 
 }
+
+/* ==========================================
+   ADMIN INFINITE MONEY MODE
+========================================== */
+
+function updateInfiniteMoneyButton() {
+    const btn = document.getElementById("infiniteMoneyAdminBtn");
+    if(!btn) return;
+    const on = !!game.adminInfiniteMoney;
+    btn.textContent = on ? "♾️ INFINITE MONEY: ON" : "♾️ INFINITE MONEY: OFF";
+    btn.classList.toggle("toggle-on", on);
+    btn.classList.toggle("toggle-off", !on);
+}
+
+function toggleInfiniteMoney() {
+    game.adminInfiniteMoney = !game.adminInfiniteMoney;
+    if(game.adminInfiniteMoney) {
+        game.cash = Math.max(Number(game.cash || 0), 1000000000000000);
+    }
+    saveGame();
+    render();
+    updateInfiniteMoneyButton();
+}
+
+function keepInfiniteMoneyAlive() {
+    if(!game || !game.adminInfiniteMoney) return;
+    if(Number(game.cash || 0) < 1000000000000000) {
+        game.cash = 1000000000000000;
+    }
+}
+
+setInterval(keepInfiniteMoneyAlive, 250);
 
 /* ==========================================
    ADMIN CASH
@@ -3579,6 +3620,14 @@ function loadGame() {
                     )
                     : game.plotLevels
             };
+
+            if(!Array.isArray(game.equippedPets)) {
+                game.equippedPets = game.equippedPet ? [game.equippedPet] : [];
+            }
+            game.petSlots = Math.max(1, Math.min(4, Number(game.petSlots || 1)));
+            game.equippedPets = [...new Set(game.equippedPets)].filter(id => game.pets && game.pets[id]).slice(0, game.petSlots);
+            game.equippedPet = game.equippedPets[0] || null;
+            game.adminInfiniteMoney = !!game.adminInfiniteMoney;
 
             /* Repair malformed or old saves safely. */
             if(!Array.isArray(game.plots) || game.plots.length !== 12) {
@@ -4093,6 +4142,18 @@ window.EXTRA_POTATO_SEEDS = {
     game.stats = Object.assign({harvested:0,planted:0,moneyEarned:0,seedsBought:0,mutations:0,questsDone:0,playSeconds:0}, game.stats||{});
     game.quests = Array.isArray(game.quests) ? game.quests : [];
     game.pets = Object.assign({sprout:false,mudpup:false,golden:false,beetle:false,ghost:false,void:false,dragon:false,prism:false,eclipse:false,glitchorb:false}, game.pets||{});
+    game.petSlots = Math.max(1, Math.min(4, Number(game.petSlots || 1)));
+    if(!Array.isArray(game.equippedPets)) {
+      game.equippedPets = game.equippedPet ? [game.equippedPet] : [];
+    }
+    game.equippedPets = [...new Set(game.equippedPets)]
+      .filter(id => PETS[id] && game.pets[id])
+      .slice(0, game.petSlots);
+    if(game.equippedPets.length === 0 && game.equippedPet && PETS[game.equippedPet] && game.pets[game.equippedPet]) {
+      game.equippedPets = [game.equippedPet];
+    }
+    game.equippedPet = game.equippedPets[0] || null;
+    game.adminInfiniteMoney = !!game.adminInfiniteMoney;
     game.achievements = game.achievements || {};
     game.weather = Object.assign({type:"clear",endsAt:0}, game.weather||{});
     game.activeEvent = Object.assign({type:null,endsAt:0}, game.activeEvent||{});
@@ -4116,8 +4177,16 @@ window.EXTRA_POTATO_SEEDS = {
   };
 
   window.getPetBonus = function(){
-    const p = PETS[game.equippedPet];
-    return p || {growth:0,sell:0};
+    ensureBigSystems();
+    const ids = Array.isArray(game.equippedPets) ? game.equippedPets : [];
+    return ids.reduce((total,id) => {
+      const p = PETS[id];
+      if(p){
+        total.growth += Number(p.growth || 0);
+        total.sell += Number(p.sell || 0);
+      }
+      return total;
+    }, {growth:0,sell:0});
   };
 
   window.getWeatherBonus = function(){
@@ -4217,27 +4286,80 @@ window.EXTRA_POTATO_SEEDS = {
     <button class="btn gold-btn" onclick="claimDailyReward()" ${ready?'':'disabled'}>${ready?'🎁 CLAIM DAILY':`⏳ ${hrs}h ${mins}m`}</button>`;
   };
 
+  const PET_SLOT_COSTS = {2:250000,3:5000000,4:100000000};
+
   window.buyPet = function(id){
+    ensureBigSystems();
     const p=PETS[id]; if(!p || game.pets[id]) return;
-    if(game.cash<p.price){alert("❌ Not enough cash!");return;}
-    game.cash-=p.price; game.pets[id]=true; game.equippedPet=id;
+    if(!game.adminInfiniteMoney && game.cash<p.price){alert("❌ Not enough cash!");return;}
+    if(!game.adminInfiniteMoney) game.cash-=p.price;
+    game.pets[id]=true;
+    if(game.equippedPets.length < game.petSlots) game.equippedPets.push(id);
+    game.equippedPet = game.equippedPets[0] || null;
     saveGame(); render();
   };
 
   window.equipPet = function(id){
+    ensureBigSystems();
     if(!game.pets[id]) return;
-    game.equippedPet = game.equippedPet===id ? null : id;
+    const index = game.equippedPets.indexOf(id);
+    if(index >= 0) {
+      game.equippedPets.splice(index,1);
+    } else {
+      if(game.equippedPets.length >= game.petSlots){
+        alert(`🐾 You can only equip ${game.petSlots} pet${game.petSlots===1?'':'s'}! Upgrade your Pet Slots first.`);
+        return;
+      }
+      game.equippedPets.push(id);
+    }
+    game.equippedPet = game.equippedPets[0] || null;
     saveGame(); render();
   };
 
+  window.upgradePetSlots = function(){
+    ensureBigSystems();
+    if(game.petSlots >= 4){
+      alert("🐾 MAX PET SLOTS reached!");
+      return;
+    }
+    const next = game.petSlots + 1;
+    const cost = PET_SLOT_COSTS[next];
+    if(!game.adminInfiniteMoney && game.cash < cost){
+      alert(`❌ You need $${cost.toLocaleString()} for Pet Slot ${next}!`);
+      return;
+    }
+    if(!game.adminInfiniteMoney) game.cash -= cost;
+    game.petSlots = next;
+    saveGame(); render();
+  };
+
+  window.renderPetSlotUpgrade = function(){
+    ensureBigSystems();
+    const box = document.getElementById("petSlotUpgradeBox");
+    if(!box) return;
+    const used = game.equippedPets.length;
+    if(game.petSlots >= 4){
+      box.innerHTML = `<b>🐾 PET SLOTS: ${used}/4</b><br>MAX SLOTS UNLOCKED! You can equip up to 4 pets at once.`;
+      return;
+    }
+    const next = game.petSlots + 1;
+    const cost = PET_SLOT_COSTS[next];
+    box.innerHTML = `<b>🐾 PET SLOTS: ${used}/${game.petSlots}</b><br>Upgrade to equip ${next} pets at once.<br><br>
+      <button class="btn gold-btn" onclick="upgradePetSlots()">⬆️ UNLOCK SLOT ${next} — $${cost.toLocaleString()}</button>`;
+  };
+
   window.renderPets = function(){
+    ensureBigSystems();
+    renderPetSlotUpgrade();
     const el=document.getElementById("petList");
     if(el){
-      el.innerHTML=Object.entries(PETS).map(([id,p])=>`<div class="pet-card ${p.secret?'secret-pet':''}">
+      el.innerHTML=Object.entries(PETS).map(([id,p])=>{
+        const active = game.equippedPets.includes(id);
+        return `<div class="pet-card ${p.secret?'secret-pet':''}">
         <div><b>${p.name}</b>${p.secret?'<br><span class="secret-label">SECRET PET</span>':''}<br><span style="font-size:5px">${p.desc}<br>$${p.price.toLocaleString()}</span></div>
-        ${game.pets[id] ? `<button class="btn ${game.equippedPet===id?'green-btn':''}" onclick="equipPet('${id}')">${game.equippedPet===id?'EQUIPPED':'EQUIP'}</button>` :
+        ${game.pets[id] ? `<button class="btn ${active?'green-btn':''}" onclick="equipPet('${id}')">${active?'UNEQUIP':'EQUIP'}</button>` :
         `<button class="btn" onclick="buyPet('${id}')">BUY</button>`}
-      </div>`).join("");
+      </div>`}).join("");
     }
     if(typeof renderQuickPetEquip === "function") renderQuickPetEquip();
   };
@@ -4282,7 +4404,7 @@ window.EXTRA_POTATO_SEEDS = {
     const rows=[
       ["🥔 Harvested",s.harvested],["🌱 Planted",s.planted],["💰 Earned","$"+Math.floor(s.moneyEarned).toLocaleString()],
       ["🛒 Seeds Bought",s.seedsBought],["🧬 Mutations",s.mutations],["📋 Quests",s.questsDone],
-      ["♻️ Rebirths",game.rebirths],["🐾 Pet",game.equippedPet?PETS[game.equippedPet].name:"None"]
+      ["♻️ Rebirths",game.rebirths],["🐾 Pets",game.equippedPets?.length ? game.equippedPets.map(id=>PETS[id]?.name||id).join(", ") : "None"]
     ];
     el.innerHTML=rows.map(([a,b])=>`<div class="stat-box">${a}<br><b>${b}</b></div>`).join("");
     const w=getWeatherBonus(), e=getEventBonus();
@@ -4413,13 +4535,14 @@ window.renderQuickPetEquip = function(){
   const box = document.getElementById("quickPetEquipList");
   if(!box || typeof game === "undefined") return;
   const pets = window.PET_CATALOG || {};
+  if(typeof ensureBigSystems === "function") ensureBigSystems();
   const owned = Object.entries(pets).filter(([id]) => !!game.pets?.[id]);
   if(!owned.length){
     box.innerHTML = '<div style="font-size:5px;color:#888;padding:8px;text-align:center;line-height:1.7;">No pets owned yet.<br>Open 🐾 PETS to buy one!</div>';
     return;
   }
   box.innerHTML = owned.map(([id,p]) => {
-    const active = game.equippedPet === id;
+    const active = Array.isArray(game.equippedPets) && game.equippedPets.includes(id);
     return `<div class="quick-pet-row ${active ? "active" : ""} ${p.secret ? "secret" : ""}">
       <div>
         <div class="quick-pet-name">${p.name}${p.secret ? " 🔐" : ""}</div>
