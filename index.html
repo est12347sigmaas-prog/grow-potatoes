@@ -884,6 +884,7 @@ body {
     <div class="gate-hint">
         Hint: Code is case-insensitive
     </div>
+    <div id="gate-status" style="margin-top:12px;font-size:6px;color:#ff7777;"></div>
 </div>
 
 <div id="broadcast"></div>
@@ -1435,7 +1436,7 @@ let game = {
         golden:0,
         ghost:0,
         tree:0,
-        diamond:0
+        diamond:0,
         crystal:0,
         storm:0,
         lunar:0,
@@ -1473,30 +1474,21 @@ let game = {
 ========================================== */
 
 function verifyFriendGateCode() {
-
-    const input =
-        document.getElementById("gate-pass-field")
-        .value
-        .trim()
-        .toLowerCase();
+    const field = document.getElementById("gate-pass-field");
+    const status = document.getElementById("gate-status");
+    const input = (field?.value || "").trim().toLowerCase();
 
     if(input === FRIEND_CODE.toLowerCase()) {
-
-        document.getElementById(
-            "site-friend-gate-lock"
-        ).style.display = "none";
-
-        localStorage.setItem(
-            "potatoGateUnlocked",
-            "yes"
-        );
-
+        document.getElementById("site-friend-gate-lock").style.display = "none";
+        localStorage.setItem("potatoGateUnlocked", "yes");
+        if(status) status.textContent = "";
     } else {
-
-        alert("❌ WRONG FRIEND CODE!");
-
+        if(status) status.textContent = "❌ WRONG FRIEND CODE!";
+        if(field) {
+            field.value = "";
+            field.focus();
+        }
     }
-
 }
 
 document
