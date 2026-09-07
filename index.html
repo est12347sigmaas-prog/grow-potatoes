@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -764,7 +764,8 @@ body {
       const clean = {};
       Object.entries(stock || {}).forEach(([k,v]) => {
         if (window.ALL_SHOP_SEEDS?.includes(k)) {
-          clean[k] = k === "common" ? 999999 : Math.max(0, Math.min(5, Number(v) || 0));
+          const cap = (typeof window.getSeedRarity === "function" && window.getSeedRarity(k) === "SECRET") ? 2 : 5;
+          clean[k] = k === "common" ? 999999 : Math.max(0, Math.min(cap, Number(v) || 0));
         }
       });
       await set(ref(window.GlobalDB.db, "global/shopStock"), clean);
@@ -1703,8 +1704,8 @@ body{
                         🌧️ RAINSTORM
                     </button>
 
-                    <button class="btn" onclick="adminBot()">
-                        🤖 ROBO-BOT
+                    <button id="autoHarvesterAdminBtn" class="btn toggle-off" onclick="adminBot()">
+                        🤖 AUTO HARVESTER: OFF
                     </button>
 
                     <button class="btn red-btn" onclick="adminWipe()">
@@ -2320,6 +2321,32 @@ let game = {
 };
 
 /* ==========================================
+   SAFE LOCAL STORAGE
+   Prevent browser/private-preview storage errors from stopping all buttons.
+========================================== */
+
+const PotatoStorage = {
+    get(key, fallback = null) {
+        try {
+            const value = window.localStorage.getItem(key);
+            return value === null ? fallback : value;
+        } catch(error) {
+            console.warn("[PotatoStorage] read blocked:", key);
+            return fallback;
+        }
+    },
+    set(key, value) {
+        try {
+            window.localStorage.setItem(key, String(value));
+            return true;
+        } catch(error) {
+            console.warn("[PotatoStorage] write blocked:", key);
+            return false;
+        }
+    }
+};
+
+/* ==========================================
    FRIEND GATE
 ========================================== */
 
@@ -2330,7 +2357,7 @@ function verifyFriendGateCode() {
 
     if(input === FRIEND_CODE.toLowerCase()) {
         document.getElementById("site-friend-gate-lock").style.display = "none";
-        localStorage.setItem("potatoGateUnlocked", "yes");
+        PotatoStorage.set("potatoGateUnlocked", "yes");
         if(status) status.textContent = "";
     } else {
         if(status) status.textContent = "❌ WRONG FRIEND CODE!";
@@ -2341,18 +2368,17 @@ function verifyFriendGateCode() {
     }
 }
 
-document
-.getElementById("gate-pass-field")
-.addEventListener("keydown",e => {
-
-    if(e.key === "Enter") {
-        verifyFriendGateCode();
+{
+    const gateField = document.getElementById("gate-pass-field");
+    if(gateField) {
+        gateField.addEventListener("keydown", e => {
+            if(e.key === "Enter") verifyFriendGateCode();
+        });
     }
-
-});
+}
 
 if(
-    localStorage.getItem("potatoGateUnlocked")
+    PotatoStorage.get("potatoGateUnlocked")
     === "yes"
 ) {
 
@@ -2704,15 +2730,14 @@ function renderShop() {
 ========================================== */
 
 function togglePanel(id) {
+    const panel = document.getElementById(id);
+    if(!panel) {
+        console.warn("[UI] Missing panel:", id);
+        return;
+    }
 
-    const panel =
-        document.getElementById(id);
-
-    panel.style.display =
-        panel.style.display === "none"
-        ? "block"
-        : "none";
-
+    const hidden = getComputedStyle(panel).display === "none";
+    panel.style.display = hidden ? "block" : "none";
 }
 
 /* ==========================================
@@ -3050,21 +3075,30 @@ function adminRain() {
    ROBOT
 ========================================== */
 
+function updateAutoHarvesterAdminButton() {
+    const btn = document.getElementById("autoHarvesterAdminBtn");
+    if(!btn) return;
+    const on = !!game.upgrades.auto;
+    btn.textContent = on ? "🤖 AUTO HARVESTER: ON" : "🤖 AUTO HARVESTER: OFF";
+    btn.classList.toggle("toggle-on", on);
+    btn.classList.toggle("toggle-off", !on);
+}
+
 function adminBot() {
-
-    game.upgrades.auto =
-        !game.upgrades.auto;
-
+    game.upgrades.auto = !game.upgrades.auto;
     saveGame();
     render();
+    updateAutoHarvesterAdminButton();
 
     sendBroadcastText(
         game.upgrades.auto
-        ? "🤖 ADMIN ACTIVATED ROBO-HARVESTERS!"
-        : "🤖 ROBO-HARVESTERS DEACTIVATED!"
+        ? "🤖 ADMIN ACTIVATED AUTO HARVESTER!"
+        : "🤖 AUTO HARVESTER DEACTIVATED!"
     );
-
 }
+
+// Keep the admin toggle label synced after loading/rendering.
+setInterval(updateAutoHarvesterAdminButton, 500);
 
 /* ==========================================
    WIPE
@@ -3265,7 +3299,7 @@ function saveAccount() {
         return;
     }
 
-    localStorage.setItem(
+    PotatoStorage.set(
         "potatoUsername",
         name
     );
@@ -3277,7 +3311,7 @@ function saveAccount() {
 }
 
 const savedUsername =
-    localStorage.getItem(
+    PotatoStorage.get(
         "potatoUsername"
     );
 
@@ -3298,7 +3332,7 @@ function saveGame() {
     if(game.farms && Array.isArray(game.farms)) game.farms[game.activeFarm || 0] = game.plots;
 
 
-    localStorage.setItem(
+    PotatoStorage.set(
         "potatoGame",
         JSON.stringify(game)
     );
@@ -3308,7 +3342,7 @@ function saveGame() {
 function loadGame() {
 
     const saved =
-        localStorage.getItem(
+        PotatoStorage.get(
             "potatoGame"
         );
 
@@ -3364,7 +3398,8 @@ function loadGame() {
             Object.keys(crops).forEach(id => {
                 game.seeds[id] = Math.max(0, Number(game.seeds[id] || 0));
                 if(game.shopStock[id] === undefined || !Number.isFinite(Number(game.shopStock[id]))){
-                    game.shopStock[id] = Math.floor(Math.random()*5)+1;
+                    const maxStock = (typeof getSeedRarity === "function" && getSeedRarity(id) === "SECRET") ? 2 : 5;
+                    game.shopStock[id] = Math.floor(Math.random()*maxStock)+1;
                 } else {
                     const maxStock = (typeof getSeedRarity === "function" && getSeedRarity(id) === "SECRET") ? 2 : 5;
                     game.shopStock[id] = Math.max(0, Math.min(maxStock, Number(game.shopStock[id])));
@@ -3414,9 +3449,11 @@ setInterval(() => {
 
     });
 
-    if(game.upgrades.auto) {
+    if(game.upgrades.auto && !game.banned) {
 
         let harvested = false;
+        let harvestedCount = 0;
+        let earnedTotal = 0;
 
         game.plots.forEach((plot,index) => {
 
@@ -3425,9 +3462,14 @@ setInterval(() => {
                 const level = Number(game.plotLevels[index] || 0);
 
                 if(crop) {
-                    game.cash += Math.floor(
-                        crop.sell * (1 + level * 0.10)
-                    );
+                    const plotMult = 1 + (level * 0.10);
+                    const globalMult = (typeof getTotalSellMultiplier === "function") ? getTotalSellMultiplier() : 1;
+                    const mutationMult = Number(plot.mutationMult || 1);
+                    const earned = Math.floor(crop.sell * plotMult * globalMult * mutationMult);
+
+                    game.cash += earned;
+                    earnedTotal += earned;
+                    harvestedCount++;
                     harvested = true;
                 }
 
@@ -3437,6 +3479,11 @@ setInterval(() => {
         });
 
         if(harvested) {
+            if(game.stats){
+                game.stats.harvested = Number(game.stats.harvested || 0) + harvestedCount;
+                game.stats.moneyEarned = Number(game.stats.moneyEarned || 0) + earnedTotal;
+            }
+
             game.level = Math.max(
                 1,
                 Math.floor(Math.sqrt(Math.max(0, game.cash) / 250)) + 1
@@ -3699,11 +3746,11 @@ window.EXTRA_POTATO_SEEDS = {
 (function(){
   const RESTOCK_MS = 60000;
   const LOCAL_KEY = "potatoShopLastAutoRestock";
-  let nextLocalRestock = Number(localStorage.getItem(LOCAL_KEY) || 0) + RESTOCK_MS;
+  let nextLocalRestock = Number(PotatoStorage.get(LOCAL_KEY) || 0) + RESTOCK_MS;
 
   function setLocalRestockNow(){
     const now = Date.now();
-    localStorage.setItem(LOCAL_KEY, String(now));
+    PotatoStorage.set(LOCAL_KEY, String(now));
     nextLocalRestock = now + RESTOCK_MS;
   }
 
@@ -3714,7 +3761,7 @@ window.EXTRA_POTATO_SEEDS = {
     let remaining;
     if(window.GlobalDB?.ready) {
       // Global mode is checked every few seconds; show a simple rolling minute timer.
-      const last = Number(localStorage.getItem("potatoGlobalRestockSeenAt") || Date.now());
+      const last = Number(PotatoStorage.get("potatoGlobalRestockSeenAt") || Date.now());
       remaining = Math.max(0, RESTOCK_MS - (Date.now() - last));
     } else {
       remaining = Math.max(0, nextLocalRestock - Date.now());
@@ -3738,7 +3785,7 @@ window.EXTRA_POTATO_SEEDS = {
     if(window.GlobalDB?.ready && window.GlobalAPI?.setShopStock){
       try {
         await window.GlobalAPI.setShopStock(stock);
-        localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+        PotatoStorage.set("potatoGlobalRestockSeenAt", String(Date.now()));
         if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! Every seed now has 1–5 stock.");
       } catch(e) {
         console.warn("Global restock failed:", e);
@@ -3754,7 +3801,7 @@ window.EXTRA_POTATO_SEEDS = {
       try {
         const result = await window.GlobalAPI.autoRestockIfDue();
         if(result?.restocked){
-          localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+          PotatoStorage.set("potatoGlobalRestockSeenAt", String(Date.now()));
           if(window.showGlobalToast) window.showGlobalToast("⏱️ 1-MINUTE GLOBAL SHOP RESTOCK!");
         }
       } catch(e) {
@@ -3785,12 +3832,12 @@ window.EXTRA_POTATO_SEEDS = {
       }
     });
     game.shopStock = {...(game.shopStock || {}), ...cleaned};
-    localStorage.setItem("potatoGlobalRestockSeenAt", String(Date.now()));
+    PotatoStorage.set("potatoGlobalRestockSeenAt", String(Date.now()));
     if(typeof saveGame === "function") saveGame();
     if(typeof render === "function") render();
   });
 
-  if(!Number(localStorage.getItem(LOCAL_KEY))){
+  if(!Number(PotatoStorage.get(LOCAL_KEY))){
     setLocalRestockNow();
   }
 
