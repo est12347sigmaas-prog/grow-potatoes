@@ -1861,6 +1861,9 @@ body{
             </button>
 
             <div id="adminControls" style="display:none;">
+                <div style="font-size:5px;line-height:1.7;margin:6px 0 10px;color:#555;">
+                    🔒 Infinite Money affects only this player's browser/save. It is NOT global.
+                </div>
 
                 <div class="admin-grid">
 
@@ -1869,7 +1872,7 @@ body{
                     </button>
 
                     <button id="infiniteMoneyAdminBtn" class="btn toggle-off" onclick="toggleInfiniteMoney()">
-                        ♾️ INFINITE MONEY: OFF
+                        ♾️ LOCAL INFINITE MONEY: OFF
                     </button>
 
                     <button class="btn" onclick="adminSeeds()">
@@ -3091,12 +3094,18 @@ function updateInfiniteMoneyButton() {
     const btn = document.getElementById("infiniteMoneyAdminBtn");
     if(!btn) return;
     const on = !!game.adminInfiniteMoney;
-    btn.textContent = on ? "♾️ INFINITE MONEY: ON" : "♾️ INFINITE MONEY: OFF";
+    btn.textContent = on ? "♾️ LOCAL INFINITE MONEY: ON" : "♾️ LOCAL INFINITE MONEY: OFF";
     btn.classList.toggle("toggle-on", on);
     btn.classList.toggle("toggle-off", !on);
 }
 
 function toggleInfiniteMoney() {
+    const controls = document.getElementById("adminControls");
+    if(!controls || controls.style.display === "none") {
+        alert("🔒 Open and unlock the Admin Panel first.");
+        return;
+    }
+
     game.adminInfiniteMoney = !game.adminInfiniteMoney;
     if(game.adminInfiniteMoney) {
         game.cash = Math.max(Number(game.cash || 0), 1000000000000000);
