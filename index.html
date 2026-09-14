@@ -2052,9 +2052,7 @@ body{
 
         </div>
 
-    </div>
-</div>
-<div class="tester-area">
+    <div class="tester-area">
     <button class="btn gold-btn" onclick="openTesterPanel()">
         🧪 TESTER TERMINAL
     </button>
@@ -2082,6 +2080,7 @@ body{
             <div class="tester-grid">
                 <button class="btn" onclick="testerCash()">💰 +$1,000</button>
                 <button class="btn" onclick="testerBillion()">💸 +$1 BILLION</button>
+                <button class="btn red-btn" onclick="testerResetMoney()">🔄 MONEY TO $0</button>
                 <button class="btn" onclick="testerCommonSeeds()">🥔 +5 COMMON</button>
                 <button class="btn" onclick="testerSelectedSeed()">🎒 +1 EQUIPPED</button>
                 <button class="btn" onclick="testerFinishOne()">⚡ FINISH 1 CROP</button>
@@ -2089,6 +2088,8 @@ body{
                 <button class="btn red-btn" onclick="testerClearField()">🧹 CLEAR MY FIELD</button>
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 <div id="sidePanelColumn">
@@ -3250,6 +3251,15 @@ function testerBillion() {
     saveGame();
     render();
     alert("🧪 Tester grant: +$1,000,000,000");
+}
+
+function testerResetMoney() {
+    if(!testerIsUnlocked()) return;
+    if(!confirm("Set your money back to $0?")) return;
+    game.cash = 0;
+    saveGame();
+    render();
+    alert("🔄 Tester money reset to $0!");
 }
 
 function testerCommonSeeds() {
