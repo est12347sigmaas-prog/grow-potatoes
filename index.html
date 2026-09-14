@@ -741,14 +741,15 @@ body {
   // IMPORTANT: Put your Firebase Web App config below and set enabled:true.
   // GitHub Pages hosts the game; Firebase Realtime Database provides the shared global shop stock.
   window.GLOBAL_FIREBASE_CONFIG = {
-    enabled: false, // Change to true AFTER pasting your real Firebase config.
-    apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
-    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "PASTE_YOUR_PROJECT",
-    storageBucket: "PASTE_YOUR_PROJECT.firebasestorage.app",
-    messagingSenderId: "PASTE_YOUR_SENDER_ID",
-    appId: "PASTE_YOUR_APP_ID"
+    enabled: true,
+    apiKey: "AIzaSyAZSZYttFDA2MK5tS2Pli1cgIHm7GhoJq8",
+    authDomain: "potato-1b31f.firebaseapp.com",
+    databaseURL: "https://potato-1b31f-default-rtdb.firebaseio.com/",
+    projectId: "potato-1b31f",
+    storageBucket: "potato-1b31f.firebasestorage.app",
+    messagingSenderId: "414791262866",
+    appId: "1:414791262866:web:c2df26434b1cc99586fc4b",
+    measurementId: "G-BK8FGZM6FW"
   };
 
   window.GlobalDB = { ready: false, app: null, db: null, auth: null, uid: null };
@@ -815,6 +816,18 @@ body {
       await set(ref(window.GlobalDB.db, "global/shopMeta"), {
         updatedAt: Date.now(),
         updatedBy: window.GlobalDB.uid
+      });
+      return true;
+    },
+    async stockOne(type) {
+      if (!window.GlobalDB.ready || !window.ALL_SHOP_SEEDS?.includes(type) || type === "common") {
+        return false;
+      }
+      await runTransaction(ref(window.GlobalDB.db, `global/shopStock/${type}`), () => 1);
+      await set(ref(window.GlobalDB.db, "global/shopMeta"), {
+        updatedAt: Date.now(),
+        updatedBy: window.GlobalDB.uid,
+        reason: "admin-stock-one"
       });
       return true;
     },
@@ -1987,6 +2000,15 @@ body{
                     <button class="btn" onclick="startAdminEvent('potatoRain')">🥔 POTATO RAIN (2 MIN)</button>
                     <button class="btn" onclick="randomizeWeather('rain')">🌧️ FORCE RAIN (2 MIN)</button>
                     <button class="btn" onclick="randomizeWeather('rainbow')">🌈 FORCE RAINBOW (2 MIN)</button>
+                    <div class="admin-heading">
+                        📦 STOCK ONE SEED FOR PLAYERS
+                    </div>
+                    <select id="adminStockSeedSelect" style="grid-column:span 2;">
+                        <option value="">CHOOSE A SEED</option>
+                    </select>
+                    <button class="btn green-btn" style="grid-column:span 2;" onclick="adminStockOneSeed()">
+                        📦 PUT 1 COPY IN GLOBAL SHOP
+                    </button>
 <div class="admin-heading">
                         ✨ LIMITED SEED TOGGLES
                     </div>
@@ -3175,6 +3197,8 @@ function openAdmin() {
         ? "block"
         : "none";
 
+    populateAdminStockSeedSelect();
+
 }
 
 function loginAdmin() {
@@ -3493,6 +3517,41 @@ async function adminEnableAllLimited() {
     }
 
     sendBroadcastText("✨ ADMIN ENABLED ALL LIMITED SEEDS!");
+}
+
+function populateAdminStockSeedSelect() {
+    const select = document.getElementById("adminStockSeedSelect");
+    if(!select || select.options.length > 1) return;
+    Object.entries(crops)
+        .filter(([type]) => type !== "common")
+        .sort((a,b) => a[1].name.localeCompare(b[1].name))
+        .forEach(([type,crop]) => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = crop.name;
+            select.appendChild(option);
+        });
+}
+
+async function adminStockOneSeed() {
+    const select = document.getElementById("adminStockSeedSelect");
+    const type = select?.value;
+    if(!type || !crops[type]) {
+        alert("📦 Choose a seed first!");
+        return;
+    }
+    if(!window.GlobalDB?.ready || !window.GlobalAPI?.stockOne) {
+        alert("⚠️ Firebase is not online yet.");
+        return;
+    }
+    try {
+        const stocked = await window.GlobalAPI.stockOne(type);
+        if(!stocked) throw new Error("Could not stock seed");
+        alert("📦 Exactly 1 " + crops[type].name + " is now in the global shop. Players must buy it!");
+    } catch(error) {
+        console.error("Could not stock one seed", error);
+        alert("⚠️ The global stock update failed. Check Firebase Authentication and Rules.");
+    }
 }
 
 /* ==========================================
@@ -4937,4 +4996,3 @@ setInterval(() => {
 
 </body>
 </html>
-
