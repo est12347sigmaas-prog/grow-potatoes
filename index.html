@@ -543,6 +543,49 @@ body {
    ADMIN
 ========================= */
 
+/* The tester terminal is intentionally smaller and weaker than the owner panel. */
+.tester-area {
+    margin-top: 10px;
+    background: #15110a;
+    border: 2px dashed #a96f20;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.tester-panel {
+    display: none;
+    margin-top: 8px;
+    padding: 9px;
+    color: #fff4d6;
+    background: #231b0e;
+    border: 2px solid #7a531d;
+    border-radius: 8px;
+}
+
+.tester-title {
+    color: #ffc857;
+    font-size: 7px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.tester-note {
+    color: #c9b991;
+    font-size: 5px;
+    line-height: 1.8;
+    margin: 7px 0;
+}
+
+.tester-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.tester-grid .btn {
+    background: #78511d;
+}
+
 .admin-area {
     margin-top: 16px;
     background:#111;
@@ -2011,6 +2054,43 @@ body{
 
     </div>
 </div>
+<div class="tester-area">
+    <button class="btn gold-btn" onclick="openTesterPanel()">
+        🧪 TESTER TERMINAL
+    </button>
+
+    <div id="testerPanel" class="tester-panel">
+        <div class="tester-title">🧪 LIMITED TESTER TOOLS</div>
+
+        <input
+            id="testerPassword"
+            type="password"
+            placeholder="ENTER TESTER CODE"
+            autocomplete="off"
+            style="width:100%;padding:8px;font-size:7px;"
+        >
+
+        <div style="margin-top:7px;">
+            <button class="btn gold-btn" onclick="loginTester()">UNLOCK TEST TOOLS</button>
+        </div>
+
+        <div id="testerControls" style="display:none;">
+            <div class="tester-note">
+                Local testing only. These buttons affect this browser and cannot control other players.
+            </div>
+
+            <div class="tester-grid">
+                <button class="btn" onclick="testerCash()">💰 +$1,000</button>
+                <button class="btn" onclick="testerBillion()">💸 +$1 BILLION</button>
+                <button class="btn" onclick="testerCommonSeeds()">🥔 +5 COMMON</button>
+                <button class="btn" onclick="testerSelectedSeed()">🎒 +1 EQUIPPED</button>
+                <button class="btn" onclick="testerFinishOne()">⚡ FINISH 1 CROP</button>
+                <button class="btn" onclick="testerHarvestOne()">🥔 HARVEST 1 READY</button>
+                <button class="btn red-btn" onclick="testerClearField()">🧹 CLEAR MY FIELD</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="sidePanelColumn">
 <div id="quickEquipRail">
   <div class="quick-equip-title">🎒 EQUIP RAIL</div>
@@ -2243,6 +2323,7 @@ body{
 
 const FRIEND_CODE = "miniboys5151";
 const ADMIN_CODE = "goofy4321";
+const TESTER_CODE = "bobbintin123";
 
 /* ==========================================
    CROPS
@@ -3116,6 +3197,128 @@ function loginAdmin() {
 
     }
 
+}
+
+/* ==========================================
+   LIMITED TESTER PANEL
+   All actions are local and intentionally weaker than owner admin tools.
+========================================== */
+
+function openTesterPanel() {
+    const panel = document.getElementById("testerPanel");
+    if(!panel) return;
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+}
+
+function testerIsUnlocked() {
+    const controls = document.getElementById("testerControls");
+    if(!controls || controls.dataset.unlocked !== "true") {
+        alert("🔒 Unlock the Tester Terminal first.");
+        return false;
+    }
+    return true;
+}
+
+function loginTester() {
+    const input = document.getElementById("testerPassword");
+    const controls = document.getElementById("testerControls");
+    if(!input || !controls) return;
+
+    if(input.value === TESTER_CODE) {
+        controls.dataset.unlocked = "true";
+        controls.style.display = "block";
+        input.value = "";
+        alert("🧪 TESTER TOOLS UNLOCKED! Local tools only.");
+    } else {
+        controls.dataset.unlocked = "false";
+        controls.style.display = "none";
+        alert("❌ WRONG TESTER CODE!");
+    }
+}
+
+function testerCash() {
+    if(!testerIsUnlocked()) return;
+    game.cash = Number(game.cash || 0) + 1000;
+    saveGame();
+    render();
+    alert("🧪 Tester grant: +$1,000");
+}
+
+function testerBillion() {
+    if(!testerIsUnlocked()) return;
+    game.cash = Number(game.cash || 0) + 1000000000;
+    saveGame();
+    render();
+    alert("🧪 Tester grant: +$1,000,000,000");
+}
+
+function testerCommonSeeds() {
+    if(!testerIsUnlocked()) return;
+    game.seeds.common = Number(game.seeds.common || 0) + 5;
+    saveGame();
+    render();
+    alert("🧪 Tester grant: +5 Common Spud seeds");
+}
+
+function testerSelectedSeed() {
+    if(!testerIsUnlocked()) return;
+    const type = game.selected || game.equippedSeed;
+    if(!type || !crops[type]) {
+        alert("🎒 Equip a seed first!");
+        return;
+    }
+    game.seeds[type] = Number(game.seeds[type] || 0) + 1;
+    saveGame();
+    render();
+    alert("🧪 Tester grant: +1 " + crops[type].name + " seed");
+}
+
+function testerFinishOne() {
+    if(!testerIsUnlocked()) return;
+    const plot = game.plots.find(item => item && !item.ready);
+    if(!plot) {
+        alert("🌱 Plant an unfinished crop first!");
+        return;
+    }
+    plot.finish = Date.now();
+    plot.ready = true;
+    saveGame();
+    render();
+    alert("⚡ One crop is now ready!");
+}
+
+function testerHarvestOne() {
+    if(!testerIsUnlocked()) return;
+    const index = game.plots.findIndex(plot => plot && (plot.ready || Date.now() >= Number(plot.finish)));
+    if(index < 0) {
+        alert("🌱 No crop is ready yet!");
+        return;
+    }
+
+    const plot = game.plots[index];
+    const crop = crops[plot.type];
+    if(!crop) return;
+    const level = Number(game.plotLevels[index] || 0);
+    const earned = Math.floor(crop.sell * (1 + level * 0.10));
+    game.cash = Number(game.cash || 0) + earned;
+    game.plots[index] = null;
+    if(game.stats) {
+        game.stats.harvested = Number(game.stats.harvested || 0) + 1;
+        game.stats.moneyEarned = Number(game.stats.moneyEarned || 0) + earned;
+    }
+    saveGame();
+    render();
+    alert("🥔 Tester harvested one crop for $" + earned.toLocaleString() + "!");
+}
+
+function testerClearField() {
+    if(!testerIsUnlocked()) return;
+    if(!confirm("Clear only your current field? Your cash, seeds, pets, and upgrades will stay.")) return;
+    game.plots = Array(12).fill(null);
+    if(Array.isArray(game.farms)) game.farms[game.activeFarm || 0] = game.plots;
+    saveGame();
+    render();
+    alert("🧹 Your current field was cleared.");
 }
 
 /* ==========================================
