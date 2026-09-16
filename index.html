@@ -806,6 +806,7 @@ body {
     async setShopStock(stock) {
       if (!window.GlobalDB.ready) return false;
       const clean = {};
+      const now = Date.now();
       Object.entries(stock || {}).forEach(([k,v]) => {
         if (window.ALL_SHOP_SEEDS?.includes(k)) {
           const cap = (typeof window.getSeedRarity === "function" && window.getSeedRarity(k) === "SECRET") ? 2 : 5;
@@ -813,9 +814,13 @@ body {
         }
       });
       await set(ref(window.GlobalDB.db, "global/shopStock"), clean);
-      await set(ref(window.GlobalDB.db, "global/shopMeta"), {
-        updatedAt: Date.now(),
-        updatedBy: window.GlobalDB.uid
+      // Reset the one-minute timer after a manual/global restock.
+      // update() preserves the rest of shopMeta instead of deleting it.
+      await update(ref(window.GlobalDB.db, "global/shopMeta"), {
+        updatedAt: now,
+        updatedBy: window.GlobalDB.uid,
+        lastAutoRestockAt: now,
+        reason: "manual-global-restock"
       });
       return true;
     },
@@ -824,9 +829,11 @@ body {
         return false;
       }
       await runTransaction(ref(window.GlobalDB.db, `global/shopStock/${type}`), () => 1);
-      await set(ref(window.GlobalDB.db, "global/shopMeta"), {
-        updatedAt: Date.now(),
+      const now = Date.now();
+      await update(ref(window.GlobalDB.db, "global/shopMeta"), {
+        updatedAt: now,
         updatedBy: window.GlobalDB.uid,
+        lastAutoRestockAt: now,
         reason: "admin-stock-one"
       });
       return true;
@@ -884,6 +891,9 @@ body {
     },
     listen() {
       if (!window.GlobalDB.ready) return;
+      // Ignore the existing latest message when a player first connects.
+      // Only broadcasts sent after this listener starts should pop up.
+      let broadcastListenerReady = false;
       onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
         const v = snap.val();
         if (v) window.dispatchEvent(new CustomEvent("global-restock", { detail: v }));
@@ -899,6 +909,10 @@ body {
       onValue(ref(window.GlobalDB.db, "global/broadcasts"), snap => {
         const all = snap.val() || {};
         const entries = Object.values(all).sort((a,b) => (b.at || 0) - (a.at || 0));
+        if (!broadcastListenerReady) {
+          broadcastListenerReady = true;
+          return;
+        }
         if (entries[0]) window.dispatchEvent(new CustomEvent("global-broadcast", { detail: entries[0] }));
       });
     }
@@ -3545,8 +3559,23 @@ async function adminStockOneSeed() {
         return;
     }
     try {
+        // Limited/secret seeds must be enabled or renderShop intentionally hides them.
+        // Turn on the selected event locally and globally before stocking its one copy.
+        if(crops[type].limited) {
+            game.limited = game.limited || {};
+            game.limited[type] = true;
+            if(window.GlobalAPI?.setLimited) {
+                await window.GlobalAPI.setLimited(type, true);
+            }
+            saveGame();
+        }
         const stocked = await window.GlobalAPI.stockOne(type);
         if(!stocked) throw new Error("Could not stock seed");
+        game.shopStock = game.shopStock || {};
+        game.shopStock[type] = 1;
+        PotatoStorage.set("potatoGlobalRestockSeenAt", String(Date.now()));
+        saveGame();
+        render();
         alert("📦 Exactly 1 " + crops[type].name + " is now in the global shop. Players must buy it!");
     } catch(error) {
         console.error("Could not stock one seed", error);
@@ -3804,15 +3833,29 @@ function renderLimitedButtons() {
    BROADCAST
 ========================================== */
 
-function sendBroadcast() {
+async function sendBroadcast() {
+    const input = document.getElementById("broadcastMessage");
+    const message = String(input?.value || "").trim();
 
-    const message =
-        document.getElementById(
-            "broadcastMessage"
-        ).value;
+    if(!message) {
+        alert("📢 Type a broadcast message first!");
+        return;
+    }
 
-    sendBroadcastText(message);
+    if(!window.GlobalDB?.ready || !window.GlobalAPI?.broadcast) {
+        alert("⚠️ Firebase is not online, so the broadcast was not sent.");
+        return;
+    }
 
+    try {
+        await window.GlobalAPI.broadcast(message);
+        // The sender sees the same big banner immediately. Other connected
+        // players receive it through the global-broadcast listener below.
+        sendBroadcastText(message);
+    } catch(error) {
+        console.error("Global broadcast failed", error);
+        alert("⚠️ Broadcast failed. Check your Firebase database rules.");
+    }
 }
 
 function sendBroadcastText(message) {
@@ -4143,7 +4186,10 @@ window.addEventListener("beforeunload", saveGame);
 
   window.addEventListener("global-broadcast", (ev) => {
     const d = ev.detail || {};
-    if (d.message && d.by !== window.GlobalDB?.uid) showGlobalToast("📢 " + d.message);
+    if (d.message && d.by !== window.GlobalDB?.uid) {
+      if (typeof sendBroadcastText === "function") sendBroadcastText(d.message);
+      else showGlobalToast("📢 " + d.message);
+    }
   });
 
   window.showGlobalToast = function(msg) {
