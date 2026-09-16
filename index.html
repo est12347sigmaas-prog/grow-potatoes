@@ -828,6 +828,10 @@ body {
       if (!window.GlobalDB.ready || !window.ALL_SHOP_SEEDS?.includes(type) || type === "common") {
         return false;
       }
+      if (window.LIMITED_SHOP_SEEDS?.includes(type) &&
+          (typeof game === "undefined" || !game.limited?.[type])) {
+        return false;
+      }
       await runTransaction(ref(window.GlobalDB.db, `global/shopStock/${type}`), () => 1);
       const now = Date.now();
       await update(ref(window.GlobalDB.db, "global/shopMeta"), {
@@ -2002,6 +2006,22 @@ body{
 
                     <button class="btn gold-btn" onclick="adminMillion()">💰 +$1,000,000</button>
 
+                    <div class="admin-heading">
+                        💵 CUSTOM LOCAL MONEY
+                    </div>
+
+                    <input
+                        id="adminMoneyAmount"
+                        type="text"
+                        inputmode="decimal"
+                        placeholder="EXAMPLE: 500000, 2M, 1B, OR 1T"
+                        style="grid-column:span 2;"
+                    >
+
+                    <button class="btn gold-btn" style="grid-column:span 2;" onclick="adminAddCustomMoney()">
+                        💵 ADD TYPED MONEY
+                    </button>
+
                     <button class="btn" onclick="adminSelectedSeeds()">🎒 +25 EQUIPPED SEED</button>
 
                     <button class="btn" onclick="adminHarvestAll()">🥔 HARVEST ALL READY</button>
@@ -2226,6 +2246,10 @@ body{
         </div>
 <div id="updateLog" class="panel" style="display:none;">
   <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V4.3 — Complete Stock Picker + Event Rules</b><br>📦 Put One Copy now rebuilds from the exact 31-seed finite shop list, so every shop seed except infinite Common Spud appears.<br><br>🔒 Limited and secret seeds can only receive stock while their event toggle is ON. Manual and automatic restocks keep event-off seeds at zero stock.</div>
+<div class="log-entry"><b>V4.2 — Full Restock + Custom Money</b><br>🌱 Owner Global Restock now guarantees stock for every normal seed plus limited/secret seeds whose events are active.<br><br>💵 Added a custom local-money admin box with K, M, B, and T shortcuts.</div>
+<div class="log-entry"><b>V4.1 — Crate Balance Update</b><br>⚖️ Nerfed every cash crate so it is no longer an easy money printer. Most rolls now lose some value, strong wins are less common, and the rare jackpot pays 5× the crate price.</div>
+<div class="log-entry"><b>V4.0 — Firebase + Admin Tools</b><br>🌐 Connected global Firebase stock, repaired live server broadcasts, added the owner Stock One Seed tool, fixed instant repeat restocks, covered all 32 shop seeds, and made stocked limited seeds appear for everyone.<br><br>🧪 Added the smaller local Tester Panel with test cash, seed, crop, harvest, field-clear, and money-reset tools.</div>
 <div class="log-entry"><b>V3.5 — Quick Equip Visuals</b><br>🎒 Quick Equip now has a white background and larger, easier-to-read seed names.</div>
 <div class="log-entry"><b>V3.4 — Layout Repair</b><br>🛠️ Fixed conflicting layout CSS and moved Quick Equip into the real right-side space beside the plots.</div>
 <div class="log-entry"><b>V3.3 — Side-Space Equip</b><br>🎒 Equip Seeds now uses the empty space outside the plots on wide screens instead of shrinking the farm.</div>
@@ -2264,6 +2288,10 @@ body{
     "common","rare","quantum","epic","nebula","supernova","mythic","void",
     "ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy",
     "infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial",
+    "golden","ghost","tree","diamond",
+    "shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"
+  ];
+  const LIMITED_SHOP_SEEDS = [
     "golden","ghost","tree","diamond",
     "shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"
   ];
@@ -2312,6 +2340,7 @@ body{
   };
 
   window.ALL_SHOP_SEEDS = ALL_SHOP_SEEDS;
+  window.LIMITED_SHOP_SEEDS = LIMITED_SHOP_SEEDS;
   window.getSeedRarity = id => rarityMap[id] || "COMMON";
   window.getRarityColor = r => rarityColors[r] || "#bdbdbd";
 
@@ -2322,6 +2351,11 @@ body{
         s[id] = 999999;
         return;
       }
+      if(LIMITED_SHOP_SEEDS.includes(id) &&
+         (typeof game === "undefined" || !game.limited?.[id])) {
+        s[id] = 0;
+        return;
+      }
 
       const chance = window.getSeedRestockChance(id);
       const appears = (Math.random() * 100) < chance;
@@ -2330,6 +2364,26 @@ body{
       const rarity = window.getSeedRarity(id);
       const maxStock = rarity === "SECRET" ? 2 : 5;
       s[id] = appears ? (Math.floor(Math.random()*maxStock)+1) : 0;
+    });
+    return s;
+  };
+
+  // Owner manual restocks use this list so every defined seed is available.
+  // Normal one-minute restocks keep using rarity chances.
+  window.makeFullShopStock = function(){
+    const s = {};
+    ALL_SHOP_SEEDS.forEach(id => {
+      if(id === "common") {
+        s[id] = 999999;
+        return;
+      }
+      if(LIMITED_SHOP_SEEDS.includes(id) &&
+         (typeof game === "undefined" || !game.limited?.[id])) {
+        s[id] = 0;
+        return;
+      }
+      const maxStock = window.getSeedRarity(id) === "SECRET" ? 2 : 5;
+      s[id] = Math.floor(Math.random() * maxStock) + 1;
     });
     return s;
   };
@@ -3483,6 +3537,32 @@ function adminMillion() {
     alert("💰 +$1,000,000!");
 }
 
+function adminAddCustomMoney() {
+    const input = document.getElementById("adminMoneyAmount");
+    const raw = String(input?.value || "").toUpperCase().replace(/[$,\s]/g, "");
+    const match = raw.match(/^(\d+(?:\.\d+)?)([KMBT]?)$/);
+    if(!match) {
+        alert("❌ Type an amount like 500000, 2M, 1B, or 1T.");
+        return;
+    }
+
+    const multiplier = {"":1, K:1e3, M:1e6, B:1e9, T:1e12}[match[2]];
+    const requested = Math.floor(Number(match[1]) * multiplier);
+    const current = Math.max(0, Number(game.cash || 0));
+    const amount = Math.min(requested, Math.max(0, Number.MAX_SAFE_INTEGER - current));
+
+    if(!Number.isFinite(requested) || requested <= 0 || amount <= 0) {
+        alert("❌ That amount is too large or invalid.");
+        return;
+    }
+
+    game.cash = current + amount;
+    if(input) input.value = "";
+    saveGame();
+    render();
+    alert("💵 Added $" + amount.toLocaleString() + " to this player's save!");
+}
+
 function adminSelectedSeeds() {
     const type = game.selected;
     if(!type || !crops[type]) {
@@ -3535,16 +3615,24 @@ async function adminEnableAllLimited() {
 
 function populateAdminStockSeedSelect() {
     const select = document.getElementById("adminStockSeedSelect");
-    if(!select || select.options.length > 1) return;
-    Object.entries(crops)
-        .filter(([type]) => type !== "common")
-        .sort((a,b) => a[1].name.localeCompare(b[1].name))
-        .forEach(([type,crop]) => {
+    if(!select) return;
+    const previous = select.value;
+    select.innerHTML = '<option value="">CHOOSE A SEED (31 TOTAL)</option>';
+    (window.ALL_SHOP_SEEDS || Object.keys(crops))
+        .filter(type => type !== "common" && crops[type])
+        .forEach(type => {
+            const crop = crops[type];
             const option = document.createElement("option");
             option.value = type;
-            option.textContent = crop.name;
+            const eventState = crop.limited
+                ? (game.limited?.[type] ? " — EVENT ON" : " — EVENT OFF")
+                : "";
+            option.textContent = crop.name + eventState;
             select.appendChild(option);
         });
+    if([...select.options].some(option => option.value === previous)) {
+        select.value = previous;
+    }
 }
 
 async function adminStockOneSeed() {
@@ -3558,17 +3646,11 @@ async function adminStockOneSeed() {
         alert("⚠️ Firebase is not online yet.");
         return;
     }
+    if(crops[type].limited && !game.limited?.[type]) {
+        alert("🔒 Turn on the " + crops[type].name + " event before stocking it.");
+        return;
+    }
     try {
-        // Limited/secret seeds must be enabled or renderShop intentionally hides them.
-        // Turn on the selected event locally and globally before stocking its one copy.
-        if(crops[type].limited) {
-            game.limited = game.limited || {};
-            game.limited[type] = true;
-            if(window.GlobalAPI?.setLimited) {
-                await window.GlobalAPI.setLimited(type, true);
-            }
-            saveGame();
-        }
         const stocked = await window.GlobalAPI.stockOne(type);
         if(!stocked) throw new Error("Could not stock seed");
         game.shopStock = game.shopStock || {};
@@ -3826,6 +3908,8 @@ function renderLimitedButtons() {
                 );
 
         });
+
+    populateAdminStockSeedSelect();
 
 }
 
@@ -4380,7 +4464,11 @@ window.EXTRA_POTATO_SEEDS = {
   }
 
   window.resetGlobalShopStock = async function(){
-    const stock = window.makeRandomShopStock();
+    // Owner restocks guarantee that every seed has stock. The automatic
+    // one-minute restock still uses rarity chances through makeRandomShopStock().
+    const stock = window.makeFullShopStock
+      ? window.makeFullShopStock()
+      : window.makeRandomShopStock();
 
     if(typeof game !== "undefined"){
       game.shopStock = {...stock};
@@ -4394,7 +4482,7 @@ window.EXTRA_POTATO_SEEDS = {
       try {
         await window.GlobalAPI.setShopStock(stock);
         PotatoStorage.set("potatoGlobalRestockSeenAt", String(Date.now()));
-        if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! Every seed now has 1–5 stock.");
+        if(window.showGlobalToast) window.showGlobalToast("🌎 GLOBAL RESTOCK! All normal and event-enabled seeds are stocked.");
       } catch(e) {
         console.warn("Global restock failed:", e);
         if(window.showGlobalToast) window.showGlobalToast("⚠️ Firebase restock failed; local stock was reset.");
@@ -4930,43 +5018,43 @@ window.addEventListener("DOMContentLoaded",()=>{
 const POTATO_CRATES = {
   basic: {
     name:"📦 Basic Crate", cost:100000, cls:"crate-basic",
-    desc:"A starter crate with a chance to profit.",
-    rewards:[50000,75000,100000,150000,250000,500000]
+    desc:"A balanced starter gamble with a rare 5x jackpot.",
+    rewards:[25000,50000,75000,100000,200000,500000]
   },
   lucky: {
     name:"🍀 Lucky Crate", cost:1000000, cls:"crate-lucky",
-    desc:"Bigger rolls and a shot at a multi-million jackpot.",
-    rewards:[500000,750000,1000000,1500000,2500000,5000000]
+    desc:"A risky million-dollar roll with a rare 5x jackpot.",
+    rewards:[250000,500000,750000,1000000,2000000,5000000]
   },
   epic: {
     name:"💜 Epic Crate", cost:10000000, cls:"crate-epic",
-    desc:"High-tier crate with huge cash hits.",
-    rewards:[5000000,7500000,10000000,20000000,50000000,100000000]
+    desc:"High-tier risk with controlled rewards and a rare 5x hit.",
+    rewards:[2500000,5000000,7500000,10000000,20000000,50000000]
   },
   mythic: {
     name:"🔥 Mythic Crate", cost:100000000, cls:"crate-mythic",
-    desc:"Expensive, dangerous, and capable of a massive jackpot.",
-    rewards:[50000000,75000000,100000000,250000000,500000000,1000000000]
+    desc:"Expensive and dangerous, with a rare 5x jackpot.",
+    rewards:[25000000,50000000,75000000,100000000,200000000,500000000]
   },
   cosmic: {
     name:"🌌 Cosmic Crate", cost:1000000000, cls:"crate-cosmic",
-    desc:"Billion-dollar potato gambling... with cosmic rewards.",
-    rewards:[500000000,750000000,1000000000,2500000000,5000000000,10000000000]
+    desc:"Billion-dollar potato gambling with balanced cosmic rewards.",
+    rewards:[250000000,500000000,750000000,1000000000,2000000000,5000000000]
   },
   void: {
     name:"🕳️ Void Crate", cost:10000000000, cls:"crate-void",
-    desc:"A $10B crate pulled straight from the potato void.",
-    rewards:[5000000000,7500000000,10000000000,25000000000,50000000000,100000000000]
+    desc:"A risky $10B crate pulled straight from the potato void.",
+    rewards:[2500000000,5000000000,7500000000,10000000000,20000000000,50000000000]
   },
   billionaire: {
     name:"👑 Billionaire Crate", cost:100000000000, cls:"crate-billion",
-    desc:"Only potato tycoons should be touching this thing.",
-    rewards:[50000000000,75000000000,100000000000,250000000000,500000000000,1000000000000]
+    desc:"A serious tycoon gamble—most rolls do not return the full price.",
+    rewards:[25000000000,50000000000,75000000000,100000000000,200000000000,500000000000]
   },
   trillion: {
     name:"♾️ TRILLIONAIRE CRATE", cost:1000000000000, cls:"crate-trillion",
-    desc:"The final $1 TRILLION crate. Its jackpot can make you absurdly rich.",
-    rewards:[500000000000,750000000000,1000000000000,2500000000000,5000000000000,10000000000000]
+    desc:"The final $1T high-risk crate, with a rare $5T jackpot.",
+    rewards:[250000000000,500000000000,750000000000,1000000000000,2000000000000,5000000000000]
   }
 };
 
