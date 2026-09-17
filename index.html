@@ -393,6 +393,20 @@ body {
     box-shadow:0 0 12px #00e5ff;
 }
 
+.potato.lone {
+    background:
+        radial-gradient(circle at 28% 23%,#f7e0b6 0 7%,transparent 8%),
+        radial-gradient(circle at 72% 68%,#4a2b1b 0 6%,transparent 7%),
+        linear-gradient(145deg,#a56a3f,#4b2a1b);
+    border-color:#d6a06d;
+    box-shadow:0 0 16px #c08352,inset -5px -6px rgba(30,10,0,.35);
+}
+.potato.lone .potato-face::before {
+    content:"★";
+    position:absolute;left:7px;top:-23px;color:#ffe3a1;font-size:15px;
+    text-shadow:0 0 6px #ffb45b;
+}
+
 .potato.quantum {
     background:
         radial-gradient(circle at 25% 20%,#fff 0 7%,transparent 8%),
@@ -807,6 +821,18 @@ body {
       });
       return true;
     },
+    async giveSeed(type) {
+      if (!window.GlobalDB.ready || !window.ALL_SHOP_SEEDS?.includes(type)) return false;
+      const now = Date.now();
+      await set(ref(window.GlobalDB.db, "global/seedGiveaway"), {
+        id: window.GlobalDB.uid + "_" + now + "_" + Math.random().toString(36).slice(2,8),
+        type,
+        amount: 1,
+        at: now,
+        by: window.GlobalDB.uid
+      });
+      return true;
+    },
     async setLimited(type, enabled) {
       if (!window.GlobalDB.ready) return false;
       await update(ref(window.GlobalDB.db, "global/limited"), {
@@ -909,6 +935,7 @@ body {
       // Ignore the existing latest message when a player first connects.
       // Only broadcasts sent after this listener starts should pop up.
       let broadcastListenerReady = false;
+      let giveawayListenerReady = false;
       onValue(ref(window.GlobalDB.db, "global/restock"), snap => {
         const v = snap.val();
         if (v) window.dispatchEvent(new CustomEvent("global-restock", { detail: v }));
@@ -934,6 +961,16 @@ body {
         const event = snap.val();
         if (event && Number(event.endsAt || 0) > Date.now()) {
           window.dispatchEvent(new CustomEvent("global-taco-rain", { detail: event }));
+        }
+      });
+      onValue(ref(window.GlobalDB.db, "global/seedGiveaway"), snap => {
+        const giveaway = snap.val();
+        if (!giveawayListenerReady) {
+          giveawayListenerReady = true;
+          return;
+        }
+        if (giveaway?.id && giveaway?.type) {
+          window.dispatchEvent(new CustomEvent("global-seed-giveaway", { detail: giveaway }));
         }
       });
     }
@@ -2076,6 +2113,15 @@ body{
                     <button class="btn green-btn" style="grid-column:span 2;" onclick="adminStockOneSeed()">
                         📦 PUT 1 COPY IN GLOBAL SHOP
                     </button>
+                    <div class="admin-heading">
+                        🎁 GIVE 1 FREE SEED TO ONLINE PLAYERS
+                    </div>
+                    <select id="adminGiveawaySeedSelect" style="grid-column:span 2;">
+                        <option value="">CHOOSE A GIVEAWAY SEED</option>
+                    </select>
+                    <button class="btn gold-btn" style="grid-column:span 2;" onclick="adminGiveSeedToEveryone()">
+                        🎁 GIVE 1 FREE SEED TO EVERYONE ONLINE
+                    </button>
 <div class="admin-heading">
                         ✨ LIMITED SEED TOGGLES
                     </div>
@@ -2279,11 +2325,12 @@ body{
         </div>
 <div id="updateLog" class="panel" style="display:none;">
   <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V4.5 — Lone Tater + Global Giveaways</b><br>⭐ Added the new Divine Lone Tater with its own detailed brown-and-gold potato style, shop stock, inventory, equip support, and economy values.<br><br>🎁 Added an owner-only giveaway tool: choose any seed and every player currently online receives one for free. Giveaway IDs prevent duplicate rewards.<br><br>💰 Large balances now use compact labels such as $10B and $1T.</div>
 <div class="log-entry"><b>V4.4 — Raining Tacos Admin Event</b><br>🌮 Added an owner-only global event button that makes tacos fall across every connected player's screen for 20 seconds. The tester panel cannot activate it.</div>
-<div class="log-entry"><b>V4.3 — Complete Stock Picker + Event Rules</b><br>📦 Put One Copy now rebuilds from the exact 31-seed finite shop list, so every shop seed except infinite Common Spud appears.<br><br>🔒 Limited and secret seeds can only receive stock while their event toggle is ON. Manual and automatic restocks keep event-off seeds at zero stock.</div>
+<div class="log-entry"><b>V4.3 — Complete Stock Picker + Event Rules</b><br>📦 Put One Copy rebuilds from the exact finite shop list, so every shop seed except infinite Common Spud appears.<br><br>🔒 Limited and secret seeds can only receive stock while their event toggle is ON. Manual and automatic restocks keep event-off seeds at zero stock.</div>
 <div class="log-entry"><b>V4.2 — Full Restock + Custom Money</b><br>🌱 Owner Global Restock now guarantees stock for every normal seed plus limited/secret seeds whose events are active.<br><br>💵 Added a custom local-money admin box with K, M, B, and T shortcuts.</div>
 <div class="log-entry"><b>V4.1 — Crate Balance Update</b><br>⚖️ Nerfed every cash crate so it is no longer an easy money printer. Most rolls now lose some value, strong wins are less common, and the rare jackpot pays 5× the crate price.</div>
-<div class="log-entry"><b>V4.0 — Firebase + Admin Tools</b><br>🌐 Connected global Firebase stock, repaired live server broadcasts, added the owner Stock One Seed tool, fixed instant repeat restocks, covered all 32 shop seeds, and made stocked limited seeds appear for everyone.<br><br>🧪 Added the smaller local Tester Panel with test cash, seed, crop, harvest, field-clear, and money-reset tools.</div>
+<div class="log-entry"><b>V4.0 — Firebase + Admin Tools</b><br>🌐 Connected global Firebase stock, repaired live server broadcasts, added the owner Stock One Seed tool, fixed instant repeat restocks, and synced the full shop catalog.<br><br>🧪 Added the smaller local Tester Panel with test cash, seed, crop, harvest, field-clear, and money-reset tools.</div>
 <div class="log-entry"><b>V3.5 — Quick Equip Visuals</b><br>🎒 Quick Equip now has a white background and larger, easier-to-read seed names.</div>
 <div class="log-entry"><b>V3.4 — Layout Repair</b><br>🛠️ Fixed conflicting layout CSS and moved Quick Equip into the real right-side space beside the plots.</div>
 <div class="log-entry"><b>V3.3 — Side-Space Equip</b><br>🎒 Equip Seeds now uses the empty space outside the plots on wide screens instead of shrinking the farm.</div>
@@ -2319,7 +2366,7 @@ body{
 /* ===== SHOP HELPERS - LOAD BEFORE GAME ===== */
 (function(){
   const ALL_SHOP_SEEDS = [
-    "common","rare","quantum","epic","nebula","supernova","mythic","void",
+    "common","rare","quantum","epic","nebula","supernova","mythic","void","lone",
     "ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy",
     "infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial",
     "golden","ghost","tree","diamond",
@@ -2333,6 +2380,7 @@ body{
   const rarityMap = {
     common:"COMMON", rare:"UNCOMMON", quantum:"RARE", epic:"EPIC", nebula:"EPIC",
     supernova:"LEGENDARY", mythic:"MYTHIC", void:"MYTHIC", ancient:"DIVINE",
+    lone:"DIVINE",
     infinity:"DIVINE", bedrock:"CELESTIAL", matrix:"CELESTIAL", prism:"CELESTIAL",
     glitch:"SECRET", cosmic:"SECRET", galaxy:"SECRET", infinity2:"SECRET",
     adminium:"ADMIN", crystal:"CELESTIAL", storm:"SECRET", lunar:"SECRET",
@@ -2520,6 +2568,14 @@ const crops = {
         className:"void"
     },
 
+    lone: {
+        name:"Lone Tater",
+        price:175000,
+        sell:800000,
+        grow:28000,
+        className:"lone"
+    },
+
     ancient: {
         name:"Divine Roots",
         price:325000,
@@ -2665,6 +2721,7 @@ let game = {
         supernova:0,
         mythic:0,
         void:0,
+        lone:0,
         ancient:0,
         infinity:0,
         bedrock:0,
@@ -2820,6 +2877,22 @@ if(
    RENDER
 ========================================== */
 
+function formatCompactMoney(value) {
+    const amount = Math.max(0, Number(value || 0));
+    const units = [
+        [1e18,"Qi"], [1e15,"Qa"], [1e12,"T"],
+        [1e9,"B"], [1e6,"M"], [1e3,"K"]
+    ];
+    for(const [size,label] of units) {
+        if(amount >= size) {
+            const scaled = amount / size;
+            const decimals = scaled < 10 ? 2 : (scaled < 100 ? 1 : 0);
+            return scaled.toFixed(decimals).replace(/\.0+$|(?<=\.[0-9])0$/, "") + label;
+        }
+    }
+    return Math.floor(amount).toLocaleString();
+}
+
 function render() {
 
     const ban = document.getElementById("banScreen");
@@ -2827,7 +2900,7 @@ function render() {
 
     document.getElementById("cash")
         .textContent =
-        game.adminInfiniteMoney ? "∞" : Math.floor(game.cash).toLocaleString();
+        game.adminInfiniteMoney ? "∞" : formatCompactMoney(game.cash);
 
     if(typeof updateInfiniteMoneyButton === "function") updateInfiniteMoneyButton();
 
@@ -3666,13 +3739,18 @@ async function startAdminTacoRain() {
 }
 
 function populateAdminStockSeedSelect() {
-    const select = document.getElementById("adminStockSeedSelect");
-    if(!select) return;
-    const previous = select.value;
-    select.innerHTML = '<option value="">CHOOSE A SEED (31 TOTAL)</option>';
-    (window.ALL_SHOP_SEEDS || Object.keys(crops))
-        .filter(type => type !== "common" && crops[type])
-        .forEach(type => {
+    const allTypes = (window.ALL_SHOP_SEEDS || Object.keys(crops))
+        .filter(type => crops[type]);
+
+    function fillSelect(select, types, placeholder) {
+        if(!select) return;
+        const previous = select.value;
+        select.innerHTML = "";
+        const first = document.createElement("option");
+        first.value = "";
+        first.textContent = placeholder;
+        select.appendChild(first);
+        types.forEach(type => {
             const crop = crops[type];
             const option = document.createElement("option");
             option.value = type;
@@ -3682,9 +3760,22 @@ function populateAdminStockSeedSelect() {
             option.textContent = crop.name + eventState;
             select.appendChild(option);
         });
-    if([...select.options].some(option => option.value === previous)) {
-        select.value = previous;
+        if([...select.options].some(option => option.value === previous)) {
+            select.value = previous;
+        }
     }
+
+    const finiteTypes = allTypes.filter(type => type !== "common");
+    fillSelect(
+        document.getElementById("adminStockSeedSelect"),
+        finiteTypes,
+        "CHOOSE A SEED (" + finiteTypes.length + " TOTAL)"
+    );
+    fillSelect(
+        document.getElementById("adminGiveawaySeedSelect"),
+        allTypes,
+        "CHOOSE A GIVEAWAY SEED (" + allTypes.length + " TOTAL)"
+    );
 }
 
 async function adminStockOneSeed() {
@@ -3714,6 +3805,31 @@ async function adminStockOneSeed() {
     } catch(error) {
         console.error("Could not stock one seed", error);
         alert("⚠️ The global stock update failed. Check Firebase Authentication and Rules.");
+    }
+}
+
+async function adminGiveSeedToEveryone() {
+    const controls = document.getElementById("adminControls");
+    if(!controls || controls.style.display === "none") {
+        alert("🔒 Unlock the owner Admin Panel first.");
+        return;
+    }
+    const select = document.getElementById("adminGiveawaySeedSelect");
+    const type = select?.value;
+    if(!type || !crops[type]) {
+        alert("🎁 Choose a giveaway seed first!");
+        return;
+    }
+    if(!window.GlobalDB?.ready || !window.GlobalAPI?.giveSeed) {
+        alert("⚠️ Firebase is not online, so the giveaway was not sent.");
+        return;
+    }
+    try {
+        const sent = await window.GlobalAPI.giveSeed(type);
+        if(!sent) throw new Error("Could not send giveaway");
+    } catch(error) {
+        console.error("Seed giveaway failed", error);
+        alert("⚠️ Giveaway failed. Check your Firebase database rules.");
     }
 }
 
@@ -4366,6 +4482,29 @@ window.addEventListener("beforeunload", saveGame);
     if(remaining > 0) window.startTacoRainVisual(remaining);
   });
 
+  window.addEventListener("global-seed-giveaway", (ev) => {
+    const data = ev.detail || {};
+    const type = String(data.type || "");
+    const giveawayId = String(data.id || "");
+    if(!giveawayId || typeof crops === "undefined" || !crops[type] || typeof game === "undefined") return;
+
+    const claimKey = "potatoSeedGiveawayClaim_" + giveawayId;
+    if(PotatoStorage.get(claimKey)) return;
+
+    game.seeds = game.seeds || {};
+    game.seeds[type] = Number(game.seeds[type] || 0) + 1;
+    PotatoStorage.set(claimKey, "claimed");
+    if(typeof saveGame === "function") saveGame();
+    if(typeof render === "function") render();
+
+    const eventNote = crops[type].limited && !game.limited?.[type]
+      ? " (Keep it until its event turns on!)"
+      : "";
+    if(typeof sendBroadcastText === "function") {
+      sendBroadcastText("🎁 FREE SEED: Everyone online received 1 " + crops[type].name + "!" + eventNote);
+    }
+  });
+
   window.showGlobalToast = function(msg) {
     let box = document.getElementById("global-toast");
     if (!box) {
@@ -4394,7 +4533,7 @@ window.addEventListener("beforeunload", saveGame);
         Object.keys(CROPS).forEach(k => stock[k] = 99);
       } else {
         // Matches the crop list in this game.
-        ["common","rare","quantum","epic","nebula","supernova","mythic","void","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial","golden","ghost","tree","diamond","shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"]
+        ["common","rare","quantum","epic","nebula","supernova","mythic","void","lone","ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy","infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial","golden","ghost","tree","diamond","shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"]
           .forEach(k => stock[k] = 99);
       }
     } catch(e) {}
