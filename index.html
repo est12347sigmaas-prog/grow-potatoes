@@ -456,6 +456,61 @@ body {
     to { transform:translateY(-5px) rotate(12deg); }
 }
 
+/* ===== PERMANENT CROP MUTATIONS ===== */
+.potato.mutation-shiny {
+    filter:brightness(1.45) saturate(1.25);
+    box-shadow:0 0 14px #fff,0 0 24px #b9f5ff,inset -4px -5px rgba(255,255,255,.25);
+}
+.potato.mutation-golden {
+    background:linear-gradient(145deg,#fff3a0,#f4b400 52%,#9a5800);
+    border-color:#fff068;box-shadow:0 0 18px #ffd51f,inset -5px -6px rgba(100,50,0,.3);
+}
+.potato.mutation-rainbow {
+    background:linear-gradient(135deg,#ff3b3b,#ffcf33,#4cff65,#35cfff,#914dff,#ff52c8);
+    background-size:300% 300%;border-color:#fff;
+    box-shadow:0 0 18px #ff65ed,0 0 28px #54dfff;
+    animation:rainbowMutation 1.7s linear infinite;
+}
+@keyframes rainbowMutation {
+    0% { background-position:0% 50%;filter:hue-rotate(0deg); }
+    50% { background-position:100% 50%; }
+    100% { background-position:0% 50%;filter:hue-rotate(360deg); }
+}
+.potato.mutation-glitched {
+    filter:hue-rotate(105deg) contrast(1.6);
+    box-shadow:-4px 0 #00ffff,4px 0 #ff00d4,0 0 18px #8b00ff;
+    animation:glitchMutation .22s steps(2) infinite;
+}
+@keyframes glitchMutation {
+    from { translate:-1px 0; }
+    to { translate:2px -1px; }
+}
+.potato.mutation-giant { transform:scale(1.32);z-index:3; }
+.potato.mutation-taco { box-shadow:0 0 18px #ffb300,0 0 28px #ff5e00; }
+.mutation-snow-cap {
+    position:absolute;left:-3px;top:-7px;width:calc(100% + 6px);height:15px;
+    z-index:7;border-radius:50% 50% 40% 40%;
+    background:radial-gradient(circle at 25% 35%,#fff 0 22%,transparent 23%),
+               radial-gradient(circle at 55% 25%,#fff 0 28%,transparent 29%),
+               radial-gradient(circle at 80% 45%,#e6f8ff 0 24%,transparent 25%);
+    filter:drop-shadow(0 2px 1px #8fd8ff);
+}
+.mutation-ice-block {
+    position:absolute;inset:-7px;z-index:8;border:3px solid #baf4ff;border-radius:5px;
+    background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(80,205,255,.25),rgba(210,250,255,.5));
+    box-shadow:0 0 16px #67ddff,inset 0 0 12px rgba(255,255,255,.8);
+    pointer-events:none;
+}
+.mutation-ice-block::before {
+    content:"";position:absolute;left:3px;top:3px;width:45%;height:3px;
+    background:rgba(255,255,255,.9);transform:rotate(-28deg);
+}
+.mutation-label {
+    position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
+    z-index:8;padding:2px 4px;border-radius:4px;background:#160020;color:#fff;
+    font-size:5px;white-space:nowrap;border:1px solid #ff66ff;
+}
+
 .potato.quantum {
     background:
         radial-gradient(circle at 25% 20%,#fff 0 7%,transparent 8%),
@@ -1847,6 +1902,31 @@ body{
   from{transform:translate3d(0,-15vh,0) rotate(0deg)}
   to{transform:translate3d(var(--taco-drift),115vh,0) rotate(var(--taco-spin))}
 }
+
+/* ===== VISIBLE WEATHER EFFECTS ===== */
+.weather-effects{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9996}
+.weather-rain{background:linear-gradient(to bottom,rgba(25,55,100,.25),transparent 60%)}
+.weather-drop{position:absolute;top:-12vh;width:2px;height:28px;background:linear-gradient(transparent,#80cfff);animation:weatherRain .7s linear infinite}
+@keyframes weatherRain{to{transform:translate(-12vw,120vh)}}
+.weather-flake{position:absolute;top:-8vh;color:#fff;text-shadow:0 0 5px #74d8ff;animation:weatherSnow linear infinite}
+@keyframes weatherSnow{to{transform:translate(var(--snow-drift),115vh) rotate(360deg)}}
+.weather-heat{background:linear-gradient(rgba(255,70,0,.16),rgba(255,190,0,.08));animation:heatPulse 1.4s ease-in-out infinite alternate}
+@keyframes heatPulse{to{background-color:rgba(255,65,0,.15)}}
+.weather-rainbow{background:linear-gradient(115deg,rgba(255,0,0,.08),rgba(255,190,0,.08),rgba(0,255,100,.08),rgba(0,150,255,.08),rgba(180,0,255,.08));animation:rainbowSky 3s linear infinite}
+@keyframes rainbowSky{to{filter:hue-rotate(360deg)}}
+.weather-lightning{background:rgba(8,15,35,.28)}
+.weather-lightning::after{content:"⚡";position:absolute;left:58%;top:4%;font-size:90px;color:#fff8a0;filter:drop-shadow(0 0 18px #fff);animation:lightningFlash 3s steps(1) infinite}
+@keyframes lightningFlash{0%,8%,12%,100%{opacity:0}9%,11%{opacity:1}}
+.mutation-corner{
+  position:fixed;right:12px;top:12px;z-index:9997;width:190px;max-height:42vh;overflow:auto;
+  padding:9px;border:2px solid #a64dff;border-radius:9px;
+  background:rgba(18,0,29,.9);color:#fff;box-shadow:0 0 15px rgba(166,77,255,.55);
+  font:7px 'Press Start 2P',monospace;line-height:1.6;
+}
+.mutation-corner-title{color:#dca2ff;margin-bottom:6px;border-bottom:1px solid #74319b;padding-bottom:5px}
+.mutation-corner-row{padding:4px 0;color:#fff}
+.mutation-corner-empty{color:#a78daf;font-size:6px}
+@media(max-width:700px){.mutation-corner{top:auto;right:8px;bottom:52px;width:155px;max-height:28vh;font-size:6px}}
 </style>
 
 </head>
@@ -1855,6 +1935,11 @@ body{
 
 <div id="global-status" style="position:fixed;left:12px;bottom:12px;z-index:9998;padding:8px 11px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.72);font:10px 'Press Start 2P',monospace;color:#aaa;">
   🌐 FIREBASE: SETUP NEEDED
+</div>
+
+<div id="mutationCorner" class="mutation-corner" aria-live="polite">
+  <div class="mutation-corner-title">🧬 MUTATIONS</div>
+  <div class="mutation-corner-empty">None growing yet</div>
 </div>
 
 
@@ -2153,6 +2238,8 @@ body{
                     <button class="btn gold-btn" onclick="startAdminTacoRain()">🌮 RAINING TACOS (20 SEC)</button>
                     <button class="btn" onclick="randomizeWeather('rain')">🌧️ FORCE RAIN (2 MIN)</button>
                     <button class="btn" onclick="randomizeWeather('rainbow')">🌈 FORCE RAINBOW (2 MIN)</button>
+                    <button class="btn" onclick="randomizeWeather('snow')">❄️ FORCE SNOW (2 MIN)</button>
+                    <button class="btn" onclick="randomizeWeather('lightning')">⚡ FORCE LIGHTNING (2 MIN)</button>
                     <div class="admin-heading">
                         📦 STOCK ONE SEED FOR PLAYERS
                     </div>
@@ -2374,6 +2461,9 @@ body{
         </div>
 <div id="updateLog" class="panel" style="display:none;">
   <h2>📜 UPDATE LOG</h2>
+<div class="log-entry"><b>V4.9 — Mutation Corner</b><br>🧬 Added a live Mutations box in the top-right corner. It shows every mutation currently growing across both farms, its value multiplier, and the number of potatoes carrying it.</div>
+<div class="log-entry"><b>V4.8 — Weather You Can See</b><br>🌦️ Rain now falls across the screen, lightning storms flash, snow drifts down, heat glows, and rainbow weather colors the sky.<br><br>❄️ Added Snowy mutations with snow on the potato's head and Frozen mutations that trap it in a block of ice.<br><br>🌮 Raining Tacos now only boosts the chance of a Taco mutation instead of guaranteeing one.</div>
+<div class="log-entry"><b>V4.7 — Permanent Visual Mutations</b><br>🧬 Mutations now stay attached to each planted potato until harvest and change its appearance. Taco gives 5× value and puts a taco on its head; Rainbow gives 3× and animates through rainbow colors. Shiny, Golden, Glitched, and Giant also have unique effects.</div>
 <div class="log-entry"><b>V4.6 — Ultimate Lone Tator + Taco Seeds</b><br>💜 Lone Tator is now the strongest seed in the game, sits at the bottom of the shop and admin seed lists, uses a dark-purple LONE rarity title, and has a vertical design with glasses and a dark jacket.<br><br>🌮 During Raining Tacos, every planted seed now gets its own bouncing taco.</div>
 <div class="log-entry"><b>V4.5 — Lone Tator + Global Giveaways</b><br>⭐ Added the new GODLY Lone Tator—the OP tator—with shop stock, inventory, and equip support.<br><br>🎁 Added an owner-only giveaway tool: choose any seed and every player currently online receives one for free. Giveaway IDs prevent duplicate rewards.<br><br>💰 Large balances now use compact labels such as $10B and $1T.</div>
 <div class="log-entry"><b>V4.4 — Raining Tacos Admin Event</b><br>🌮 Added an owner-only global event button that makes tacos fall across every connected player's screen for 20 seconds. The tester panel cannot activate it.</div>
@@ -2945,6 +3035,51 @@ function formatCompactMoney(value) {
     return Math.floor(amount).toLocaleString();
 }
 
+function renderMutationCorner() {
+    const box = document.getElementById("mutationCorner");
+    if(!box) return;
+
+    const farms = Array.isArray(game.farms) ? game.farms : [game.plots || []];
+    const found = new Map();
+    farms.forEach(farm => {
+        if(!Array.isArray(farm)) return;
+        farm.forEach(plot => {
+            if(!plot?.mutation) return;
+            const key = String(plot.mutation);
+            const current = found.get(key) || {
+                name:key,
+                mult:Number(plot.mutationMult || 1),
+                count:0
+            };
+            current.count++;
+            current.mult = Math.max(current.mult, Number(plot.mutationMult || 1));
+            found.set(key, current);
+        });
+    });
+
+    box.innerHTML = "";
+    const title = document.createElement("div");
+    title.className = "mutation-corner-title";
+    title.textContent = "🧬 MUTATIONS";
+    box.appendChild(title);
+
+    const mutations = [...found.values()].sort((a,b) => b.mult - a.mult);
+    if(mutations.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "mutation-corner-empty";
+        empty.textContent = "None growing yet";
+        box.appendChild(empty);
+        return;
+    }
+
+    mutations.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "mutation-corner-row";
+        row.textContent = item.name + " ×" + item.mult + (item.count > 1 ? "  (" + item.count + ")" : "");
+        box.appendChild(row);
+    });
+}
+
 function render() {
 
     const ban = document.getElementById("banScreen");
@@ -2976,6 +3111,7 @@ function render() {
         .value || "Player1";
 
     renderGarden();
+    renderMutationCorner();
     renderShop();
     renderLimitedButtons();
     renderPlotUpgrades();
@@ -3030,7 +3166,10 @@ function renderGarden() {
             wrap.className = "potato-wrap";
 
             const potato = document.createElement("div");
-            potato.className = "potato " + crop.className;
+            const mutationKey = String(plot.mutation || "")
+                .replace(/[^A-Z]/gi, "")
+                .toLowerCase();
+            potato.className = "potato " + crop.className + (mutationKey ? " mutation-" + mutationKey : "");
 
             if(plot.type === "lone") {
                 const loneTitle = document.createElement("div");
@@ -3047,15 +3186,34 @@ function renderGarden() {
                 potato.appendChild(jacket);
             }
 
-            if(window.__tacoRainActive) {
+            if(window.__tacoRainActive || mutationKey === "taco") {
                 const seedTaco = document.createElement("div");
                 seedTaco.className = "seed-taco";
                 seedTaco.textContent = "🌮";
-                seedTaco.setAttribute("aria-label", "Taco-covered seed");
+                seedTaco.setAttribute("aria-label", mutationKey === "taco" ? "Permanent Taco mutation" : "Taco-covered seed");
                 wrap.appendChild(seedTaco);
             }
 
+            if(mutationKey === "snowy") {
+                const snowCap = document.createElement("div");
+                snowCap.className = "mutation-snow-cap";
+                potato.appendChild(snowCap);
+            }
+
+            if(mutationKey === "frozen") {
+                const iceBlock = document.createElement("div");
+                iceBlock.className = "mutation-ice-block";
+                potato.appendChild(iceBlock);
+            }
+
             wrap.appendChild(potato);
+
+            if(plot.mutation) {
+                const mutationLabel = document.createElement("div");
+                mutationLabel.className = "mutation-label";
+                mutationLabel.textContent = plot.mutation + " ×" + Number(plot.mutationMult || 1);
+                wrap.appendChild(mutationLabel);
+            }
             div.appendChild(wrap);
 
             const text = document.createElement("div");
@@ -4885,7 +5043,9 @@ window.EXTRA_POTATO_SEEDS = {
     clear:{name:"☀️ Clear",speed:0,sell:0,mutation:0},
     rain:{name:"🌧️ Rain",speed:.20,sell:0,mutation:.01},
     rainbow:{name:"🌈 Rainbow",speed:.10,sell:.10,mutation:.05},
-    heat:{name:"🔥 Heatwave",speed:-.10,sell:.20,mutation:0}
+    heat:{name:"🔥 Heatwave",speed:-.10,sell:.20,mutation:0},
+    snow:{name:"❄️ Snow",speed:-.05,sell:.10,mutation:.04},
+    lightning:{name:"⛈️ Lightning Storm",speed:.15,sell:.15,mutation:.03}
   };
 
   const EVENTS = {
@@ -4975,21 +5135,29 @@ window.EXTRA_POTATO_SEEDS = {
 
   window.rollMutation = function(){
     const weather = getWeatherBonus();
-    const chance = .02 + weather.mutation;
+    const chance = .02 + weather.mutation + (window.__tacoRainActive ? .08 : 0);
     if(Math.random() >= chance) return null;
     const pool = [
       {name:"✨ SHINY",mult:1.5},
       {name:"🌟 GOLDEN",mult:2},
       {name:"🌈 RAINBOW",mult:3},
+      {name:"🌮 TACO",mult:5},
+      {name:"❄️ SNOWY",mult:2.5},
+      {name:"🧊 FROZEN",mult:4},
       {name:"🧬 GLITCHED",mult:5},
       {name:"🦣 GIANT",mult:8}
     ];
     const r = Math.random();
-    if(r<.45) return pool[0];
-    if(r<.72) return pool[1];
-    if(r<.88) return pool[2];
-    if(r<.97) return pool[3];
-    return pool[4];
+    if(window.__tacoRainActive && r < .30) return pool[3];
+    if(game.weather?.type === "snow" && r < .32) return Math.random() < .55 ? pool[4] : pool[5];
+    if(r<.40) return pool[0];
+    if(r<.66) return pool[1];
+    if(r<.82) return pool[2];
+    if(r<.90) return pool[3];
+    if(r<.935) return pool[4];
+    if(r<.965) return pool[5];
+    if(r<.99) return pool[6];
+    return pool[7];
   };
 
   window.generateQuest = function(){
@@ -5195,10 +5363,50 @@ window.EXTRA_POTATO_SEEDS = {
     saveGame(); render();
   };
 
+  window.updateWeatherVisuals = function(){
+    const type = String(game.weather?.type || "clear");
+    if(window.__shownWeatherType === type && document.getElementById("weather-effects")) return;
+    const old = document.getElementById("weather-effects");
+    if(old) old.remove();
+    window.__shownWeatherType = type;
+    if(type === "clear") return;
+
+    const layer = document.createElement("div");
+    layer.id = "weather-effects";
+    layer.className = "weather-effects weather-" + type + (type === "lightning" ? " weather-rain" : "");
+    layer.setAttribute("aria-label", (WEATHER[type]?.name || type) + " weather effect");
+
+    if(type === "rain" || type === "lightning") {
+      for(let i=0;i<42;i++) {
+        const drop = document.createElement("i");
+        drop.className = "weather-drop";
+        drop.style.left = (Math.random()*112).toFixed(1) + "%";
+        drop.style.animationDelay = (-Math.random()).toFixed(2) + "s";
+        drop.style.animationDuration = (.45 + Math.random()*.45).toFixed(2) + "s";
+        layer.appendChild(drop);
+      }
+    }
+    if(type === "snow") {
+      for(let i=0;i<36;i++) {
+        const flake = document.createElement("i");
+        flake.className = "weather-flake";
+        flake.textContent = Math.random() < .5 ? "❄" : "•";
+        flake.style.left = (Math.random()*100).toFixed(1) + "%";
+        flake.style.fontSize = (9 + Math.random()*18).toFixed(0) + "px";
+        flake.style.animationDelay = (-Math.random()*7).toFixed(2) + "s";
+        flake.style.animationDuration = (4 + Math.random()*5).toFixed(2) + "s";
+        flake.style.setProperty("--snow-drift", ((Math.random()-.5)*22).toFixed(1) + "vw");
+        layer.appendChild(flake);
+      }
+    }
+    document.body.appendChild(layer);
+  };
+
   window.randomizeWeather = function(force){
-    const types=["clear","rain","rainbow","heat"];
+    const types=["clear","rain","rainbow","heat","snow","lightning"];
     const type=force || types[Math.floor(Math.random()*types.length)];
     game.weather={type,endsAt:Date.now()+120000};
+    window.__shownWeatherType = null;
     saveGame(); render();
   };
 
@@ -5214,6 +5422,7 @@ window.EXTRA_POTATO_SEEDS = {
     renderQuests(); renderDaily(); renderPets(); renderAchievements(); renderStats();
     const title=document.getElementById("playerTitle"); if(title) title.textContent=getPlayerTitle();
     const wh=document.getElementById("weatherHud"); if(wh) wh.textContent=getWeatherBonus().name;
+    updateWeatherVisuals();
     const rc=document.getElementById("rebirthCount"); if(rc) rc.textContent=game.rebirths;
     const rb=document.getElementById("rebirthBonus"); if(rb) rb.textContent=`+${game.rebirths*20}%`;
     const fi=document.getElementById("farmInfo"); if(fi) fi.textContent=game.activeFarm===1?"🕳️ Cave Farm":"🌾 Main Farm";
