@@ -394,17 +394,66 @@ body {
 }
 
 .potato.lone {
+    width:34px;
+    height:48px;
+    border-radius:48% 52% 43% 47% / 38% 42% 58% 62%;
     background:
-        radial-gradient(circle at 28% 23%,#f7e0b6 0 7%,transparent 8%),
-        radial-gradient(circle at 72% 68%,#4a2b1b 0 6%,transparent 7%),
-        linear-gradient(145deg,#a56a3f,#4b2a1b);
-    border-color:#d6a06d;
-    box-shadow:0 0 16px #c08352,inset -5px -6px rgba(30,10,0,.35);
+        radial-gradient(circle at 28% 23%,#f2d9ff 0 7%,transparent 8%),
+        radial-gradient(circle at 72% 68%,#26003d 0 6%,transparent 7%),
+        linear-gradient(145deg,#8d45c7,#250033 68%,#100016);
+    border-color:#d798ff;
+    box-shadow:0 0 20px #7c16bd,0 0 7px #e5b1ff,inset -5px -6px rgba(12,0,20,.5);
+    animation:lonePulse 1.25s ease-in-out infinite alternate;
 }
+.potato.lone::before {
+    width:4px;height:4px;left:8px;top:14px;
+    box-shadow:14px 0 0 #160020,7px 11px 0 #160020;
+}
+.lone-glasses {
+    position:absolute;left:5px;top:10px;width:9px;height:8px;
+    border:3px solid #110018;border-radius:3px;background:rgba(183,92,255,.35);
+    box-shadow:14px 0 0 -3px rgba(183,92,255,.35),14px 0 0 0 #110018;
+    z-index:5;
+}
+.lone-glasses::after {
+    content:"";position:absolute;left:9px;top:2px;width:5px;height:3px;
+    background:#110018;
+}
+.lone-jacket {
+    position:absolute;left:1px;bottom:0;width:32px;height:22px;
+    background:linear-gradient(90deg,#120018 0 45%,#2f0643 46% 54%,#120018 55%);
+    border:2px solid #09000c;border-radius:4px 4px 13px 13px;
+    z-index:4;box-sizing:border-box;
+}
+.lone-jacket::before,.lone-jacket::after {
+    content:"";position:absolute;top:-1px;width:12px;height:15px;
+    background:#3f095c;border:1px solid #a04dd0;
+}
+.lone-jacket::before { left:2px;clip-path:polygon(0 0,100% 45%,35% 100%); }
+.lone-jacket::after { right:2px;clip-path:polygon(100% 0,0 45%,65% 100%); }
 .potato.lone .potato-face::before {
     content:"★";
     position:absolute;left:7px;top:-23px;color:#ffe3a1;font-size:15px;
     text-shadow:0 0 6px #ffb45b;
+}
+@keyframes lonePulse {
+    from { filter:brightness(1); transform:scale(1); }
+    to { filter:brightness(1.25); transform:scale(1.08); }
+}
+.lone-title {
+    position:absolute;left:50%;top:-25px;transform:translateX(-50%);
+    color:#4b0872;font-size:8px;font-weight:900;letter-spacing:1px;
+    text-shadow:0 0 3px #fff,0 0 7px #bd55ff,2px 2px 0 #160020;
+    z-index:6;white-space:nowrap;
+}
+.seed-taco {
+    position:absolute;right:-12px;top:-18px;z-index:7;font-size:18px;
+    filter:drop-shadow(1px 2px 1px rgba(0,0,0,.55));
+    animation:seedTacoBounce .55s ease-in-out infinite alternate;
+}
+@keyframes seedTacoBounce {
+    from { transform:translateY(0) rotate(-12deg); }
+    to { transform:translateY(-5px) rotate(12deg); }
 }
 
 .potato.quantum {
@@ -2325,7 +2374,8 @@ body{
         </div>
 <div id="updateLog" class="panel" style="display:none;">
   <h2>📜 UPDATE LOG</h2>
-<div class="log-entry"><b>V4.5 — Lone Tater + Global Giveaways</b><br>⭐ Added the new Divine Lone Tater with its own detailed brown-and-gold potato style, shop stock, inventory, equip support, and economy values.<br><br>🎁 Added an owner-only giveaway tool: choose any seed and every player currently online receives one for free. Giveaway IDs prevent duplicate rewards.<br><br>💰 Large balances now use compact labels such as $10B and $1T.</div>
+<div class="log-entry"><b>V4.6 — Ultimate Lone Tator + Taco Seeds</b><br>💜 Lone Tator is now the strongest seed in the game, sits at the bottom of the shop and admin seed lists, uses a dark-purple LONE rarity title, and has a vertical design with glasses and a dark jacket.<br><br>🌮 During Raining Tacos, every planted seed now gets its own bouncing taco.</div>
+<div class="log-entry"><b>V4.5 — Lone Tator + Global Giveaways</b><br>⭐ Added the new GODLY Lone Tator—the OP tator—with shop stock, inventory, and equip support.<br><br>🎁 Added an owner-only giveaway tool: choose any seed and every player currently online receives one for free. Giveaway IDs prevent duplicate rewards.<br><br>💰 Large balances now use compact labels such as $10B and $1T.</div>
 <div class="log-entry"><b>V4.4 — Raining Tacos Admin Event</b><br>🌮 Added an owner-only global event button that makes tacos fall across every connected player's screen for 20 seconds. The tester panel cannot activate it.</div>
 <div class="log-entry"><b>V4.3 — Complete Stock Picker + Event Rules</b><br>📦 Put One Copy rebuilds from the exact finite shop list, so every shop seed except infinite Common Spud appears.<br><br>🔒 Limited and secret seeds can only receive stock while their event toggle is ON. Manual and automatic restocks keep event-off seeds at zero stock.</div>
 <div class="log-entry"><b>V4.2 — Full Restock + Custom Money</b><br>🌱 Owner Global Restock now guarantees stock for every normal seed plus limited/secret seeds whose events are active.<br><br>💵 Added a custom local-money admin box with K, M, B, and T shortcuts.</div>
@@ -2366,11 +2416,11 @@ body{
 /* ===== SHOP HELPERS - LOAD BEFORE GAME ===== */
 (function(){
   const ALL_SHOP_SEEDS = [
-    "common","rare","quantum","epic","nebula","supernova","mythic","void","lone",
+    "common","rare","quantum","epic","nebula","supernova","mythic","void",
     "ancient","infinity","bedrock","matrix","prism","glitch","cosmic","galaxy",
     "infinity2","adminium","crystal","storm","lunar","solar","chaos","celestial",
     "golden","ghost","tree","diamond",
-    "shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret"
+    "shadowsecret","prismaticsecret","eclipsesecret","corruptedsecret","lone"
   ];
   const LIMITED_SHOP_SEEDS = [
     "golden","ghost","tree","diamond",
@@ -2380,7 +2430,7 @@ body{
   const rarityMap = {
     common:"COMMON", rare:"UNCOMMON", quantum:"RARE", epic:"EPIC", nebula:"EPIC",
     supernova:"LEGENDARY", mythic:"MYTHIC", void:"MYTHIC", ancient:"DIVINE",
-    lone:"DIVINE",
+    lone:"LONE",
     infinity:"DIVINE", bedrock:"CELESTIAL", matrix:"CELESTIAL", prism:"CELESTIAL",
     glitch:"SECRET", cosmic:"SECRET", galaxy:"SECRET", infinity2:"SECRET",
     adminium:"ADMIN", crystal:"CELESTIAL", storm:"SECRET", lunar:"SECRET",
@@ -2392,7 +2442,8 @@ body{
   const rarityColors = {
     COMMON:"#bdbdbd", UNCOMMON:"#78c850", RARE:"#4dabf7", EPIC:"#b66dff",
     LEGENDARY:"#ffb300", MYTHIC:"#ff4d8d", DIVINE:"#fff176",
-    CELESTIAL:"#66e0ff", SECRET:"#ff5cff", GODLY:"#ffffff", ADMIN:"#ff3b30"
+    CELESTIAL:"#66e0ff", SECRET:"#ff5cff", GODLY:"#ffffff",
+    LONE:"#65108f", ADMIN:"#ff3b30"
   };
 
   // Chance that a seed appears on each 1-minute restock.
@@ -2408,6 +2459,7 @@ body{
     CELESTIAL: 8,
     SECRET: 4,
     GODLY: 1,
+    LONE: 1,
     ADMIN: 1
   };
 
@@ -2568,14 +2620,6 @@ const crops = {
         className:"void"
     },
 
-    lone: {
-        name:"Lone Tater",
-        price:175000,
-        sell:800000,
-        grow:28000,
-        className:"lone"
-    },
-
     ancient: {
         name:"Divine Roots",
         price:325000,
@@ -2696,6 +2740,14 @@ const crops = {
         className:"corruptedsecret",
         limited:true,
         secret:true
+    },
+
+    lone: {
+        name:"Lone Tator",
+        price:1000000000000000000,
+        sell:1000000000000000000000,
+        grow:10000,
+        className:"lone"
     }
 
 };
@@ -2979,6 +3031,29 @@ function renderGarden() {
 
             const potato = document.createElement("div");
             potato.className = "potato " + crop.className;
+
+            if(plot.type === "lone") {
+                const loneTitle = document.createElement("div");
+                loneTitle.className = "lone-title";
+                loneTitle.textContent = "LONE";
+                wrap.appendChild(loneTitle);
+
+                const glasses = document.createElement("div");
+                glasses.className = "lone-glasses";
+                potato.appendChild(glasses);
+
+                const jacket = document.createElement("div");
+                jacket.className = "lone-jacket";
+                potato.appendChild(jacket);
+            }
+
+            if(window.__tacoRainActive) {
+                const seedTaco = document.createElement("div");
+                seedTaco.className = "seed-taco";
+                seedTaco.textContent = "🌮";
+                seedTaco.setAttribute("aria-label", "Taco-covered seed");
+                wrap.appendChild(seedTaco);
+            }
 
             wrap.appendChild(potato);
             div.appendChild(wrap);
@@ -4450,6 +4525,8 @@ window.addEventListener("beforeunload", saveGame);
     clearTimeout(window.__tacoRainTimer);
 
     const duration = Math.max(1000, Math.min(30000, Number(durationMs) || 20000));
+    window.__tacoRainActive = true;
+    if(typeof render === "function") render();
     const layer = document.createElement("div");
     layer.id = "taco-rain-layer";
     layer.className = "taco-rain-layer";
@@ -4473,7 +4550,11 @@ window.addEventListener("beforeunload", saveGame);
     if(typeof sendBroadcastText === "function") {
       sendBroadcastText("🌮 ADMIN EVENT: IT'S RAINING TACOS! 🌮");
     }
-    window.__tacoRainTimer = setTimeout(() => layer.remove(), duration);
+    window.__tacoRainTimer = setTimeout(() => {
+      layer.remove();
+      window.__tacoRainActive = false;
+      if(typeof render === "function") render();
+    }, duration);
   };
 
   window.addEventListener("global-taco-rain", (ev) => {
